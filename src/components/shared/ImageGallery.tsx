@@ -1,42 +1,48 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Image from 'next/image'
-import { Expand } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { useState } from "react";
+import Image from "next/image";
+import { Expand } from "lucide-react";
+
+import { cn } from "@/lib/utils";
 
 interface ImageGalleryProps {
-  images: string[]
-  alt: string
-  priority?: boolean
-  className?: string
+  images: string[];
+  alt: string;
+  priority?: boolean;
+  className?: string;
 }
 
-export function ImageGallery({ images, alt, priority = false, className }: ImageGalleryProps) {
-  const [activeIndex, setActiveIndex] = useState(0)
-  const [fading, setFading] = useState(false)
+export function ImageGallery({
+  images,
+  alt,
+  priority = false,
+  className,
+}: ImageGalleryProps) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [fading, setFading] = useState(false);
 
   function handleThumbnailClick(i: number) {
-    if (i === activeIndex) return
-    setFading(true)
+    if (i === activeIndex) return;
+    setFading(true);
     setTimeout(() => {
-      setActiveIndex(i)
-      setFading(false)
-    }, 150)
+      setActiveIndex(i);
+      setFading(false);
+    }, 150);
   }
 
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn("w-full", className)}>
       {/* Main image */}
-      <div className="relative aspect-[16/9] overflow-hidden rounded-xl">
+      <div className="relative aspect-video overflow-hidden rounded-xl">
         <Image
           src={images[activeIndex]}
           alt={`${alt} — image ${activeIndex + 1}`}
           fill
           priority={priority && activeIndex === 0}
           className={cn(
-            'object-cover transition-opacity duration-300',
-            fading ? 'opacity-0' : 'opacity-100'
+            "object-cover transition-opacity duration-300",
+            fading ? "opacity-0" : "opacity-100",
           )}
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
         />
@@ -50,16 +56,16 @@ export function ImageGallery({ images, alt, priority = false, className }: Image
 
       {/* Thumbnail strip */}
       {images.length > 1 && (
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-none [&::-webkit-scrollbar]:hidden">
           {images.map((src, i) => (
             <button
               key={i}
               onClick={() => handleThumbnailClick(i)}
               className={cn(
-                'relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer transition-all duration-200',
-                i === activeIndex
-                  ? 'ring-2 ring-[var(--color-gold)] ring-offset-2 ring-offset-[var(--color-navy)] opacity-100'
-                  : 'opacity-70 hover:opacity-100 hover:ring-1 hover:ring-[var(--color-gold)]/50'
+                "relative w-16 h-16 shrink-0 rounded-lg overflow-hidden cursor-pointer transition-all duration-200",
+                i === activeIndex ?
+                  "ring-2 ring-(--color-gold) ring-offset-2 ring-offset-(--color-navy) opacity-100"
+                : "opacity-70 hover:opacity-100 hover:ring-1 hover:ring-(--color-gold)/50",
               )}
               aria-label={`View image ${i + 1}`}
             >
@@ -75,5 +81,5 @@ export function ImageGallery({ images, alt, priority = false, className }: Image
         </div>
       )}
     </div>
-  )
+  );
 }

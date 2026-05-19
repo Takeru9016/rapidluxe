@@ -5,11 +5,14 @@ import Image from "next/image";
 import { Heart } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+
 import type { Package } from "@/types/package";
+
+import { useWishlistStore } from "@/store/wishlistStore";
+
 import { Rating } from "@/components/shared/Rating";
 import { Badge } from "@/components/shared/Badge";
 import { PriceDisplay } from "@/components/shared/PriceDisplay";
-import { useWishlistStore } from "@/store/wishlistStore";
 
 interface PackageCardProps {
   package: Package;
@@ -37,10 +40,10 @@ export function PackageCard({
     <Link href={`/packages/${pkg.slug}`} className="block" tabIndex={-1}>
       <article
         className={cn(
-          "group rounded-xl overflow-hidden bg-[var(--color-navy-surface)]",
-          "border border-[var(--color-navy-border)]",
+          "group rounded-xl overflow-hidden bg-(--color-navy-surface)",
+          "border border-(--color-navy-border)",
           "transition-all duration-200",
-          "hover:border-[var(--color-gold)]/50 hover:shadow-lg hover:shadow-black/30",
+          "hover:border-(--color-gold)/50 hover:shadow-lg hover:shadow-black/30",
           className,
         )}
       >
@@ -48,7 +51,7 @@ export function PackageCard({
         <div
           className={cn(
             "relative overflow-hidden",
-            variant === "compact" ? "aspect-video" : "aspect-[4/3]",
+            variant === "compact" ? "aspect-video" : "aspect-4/3",
           )}
         >
           <Image
@@ -80,8 +83,8 @@ export function PackageCard({
                 className={cn(
                   "transition-colors",
                   isWishlisted ?
-                    "text-[var(--color-gold)] fill-[var(--color-gold)]"
-                  : "text-white/70 hover:text-[var(--color-gold)]",
+                    "text-(--color-gold) fill-(--color-gold)"
+                  : "text-white/70 hover:text-(--color-gold)",
                 )}
               />
             </button>
@@ -89,8 +92,8 @@ export function PackageCard({
 
           {/* Hover overlay — default variant only */}
           {variant === "default" && (
-            <div className="absolute inset-0 bg-[var(--color-navy)]/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-              <span className="border border-[var(--color-gold)] text-[var(--color-gold)] px-6 py-2 rounded-lg font-sans font-medium text-sm hover:bg-[var(--color-gold)]/10 transition-colors">
+            <div className="absolute inset-0 bg-(--color-navy)/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+              <span className="border border-(--color-gold) text-(--color-gold) px-6 py-2 rounded-lg font-sans font-medium text-sm hover:bg-(--color-gold)/10 transition-colors">
                 View Details →
               </span>
             </div>
@@ -108,7 +111,7 @@ export function PackageCard({
             {pkg.title}
           </h3>
 
-          <div className="mt-1 flex items-center gap-3 text-sm text-[var(--color-text-secondary)]">
+          <div className="mt-1 flex items-center gap-3 text-sm text-(--color-text-secondary)">
             <span className="font-mono">{pkg.durationNights} Nights</span>
             <span>·</span>
             <span className="font-sans">
