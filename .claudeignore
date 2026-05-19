@@ -1,0 +1,57 @@
+# .claudeignore — RapidLuxe
+# Claude Code will not read or index these paths.
+# This directly reduces token usage on file searches.
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+
+# Package manager locks (too large, no value)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Cache and generated files
+.eslintcache
+*.tsbuildinfo
+next-env.d.ts
+
+# Sanity managed
+.sanity/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# OS junk
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Prisma generated client (huge, auto-generated)
+node_modules/.prisma/
+prisma/migrations/
+
+# Storybook (if added later)
+storybook-static/
+
+# Test outputs
+test-results/
+playwright-report/
+
+# Environment (never read)
+.env.local
+.env
+.env.*

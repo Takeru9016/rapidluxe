@@ -41,3 +41,24 @@ yarn-error.log*
 next-env.d.ts
 
 certificates
+
+# Claude Code
+.claude
+CLAUDE.local.md
+docs
+prompts
+CLAUDE.md
+RAPIDLUXE.md
+
+# Environment
+.env.local
+.env*.local
+
+# Next.js
+.next/
+out/
+
+# Sanity
+.sanity/
+# clerk configuration (can include secrets)
+/.clerk/

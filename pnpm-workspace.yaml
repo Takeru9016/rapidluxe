@@ -1,4 +1,6 @@
 allowBuilds:
+  '@clerk/shared': true
+  msw: true
   sharp: true
 ignoredBuiltDependencies:
   - sharp
