@@ -3,9 +3,9 @@
 ## Current Build State
 
 ```
-Phase:          1B — Core Components
-Active Task:    1B-4
-Last Completed: 1B-3 "Footer + theme toggle (light/dark)"
+Phase:          1C — Homepage
+Active Task:    1C-1
+Last Completed: 1B-ALL "Phase 1B all core components complete"
 ```
 
 > Update after every completed task.

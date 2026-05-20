@@ -142,7 +142,7 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
 
 #### Layout Components
 
-- [ ] **1B-1** — `components/layout/Navbar.tsx` _(client)_
+- [x] **1B-1** — `components/layout/Navbar.tsx` _(client)_
   - Transparent → `bg-[#111827]/95 backdrop-blur-md border-b border-navy-border` on scroll >50px
   - Logo: "Rapid**Luxe**" — "Rapid" in gold, "Luxe" in white, Cormorant Garamond
   - Desktop: NavigationMenu dropdowns (Packages, Destinations), nav links, search icon, Sign In (ghost), Book Now (coral)
@@ -150,13 +150,13 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
   - Transition: `transition-all duration-300`
   - Uses `uiStore` for mobile menu state
 
-- [ ] **1B-2** — `components/layout/MobileMenu.tsx` _(client)_
+- [x] **1B-2** — `components/layout/MobileMenu.tsx` _(client)_
   - Full-height Sheet from right
   - All nav links (accordion for Packages/Destinations dropdowns)
   - Sign In + Book Now buttons
   - Gold on active link
 
-- [ ] **1B-3** — `components/layout/Footer.tsx`
+- [x] **1B-3** — `components/layout/Footer.tsx`
   - 4-col grid (lg) → 2-col (md) → 1-col (mobile)
   - Col 1: Logo + tagline + social icons (gold hover)
   - Col 2: Company links
@@ -216,7 +216,7 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
   - `isEligible` prop — if false, shows locked state with explanation
   - React Hook Form + Zod
 
-- [ ] **1B-15** — `hooks/useSearch.ts` — debounced search (300ms), syncs to `searchStore`
+- [x] **1B-15** — `hooks/useSearch.ts` — debounced search (300ms), syncs to `searchStore`
 
 #### Card Components
 
@@ -228,28 +228,28 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
   - "✈ Flights included" badge (teal) if true
   - Variants: `default` | `compact`
 
-- [ ] **1B-17** — `components/cards/DestinationCard.tsx`
+- [x] **1B-17** — `components/cards/DestinationCard.tsx`
   - Full-bleed image (3:4), gradient overlay bottom-to-top
   - Country + city + "X packages" overlay at bottom
   - Hover: scale-105 + gold border
 
-- [ ] **1B-18** — `components/cards/DealCard.tsx`
+- [x] **1B-18** — `components/cards/DealCard.tsx`
   - Image (16:9), "⚡ FLASH SALE" coral badge (top-left), "30% OFF" gold badge (top-right)
   - Price block: original strikethrough → new price (gold, JetBrains Mono) → "Save ₹X" coral
   - `CountdownTimer` inline variant
   - Coral CTA button
 
-- [ ] **1B-19** — `components/cards/ReviewCard.tsx`
+- [x] **1B-19** — `components/cards/ReviewCard.tsx`
   - Avatar + name + trip name
   - Rating component
   - Body (3-line clamp, "Read more" toggle)
   - "✓ Verified Booking" teal badge + date
 
-- [ ] **1B-20** — `components/cards/HotelCard.tsx`
+- [x] **1B-20** — `components/cards/HotelCard.tsx`
   - Image (4:3), star rating display (gold stars)
   - Hotel name (Cormorant), location (MapPin icon), "Included" / "Optional Upgrade" badge
 
-- [ ] **1B-21** — `components/cards/ActivityCard.tsx`
+- [x] **1B-21** — `components/cards/ActivityCard.tsx`
   - Horizontal layout: icon/thumbnail (64px square) + content
   - Name, duration (JetBrains Mono), "✓ Included" (teal) or "Add-On + price" (gold)
 
