@@ -9,7 +9,10 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 
 import "./globals.css";
+
 import { cn } from "@/lib/utils";
+
+import { ThemeProvider, Navbar, MobileMenu, Footer } from "@/components";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -66,6 +69,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={cn(
         cormorant.variable,
         dmSans.variable,
@@ -75,12 +79,15 @@ export default function RootLayout({
       )}
     >
       <body className={dmSans.className}>
-        <ClerkProvider
-          publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-        >
-          {children}
-        </ClerkProvider>
-        <Toaster position="bottom-right" theme="dark" richColors />
+        <ThemeProvider>
+          <ClerkProvider>
+            <Navbar />
+            <MobileMenu />
+            <main className="min-h-screen pt-16">{children}</main>
+            <Footer />
+          </ClerkProvider>
+          <Toaster position="top-center" richColors />
+        </ThemeProvider>
       </body>
     </html>
   );

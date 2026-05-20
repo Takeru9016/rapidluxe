@@ -48,14 +48,15 @@ export function EmptyState({
 
       {action && (
         <div className="mt-6">
-          {action.href ?
+          {action.href ? (
             <Link href={action.href} className={actionButtonClass}>
               {action.label}
             </Link>
-          : <button onClick={action.onClick} className={actionButtonClass}>
+          ) : (
+            <button onClick={action.onClick} className={actionButtonClass}>
               {action.label}
             </button>
-          }
+          )}
         </div>
       )}
     </div>

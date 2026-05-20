@@ -55,14 +55,15 @@ export function ReviewForm({
     <div className="bg-(--color-navy-surface) rounded-xl p-6 border border-(--color-navy-border)">
       <h2 className="font-serif text-2xl text-white">Share Your Experience</h2>
 
-      {!isEligible ?
+      {!isEligible ? (
         <div className="mt-4 bg-(--color-navy-border)/30 rounded-lg p-4 flex items-center gap-3">
           <Lock size={20} className="text-(--color-gold) shrink-0" />
           <p className="font-sans text-(--color-white-muted) text-sm">
             Complete your trip to share your experience
           </p>
         </div>
-      : <form
+      ) : (
+        <form
           onSubmit={handleSubmit(onSubmit)}
           className="mt-5 flex flex-col gap-5"
         >
@@ -90,9 +91,9 @@ export function ReviewForm({
                       size={28}
                       className={cn(
                         "transition-colors",
-                        active ?
-                          "text-(--color-gold) fill-(--color-gold)"
-                        : "text-(--color-navy-border)",
+                        active
+                          ? "text-(--color-gold) fill-(--color-gold)"
+                          : "text-(--color-navy-border)",
                       )}
                     />
                   </button>
@@ -127,11 +128,13 @@ export function ReviewForm({
               className="bg-transparent border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) resize-none"
             />
             <div className="flex justify-between mt-1">
-              {errors.body ?
+              {errors.body ? (
                 <p className="text-xs text-(--color-coral)">
                   {errors.body.message}
                 </p>
-              : <span />}
+              ) : (
+                <span />
+              )}
               <p className="text-xs text-(--color-text-secondary) ml-auto">
                 {body.length}/500
               </p>
@@ -154,7 +157,7 @@ export function ReviewForm({
             Submit Review
           </button>
         </form>
-      }
+      )}
     </div>
   );
 }

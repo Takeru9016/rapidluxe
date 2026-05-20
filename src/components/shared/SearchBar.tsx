@@ -87,7 +87,7 @@ export function SearchBar({ variant = "hero", className }: SearchBarProps) {
     return (
       <div
         className={cn(
-          "flex items-center gap-2 bg-[#111827]/90 backdrop-blur-md rounded-full border border-(--color-navy-border) px-4 py-2",
+          "flex items-center gap-2 bg-(--color-navy-surface)/90 backdrop-blur-md rounded-full border border-(--color-navy-border) px-4 py-2",
           className,
         )}
       >
@@ -110,7 +110,7 @@ export function SearchBar({ variant = "hero", className }: SearchBarProps) {
   return (
     <div
       className={cn(
-        "bg-[#111827]/90 backdrop-blur-md rounded-2xl border border-(--color-navy-border) shadow-2xl overflow-hidden",
+        "bg-(--color-navy-surface)/90 backdrop-blur-md rounded-2xl border border-(--color-navy-border) shadow-2xl overflow-hidden",
         "flex flex-col md:flex-row md:items-stretch",
         className,
       )}
@@ -153,7 +153,7 @@ export function SearchBar({ variant = "hero", className }: SearchBarProps) {
           </button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-auto p-0 bg-[#111827] border-(--color-navy-border)"
+          className="w-auto p-0 bg-(--color-navy-surface) border-(--color-navy-border)"
           align="start"
         >
           <CalendarComponent
@@ -182,7 +182,7 @@ export function SearchBar({ variant = "hero", className }: SearchBarProps) {
           </button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-72 bg-[#111827] border-(--color-navy-border) p-4"
+          className="w-72 bg-(--color-navy-surface) border-(--color-navy-border) p-4"
           align="start"
         >
           <div className="divide-y divide-(--color-navy-border)">

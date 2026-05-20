@@ -82,9 +82,9 @@ export function PackageCard({
                 size={18}
                 className={cn(
                   "transition-colors",
-                  isWishlisted ?
-                    "text-(--color-gold) fill-(--color-gold)"
-                  : "text-white/70 hover:text-(--color-gold)",
+                  isWishlisted
+                    ? "text-(--color-gold) fill-(--color-gold)"
+                    : "text-white/70 hover:text-(--color-gold)",
                 )}
               />
             </button>

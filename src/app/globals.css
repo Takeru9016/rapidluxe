@@ -10,22 +10,22 @@
 
 /* Section 3: Design Tokens */
 :root {
-  /* Backgrounds */
-  --color-navy: #0B0F1A;
-  --color-navy-surface: #111827;
-  --color-navy-border: #1F2937;
+  /* Backgrounds — Light mode (warm luxury cream) */
+  --color-navy: #FAF9F6;
+  --color-navy-surface: #F3EFE8;
+  --color-navy-border: #E5DDD0;
 
-  /* Brand Accents */
+  /* Brand Accents — identical in both modes */
   --color-gold: #C9A84C;
   --color-gold-light: #E2C47A;
   --color-gold-muted: #A07C30;
   --color-teal: #0D9488;
   --color-coral: #E07A5F;
 
-  /* Text */
-  --color-white: #FAF9F6;
-  --color-white-muted: #D1CBC0;
-  --color-text-secondary: #9CA3AF;
+  /* Text — Light mode */
+  --color-white: #1A1410;
+  --color-white-muted: #4A3F35;
+  --color-text-secondary: #7A6E65;
 
   /* Typography */
   --font-display: 'Cormorant Garamond', Georgia, serif;
@@ -87,7 +87,7 @@
     color: var(--color-white);
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
-    @apply bg-background text-foreground;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   a {
@@ -138,7 +138,17 @@
   background: var(--color-gold-muted);
 }
 
-/* Section 7: Selection */
+/* Section 7: View Transitions (theme toggle ripple) */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) { z-index: 1; }
+::view-transition-new(root) { z-index: 2; }
+
+/* Section 8: Selection */
 ::selection {
   background-color: var(--color-gold);
   color: var(--color-navy);
@@ -188,6 +198,16 @@
 }
 
 .dark {
+  /* Backgrounds — Dark mode */
+  --color-navy: #0B0F1A;
+  --color-navy-surface: #111827;
+  --color-navy-border: #1F2937;
+
+  /* Text — Dark mode */
+  --color-white: #FAF9F6;
+  --color-white-muted: #D1CBC0;
+  --color-text-secondary: #9CA3AF;
+
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);

@@ -4,8 +4,8 @@
 
 ```
 Phase:          1B — Core Components
-Active Task:    1B-15 (hooks/useSearch.ts)
-Last Completed: 1B-4 to 1B-14 "Phase 1B Few Core Components Completed"
+Active Task:    1B-4
+Last Completed: 1B-3 "Footer + theme toggle (light/dark)"
 ```
 
 > Update after every completed task.
