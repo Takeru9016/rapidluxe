@@ -19,6 +19,7 @@ import { dummyPackages } from "@/lib/dummy/packages";
 import { dummyDestinations } from "@/lib/dummy/destinations";
 import { dummyReviews } from "@/lib/dummy/reviews";
 import { formatPrice, calculateGST, formatDate } from "@/lib/utils";
+
 import { useWishlistStore } from "@/store/wishlistStore";
 
 import { ImageGallery } from "@/components/shared/ImageGallery";

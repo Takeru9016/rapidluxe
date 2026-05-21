@@ -5,6 +5,7 @@ import { Zap } from "lucide-react";
 
 import { dummyDeals } from "@/lib/dummy/deals";
 import { dummyPackages } from "@/lib/dummy/packages";
+
 import { DealCard } from "@/components/cards/DealCard";
 import { CountdownTimer } from "@/components/shared/CountdownTimer";
 

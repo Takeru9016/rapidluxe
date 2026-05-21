@@ -2,8 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 
 import { dummyBlogPosts } from "@/lib/dummy/blog";
-import { Badge } from "@/components/shared/Badge";
 import { formatDate } from "@/lib/utils";
+
+import { Badge } from "@/components/shared/Badge";
 
 function BlogCard({ post }: { post: (typeof dummyBlogPosts)[number] }) {
   return (

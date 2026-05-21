@@ -5,12 +5,13 @@ import { SlidersHorizontal, PackageSearch } from "lucide-react";
 
 import { dummyPackages } from "@/lib/dummy/packages";
 import { dummyDestinations } from "@/lib/dummy/destinations";
+import { formatPrice } from "@/lib/utils";
+
+import { useSearchStore } from "@/store/searchStore";
+
 import { PackageCard } from "@/components/cards/PackageCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PackageCardSkeleton } from "@/components/shared/Skeletons";
-import { useSearchStore } from "@/store/searchStore";
-import { formatPrice } from "@/lib/utils";
-
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";

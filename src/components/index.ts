@@ -28,3 +28,13 @@ export { Navbar } from "./layout/Navbar";
 export { MobileMenu } from "./layout/MobileMenu";
 export { Footer } from "./layout/Footer";
 export { NewsletterForm } from "./layout/NewsletterForm";
+
+export { BlogPreview } from "./sections/BlogPreview";
+export { DestinationsSection } from "./sections/DestinationsSection";
+export { FeaturedPackages } from "./sections/FeaturedPackages"
+export { Hero } from "./sections/Hero";
+export { HotDealsSection } from "./sections/HotDealsSection";
+export { HowItWorks } from "./sections/HowItWorks";
+export { Newsletter } from "./sections/Newsletter"
+export { Testimonials } from "./sections/Testimonials";
+export { TrustBar } from "./sections/TrustBar";

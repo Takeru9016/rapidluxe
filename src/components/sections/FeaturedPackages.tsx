@@ -6,7 +6,9 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import { dummyPackages } from "@/lib/dummy/packages";
+
 import { PackageCard } from "@/components/cards/PackageCard";
+
 import type { Package } from "@/types/package";
 
 gsap.registerPlugin(ScrollTrigger);

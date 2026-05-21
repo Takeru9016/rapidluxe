@@ -6,6 +6,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import { dummyDestinations } from "@/lib/dummy/destinations";
+
 import { DestinationCard } from "@/components/cards/DestinationCard";
 
 gsap.registerPlugin(ScrollTrigger);

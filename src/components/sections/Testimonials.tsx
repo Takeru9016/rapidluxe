@@ -1,6 +1,7 @@
 import { Star } from "lucide-react";
 
 import { dummyReviews } from "@/lib/dummy/reviews";
+
 import { ReviewCard } from "@/components/cards/ReviewCard";
 
 const USER_NAMES: Record<string, string> = {
