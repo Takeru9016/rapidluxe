@@ -4,8 +4,8 @@
 
 ```
 Phase:          1C — Homepage
-Active Task:    1C-1
-Last Completed: 1B-ALL "Phase 1B all core components complete"
+Active Task:    1C-10
+Last Completed: 1C-Homepage "Phase 1C - Homepage Completed"
 ```
 
 > Update after every completed task.

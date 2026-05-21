@@ -259,49 +259,49 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
 
 ### Phase 1C — Homepage
 
-- [ ] **1C-1** — `components/sections/Hero.tsx` _(client for GSAP)_
+- [x] **1C-1** — `components/sections/Hero.tsx` _(client for GSAP)_
   - Full-bleed image/video bg, gradient overlay: `from-navy/60 via-transparent to-navy/80`
   - Eyebrow (gold, DM Sans, tracking-widest, uppercase) → H1 (Cormorant, 5xl–7xl, font-light) → subtext → SearchBar hero variant
   - Scroll indicator with bounce
   - GSAP timeline on mount: eyebrow → H1 → sub → search (stagger 0.2s, y:30→0, opacity:0→1)
 
-- [ ] **1C-2** — `components/sections/TrustBar.tsx`
+- [x] **1C-2** — `components/sections/TrustBar.tsx`
   - 4 stats with Lucide icons: "10,000+ Trips" | "4.8★ Rated" | "100% Money-Back" | "24/7 Support"
   - Numbers in gold JetBrains Mono, labels DM Sans
   - Horizontal scroll on mobile
 
-- [ ] **1C-3** — `components/sections/FeaturedPackages.tsx` _(client for tabs)_
+- [x] **1C-3** — `components/sections/FeaturedPackages.tsx` _(client for tabs)_
   - Tab filter: "Trending" | "Luxury" | "Budget" — active tab bg-gold text-navy
   - 3→2→1 col grid of PackageCard
   - "View All Packages →" outline-gold CTA
   - GSAP stagger reveal on scroll
 
-- [ ] **1C-4** — `components/sections/Destinations.tsx` _(client for scroll)_
+- [x] **1C-4** — `components/sections/Destinations.tsx` _(client for scroll)_
   - Horizontal scroll with prev/next arrows (desktop) OR grid (mobile)
   - DestinationCard components
   - Arrow buttons: ghost, gold on hover
 
-- [ ] **1C-5** — `components/sections/HotDeals.tsx` _(client for timer)_
+- [x] **1C-5** — `components/sections/HotDeals.tsx` _(client for timer)_
   - Section header with ⚡ icon + global countdown (CountdownTimer blocks variant)
   - 3-col grid of DealCard
   - "See All Deals →" CTA
 
-- [ ] **1C-6** — `components/sections/HowItWorks.tsx` _(client for GSAP)_
+- [x] **1C-6** — `components/sections/HowItWorks.tsx` _(client for GSAP)_
   - 3 steps: Search → Book → Travel
   - Numbered circles + icon + title + description
   - Connector line between steps (desktop)
   - GSAP stagger on scroll
 
-- [ ] **1C-7** — `components/sections/Testimonials.tsx`
+- [x] **1C-7** — `components/sections/Testimonials.tsx`
   - Section heading with gold ★
   - 3-col grid of ReviewCard
 
-- [ ] **1C-8** — `components/sections/BlogPreview.tsx`
+- [x] **1C-8** — `components/sections/BlogPreview.tsx`
   - 3 blog post preview cards from dummy data
   - Image + category badge + title + excerpt + read time
   - "Read More on the Blog →" CTA
 
-- [ ] **1C-9** — `components/sections/Newsletter.tsx`
+- [x] **1C-9** — `components/sections/Newsletter.tsx`
   - Lead magnet copy + email input + "Subscribe" gold button
   - Background: subtle gradient or slightly lighter navy strip
 
