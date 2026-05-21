@@ -3,9 +3,9 @@
 ## Current Build State
 
 ```
-Phase:          1C — Homepage
-Active Task:    1C-10
-Last Completed: 1C-Homepage "Phase 1C - Homepage Completed"
+Phase:          1D — Package Pages
+Active Task:    1E-1
+Last Completed: 1D-Package Pages "Phase 1D - Package List & Detail Pages Completed"
 ```
 
 > Update after every completed task.

@@ -305,7 +305,7 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
   - Lead magnet copy + email input + "Subscribe" gold button
   - Background: subtle gradient or slightly lighter navy strip
 
-- [ ] **1C-10** — `app/(public)/page.tsx` — assemble all sections in order with Navbar + Footer
+- [x] **1C-10** — `app/(public)/page.tsx` — assemble all sections in order with Navbar + Footer
 
 **1C Gate:** Full homepage end-to-end. GSAP triggers on scroll. No hydration errors. Correct on 375px.
 
@@ -313,7 +313,7 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
 
 ### Phase 1D — Package Pages
 
-- [ ] **1D-1** — `app/(public)/packages/page.tsx`
+- [x] **1D-1** — `app/(public)/packages/page.tsx`
   - Desktop: filter sidebar (left, w-72) + package grid (right)
   - Mobile: "Filters" button → Sheet drawer
   - Filter sidebar: Destination multiselect, Duration range, Price slider (shadcn Slider), Travel type checkboxes, Group size
@@ -322,7 +322,7 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
   - Pagination UI (non-functional Phase 1)
   - Filter state in `searchStore`
 
-- [ ] **1D-2** — `app/(public)/packages/[slug]/page.tsx` ⭐ Most complex page
+- [x] **1D-2** — `app/(public)/packages/[slug]/page.tsx` ⭐ Most complex page
   - `ImageGallery` full-width
   - Header: title, destination, duration, rating, share icon, wishlist button
   - Desktop sticky sidebar (right, w-80): price, date picker (shadcn Calendar), travelers selector, total calculator, "Book Now" coral CTA, "Get Custom Quote" ghost → Dialog modal
@@ -334,7 +334,7 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
   - **Reviews tab:** summary block (avg + bar breakdown), list of `ReviewCard`, `ReviewForm` (disabled in Phase 1)
   - Similar packages horizontal scroll (compact PackageCard) at bottom
 
-- [ ] **1D-3** — `store/bookingStore.ts` — Zustand booking state (see CLAUDE.md for full interface)
+- [x] **1D-3** — `store/bookingStore.ts` — Zustand booking state (see CLAUDE.md for full interface)
 
 ---
 
