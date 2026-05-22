@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { Suspense, useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal, PackageSearch } from "lucide-react";
 
@@ -220,7 +220,7 @@ function FilterPanel({
 
 // ─── PackagesPage ─────────────────────────────────────────────────────────────
 
-export default function PackagesPage() {
+function PackagesContent() {
   const [mounted, setMounted] = useState(false);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [selectedDestinations, setSelectedDestinations] = useState<string[]>(
@@ -432,5 +432,13 @@ export default function PackagesPage() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function PackagesPage() {
+  return (
+    <Suspense fallback={null}>
+      <PackagesContent />
+    </Suspense>
   );
 }
