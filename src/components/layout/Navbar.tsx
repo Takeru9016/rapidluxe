@@ -5,45 +5,22 @@ import Link from "next/link";
 import { Menu } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  NavigationMenu,
-  NavigationMenuList,
-  NavigationMenuItem,
-  NavigationMenuTrigger,
-  NavigationMenuContent,
-  NavigationMenuLink,
-} from "@/components/ui/navigation-menu";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
 import { useUIStore } from "@/store/uiStore";
 
 import { cn } from "@/lib/utils";
 
-const packagesItems = [
-  { label: "Top Picks", href: "/packages/top-picks" },
-  { label: "By Destination", href: "/packages/by-destination" },
-  { label: "By Theme", href: "/packages/by-theme" },
-];
-
-const destinationItems = [
-  { label: "Asia", href: "/destinations/asia" },
-  { label: "Europe", href: "/destinations/europe" },
-  { label: "Africa", href: "/destinations/africa" },
-  {
-    label: "Middle East & Americas",
-    href: "/destinations/middle-east-americas",
-  },
-  { label: "Oceania", href: "/destinations/oceania" },
-];
-
 const plainLinks = [
+  { label: "Packages", href: "/packages" },
+  { label: "Destinations", href: "/destinations" },
   { label: "Deals", href: "/deals" },
+  { label: "About Us", href: "/about" },
   { label: "Blog", href: "/blog" },
   { label: "Corporate", href: "/corporate" },
+  { label: "Contact Us", href: "/contact" },
 ];
 
-const dropdownItemClass =
-  "block px-3 py-2 text-sm font-sans text-[var(--color-white-muted)] rounded-md hover:text-[var(--color-gold)] hover:bg-white/5 transition-colors cursor-pointer";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -82,7 +59,7 @@ export function Navbar() {
         className={cn(
           "flex items-center justify-between transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]",
           scrolled
-            ? "bg-(--color-navy-surface)/80 backdrop-blur-xl border border-(--color-navy-border) rounded-full px-4 py-2.5 gap-4 shadow-2xl shadow-black/20"
+            ? "bg-(--color-navy-surface)/80 backdrop-blur-md border border-(--color-navy-border) rounded-full px-4 py-2.5 gap-4 shadow-2xl shadow-black/20"
             : "max-w-7xl mx-auto px-4 md:px-6 h-16 gap-6",
         )}
       >
@@ -96,44 +73,6 @@ export function Navbar() {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
-          <NavigationMenu viewport={false}>
-            <NavigationMenuList className="gap-0">
-              <NavigationMenuItem>
-                <NavigationMenuTrigger className="bg-transparent text-(--color-white-muted) hover:text-white font-sans font-medium text-sm data-open:bg-transparent hover:bg-white/5 focus:bg-transparent rounded-full">
-                  Packages
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <div className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-lg p-1 min-w-[180px]">
-                    {packagesItems.map((item) => (
-                      <NavigationMenuLink key={item.href} asChild>
-                        <Link href={item.href} className={dropdownItemClass}>
-                          {item.label}
-                        </Link>
-                      </NavigationMenuLink>
-                    ))}
-                  </div>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <NavigationMenuTrigger className="bg-transparent text-(--color-white-muted) hover:text-white font-sans font-medium text-sm data-open:bg-transparent hover:bg-white/5 focus:bg-transparent rounded-full">
-                  Destinations
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <div className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-lg p-1 min-w-[200px]">
-                    {destinationItems.map((item) => (
-                      <NavigationMenuLink key={item.href} asChild>
-                        <Link href={item.href} className={dropdownItemClass}>
-                          {item.label}
-                        </Link>
-                      </NavigationMenuLink>
-                    ))}
-                  </div>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
-
           {/* Plain links with hover pill */}
           <div
             ref={plainLinksRef}

@@ -1,44 +1,24 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, Camera, Globe, Video, AtSign } from "lucide-react";
+import { Camera, Globe, Video, AtSign } from "lucide-react";
 import gsap from "gsap";
 
 import { useUIStore } from "@/store/uiStore";
 
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
-import { cn } from "@/lib/utils";
 
 const navItems = [
-  {
-    label: "Packages",
-    href: "/packages",
-    sub: [
-      { label: "Top Picks", href: "/packages/top-picks" },
-      { label: "By Destination", href: "/packages/by-destination" },
-      { label: "By Theme", href: "/packages/by-theme" },
-    ],
-  },
-  {
-    label: "Destinations",
-    href: "/destinations",
-    sub: [
-      { label: "Asia", href: "/destinations/asia" },
-      { label: "Europe", href: "/destinations/europe" },
-      { label: "Africa", href: "/destinations/africa" },
-      {
-        label: "Middle East & Americas",
-        href: "/destinations/middle-east-americas",
-      },
-      { label: "Oceania", href: "/destinations/oceania" },
-    ],
-  },
+  { label: "Packages", href: "/packages" },
+  { label: "Destinations", href: "/destinations" },
   { label: "Deals", href: "/deals" },
+  { label: "About Us", href: "/about" },
   { label: "Blog", href: "/blog" },
   { label: "Corporate", href: "/corporate" },
+  { label: "Contact Us", href: "/contact" },
 ];
 
 const socialLinks = [
@@ -52,7 +32,6 @@ export function MobileMenu() {
   const { mobileMenuOpen, setMobileMenuOpen } = useUIStore();
   const overlayRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
-  const [expanded, setExpanded] = useState<string | null>(null);
 
   const close = () => setMobileMenuOpen(false);
 
@@ -97,7 +76,6 @@ export function MobileMenu() {
         ease: "power3.inOut",
         onComplete: () => {
           gsap.set(el, { display: "none" });
-          setExpanded(null);
         },
       });
       document.body.style.overflow = "";
@@ -137,56 +115,13 @@ export function MobileMenu() {
             key={item.href}
             className="mobile-nav-link overflow-hidden border-b border-(--color-navy-border)/40"
           >
-            {item.sub ? (
-              <>
-                <button
-                  onClick={() =>
-                    setExpanded(expanded === item.label ? null : item.label)
-                  }
-                  className="w-full flex items-center justify-between py-5 text-left"
-                >
-                  <span
-                    className={cn(
-                      "font-display text-5xl leading-none tracking-tight transition-colors duration-200",
-                      expanded === item.label
-                        ? "text-(--color-gold)"
-                        : "text-white hover:text-(--color-gold)",
-                    )}
-                  >
-                    {item.label}
-                  </span>
-                  <ChevronDown
-                    size={20}
-                    className={cn(
-                      "text-(--color-white-muted) transition-transform duration-300 shrink-0",
-                      expanded === item.label && "rotate-180",
-                    )}
-                  />
-                </button>
-                {expanded === item.label && (
-                  <div className="pb-4 flex flex-col gap-2 pl-2">
-                    {item.sub.map((sub) => (
-                      <Link
-                        key={sub.href}
-                        href={sub.href}
-                        onClick={close}
-                        className="font-sans text-base text-(--color-white-muted) hover:text-(--color-gold) transition-colors py-1"
-                      >
-                        {sub.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <Link
-                href={item.href}
-                onClick={close}
-                className="block py-5 font-display text-5xl leading-none tracking-tight text-white hover:text-(--color-gold) transition-colors duration-200"
-              >
-                {item.label}
-              </Link>
-            )}
+            <Link
+              href={item.href}
+              onClick={close}
+              className="block py-5 font-display text-5xl leading-none tracking-tight text-white hover:text-(--color-gold) transition-colors duration-200"
+            >
+              {item.label}
+            </Link>
           </div>
         ))}
       </nav>

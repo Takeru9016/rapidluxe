@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Clock } from "lucide-react";
 
 import { Deal } from "@/types/deal";
@@ -95,9 +96,12 @@ export function DealCard({ deal, className }: DealCardProps) {
 
         {/* CTA */}
         <div className="mt-4">
-          <button className="w-full bg-(--color-coral) text-white font-sans font-medium py-3 rounded-lg hover:bg-(--color-coral)/90 transition-colors">
+          <Link
+            href={`/packages/${pkg.slug}?deal=${deal.id}`}
+            className="block w-full bg-(--color-coral) text-white font-sans font-medium py-3 rounded-lg hover:bg-(--color-coral)/90 transition-colors text-center"
+          >
             Book This Deal
-          </button>
+          </Link>
         </div>
       </div>
     </article>

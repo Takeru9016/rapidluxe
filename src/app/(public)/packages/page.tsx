@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal, PackageSearch } from "lucide-react";
 
 import { dummyPackages } from "@/lib/dummy/packages";
@@ -99,7 +100,7 @@ function FilterPanel({
     <div className="flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-xl font-semibold text-(--color-white)">
+        <h2 className="font-display text-xl font-semibold text-white">
           Filters
         </h2>
         {hasActiveFilters && (
@@ -131,7 +132,7 @@ function FilterPanel({
                 onChange={() => onToggleDestination(dest.id)}
                 className="w-4 h-4 rounded border border-(--color-navy-border) cursor-pointer accent-(--color-gold) shrink-0"
               />
-              <span className="text-sm text-(--color-white-muted) group-hover:text-(--color-white) transition-colors">
+              <span className="text-sm text-(--color-white-muted) group-hover:text-white transition-colors">
                 {dest.name}
               </span>
             </label>
@@ -158,7 +159,7 @@ function FilterPanel({
                 onChange={() => onToggleDuration(opt.label)}
                 className="w-4 h-4 rounded border border-(--color-navy-border) cursor-pointer accent-(--color-gold) shrink-0"
               />
-              <span className="text-sm text-(--color-white-muted) group-hover:text-(--color-white) transition-colors font-mono">
+              <span className="text-sm text-(--color-white-muted) group-hover:text-white transition-colors font-mono">
                 {opt.label}
               </span>
             </label>
@@ -206,7 +207,7 @@ function FilterPanel({
                 onChange={() => onToggleTag(tag)}
                 className="w-4 h-4 rounded border border-(--color-navy-border) cursor-pointer accent-(--color-gold) shrink-0"
               />
-              <span className="text-sm text-(--color-white-muted) group-hover:text-(--color-white) transition-colors">
+              <span className="text-sm text-(--color-white-muted) group-hover:text-white transition-colors">
                 {tag}
               </span>
             </label>
@@ -230,10 +231,16 @@ export default function PackagesPage() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const { sort, setSort } = useSearchStore();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    const sortParam = searchParams.get("sort");
+    const valid = SORT_OPTIONS.map((o) => o.value);
+    if (sortParam && valid.includes(sortParam as typeof SORT_OPTIONS[number]["value"])) {
+      setSort(sortParam as typeof SORT_OPTIONS[number]["value"]);
+    }
+  }, [searchParams, setSort]);
 
   function toggle<T>(arr: T[], item: T): T[] {
     return arr.includes(item) ? arr.filter((x) => x !== item) : [...arr, item];
@@ -317,7 +324,7 @@ export default function PackagesPage() {
           <p className="text-xs font-body font-medium tracking-widest uppercase text-(--color-gold) mb-3">
             Explore
           </p>
-          <h1 className="font-display text-4xl md:text-5xl font-light text-(--color-white) mb-3">
+          <h1 className="font-display text-4xl md:text-5xl font-light text-white mb-3">
             All Packages
           </h1>
           <p className="text-sm font-body text-(--color-text-secondary) max-w-lg">
@@ -351,7 +358,7 @@ export default function PackagesPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="lg:hidden border-(--color-navy-border) bg-(--color-navy-surface) text-(--color-white-muted) hover:text-(--color-white) hover:bg-(--color-navy-border) gap-2"
+                      className="lg:hidden border-(--color-navy-border) bg-(--color-navy-surface) text-(--color-white-muted) hover:text-white hover:bg-(--color-navy-border) gap-2"
                     >
                       <SlidersHorizontal className="size-4" />
                       Filters
@@ -362,7 +369,7 @@ export default function PackagesPage() {
                     className="w-80 bg-(--color-navy-surface) border-r border-(--color-navy-border) overflow-y-auto"
                   >
                     <SheetHeader className="mb-6">
-                      <SheetTitle className="font-display text-xl text-(--color-white)">
+                      <SheetTitle className="font-display text-xl text-white">
                         Filters
                       </SheetTitle>
                     </SheetHeader>
@@ -391,7 +398,7 @@ export default function PackagesPage() {
                     <SelectItem
                       key={opt.value}
                       value={opt.value}
-                      className="text-(--color-white-muted) focus:bg-(--color-navy-border) focus:text-(--color-white) cursor-pointer"
+                      className="text-(--color-white-muted) focus:bg-(--color-navy-border) focus:text-white cursor-pointer"
                     >
                       {opt.label}
                     </SelectItem>

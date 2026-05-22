@@ -9,17 +9,17 @@ export function Newsletter() {
   return (
     <section className="py-20 md:py-24 relative overflow-hidden">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-gold)]/5 via-transparent to-[var(--color-teal)]/5 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-r from-(--color-gold)/5 via-transparent to-(--color-teal)/5 pointer-events-none" />
 
       <div className="relative max-w-2xl mx-auto px-4 text-center">
         <Mail size={32} className="mx-auto mb-4" style={{ color: "var(--color-gold)" }} />
 
-        <h2 className="font-[family-name:var(--font-display)] text-4xl text-white">
+        <h2 className="font-(family-name:--font-display) text-4xl text-white">
           Travel Inspiration, Direct to Your Inbox
         </h2>
 
         <p
-          className="font-[family-name:var(--font-body)] text-base mt-3"
+          className="font-(family-name:--font-body) text-base mt-3"
           style={{ color: "var(--color-white-muted)" }}
         >
           Exclusive deals, destination guides, and insider tips. Every week.
@@ -36,7 +36,7 @@ export function Newsletter() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Your email address"
-              className="flex-1 px-4 py-3 font-[family-name:var(--font-body)] text-white text-sm outline-none border-none"
+              className="flex-1 px-4 py-3 font-(family-name:--font-body) text-white text-sm outline-none border-none"
               style={{
                 backgroundColor: "var(--color-navy-surface)",
                 color: "var(--color-white)",
@@ -44,7 +44,7 @@ export function Newsletter() {
             />
             <button
               onClick={() => console.log(email)}
-              className="px-6 py-3 font-[family-name:var(--font-body)] font-semibold text-sm transition-colors cursor-pointer whitespace-nowrap"
+              className="px-6 py-3 font-(family-name:--font-body) font-semibold text-sm transition-colors cursor-pointer whitespace-nowrap"
               style={{
                 backgroundColor: "var(--color-gold)",
                 color: "var(--color-navy)",
@@ -63,7 +63,7 @@ export function Newsletter() {
           </div>
 
           <p
-            className="mt-3 text-xs font-[family-name:var(--font-body)]"
+            className="mt-3 text-xs font-(family-name:--font-body)"
             style={{ color: "var(--color-text-secondary)" }}
           >
             No spam, ever. Unsubscribe anytime.

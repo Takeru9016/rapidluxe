@@ -41,7 +41,7 @@ export function HotDealsSection() {
               style={{ color: "var(--color-gold)", fill: "var(--color-gold)" }}
             />
             <h2
-              className="font-[family-name:var(--font-display)] text-4xl text-white"
+              className="font-(family-name:--font-display) text-4xl text-white"
             >
               Hot Deals &amp; Flash Sales
             </h2>
@@ -49,7 +49,7 @@ export function HotDealsSection() {
 
           <div className="flex flex-col items-start md:items-end gap-2">
             <span
-              className="font-[family-name:var(--font-body)] text-sm"
+              className="font-(family-name:--font-body) text-sm"
               style={{ color: "var(--color-text-secondary)" }}
             >
               Offers end in:
@@ -69,7 +69,7 @@ export function HotDealsSection() {
         <div className="mt-10 text-center">
           <Link href="/deals">
             <button
-              className="font-[family-name:var(--font-body)] font-medium text-sm px-8 py-3 rounded-lg transition-colors cursor-pointer"
+              className="font-(family-name:--font-body) font-medium text-sm px-8 py-3 rounded-lg transition-colors cursor-pointer"
               style={{
                 border: "1px solid var(--color-gold)",
                 color: "var(--color-gold)",

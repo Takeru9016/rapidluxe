@@ -29,7 +29,7 @@ export function TrustBar() {
             return (
               <div
                 key={stat.label}
-                className="flex flex-col md:flex-row items-center gap-3 flex-shrink-0"
+                className="flex flex-col md:flex-row items-center gap-3 shrink-0"
               >
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center"
@@ -39,13 +39,13 @@ export function TrustBar() {
                 </div>
                 <div className="flex flex-col items-center md:items-start">
                   <span
-                    className="font-[family-name:var(--font-mono)] text-xl font-bold"
+                    className="font-mono text-xl font-bold"
                     style={{ color: "var(--color-gold)" }}
                   >
                     {stat.number}
                   </span>
                   <span
-                    className="font-[family-name:var(--font-body)] text-sm"
+                    className="font-(family-name:--font-body) text-sm"
                     style={{ color: "var(--color-white-muted)" }}
                   >
                     {stat.label}

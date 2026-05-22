@@ -74,14 +74,14 @@ export function FeaturedPackages() {
       {/* Header */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 text-center mb-12">
         <p
-          className="font-[family-name:var(--font-body)] text-sm tracking-widest uppercase"
+          className="font-(family-name:--font-body) text-sm tracking-widest uppercase"
           style={{ color: "var(--color-gold)" }}
         >
           Featured Packages
         </p>
 
         <h2
-          className="font-[family-name:var(--font-display)] text-4xl md:text-5xl text-white mt-2"
+          className="font-(family-name:--font-display) text-4xl md:text-5xl text-white mt-2"
         >
           Handpicked Journeys for You
         </h2>
@@ -92,7 +92,7 @@ export function FeaturedPackages() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className="font-[family-name:var(--font-body)] font-medium text-sm px-5 py-2 rounded-full transition-colors cursor-pointer"
+              className="font-(family-name:--font-body) font-medium text-sm px-5 py-2 rounded-full transition-colors cursor-pointer"
               style={
                 activeTab === tab
                   ? {
@@ -138,7 +138,7 @@ export function FeaturedPackages() {
       <div className="mt-12 text-center">
         <Link href="/packages">
           <button
-            className="font-[family-name:var(--font-body)] font-medium text-sm px-8 py-3 rounded-lg transition-colors cursor-pointer"
+            className="font-(family-name:--font-body) font-medium text-sm px-8 py-3 rounded-lg transition-colors cursor-pointer"
             style={{
               border: "1px solid var(--color-gold)",
               color: "var(--color-gold)",

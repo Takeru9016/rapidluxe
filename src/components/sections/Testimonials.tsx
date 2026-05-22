@@ -32,13 +32,13 @@ export function Testimonials() {
       {/* Header */}
       <div className="text-center mb-12 px-4">
         <p
-          className="font-[family-name:var(--font-body)] text-sm tracking-widest uppercase"
+          className="font-(family-name:--font-body) text-sm tracking-widest uppercase"
           style={{ color: "var(--color-gold)" }}
         >
           Guest Reviews
         </p>
         <h2
-          className="font-[family-name:var(--font-display)] text-4xl md:text-5xl text-white mt-2"
+          className="font-(family-name:--font-display) text-4xl md:text-5xl text-white mt-2"
         >
           What Our Travellers Say
         </h2>
@@ -55,7 +55,7 @@ export function Testimonials() {
             ))}
           </div>
           <p
-            className="font-[family-name:var(--font-body)] text-sm"
+            className="font-(family-name:--font-body) text-sm"
             style={{ color: "var(--color-text-secondary)" }}
           >
             4.8 out of 5 &mdash; 2,400+ reviews

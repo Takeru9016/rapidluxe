@@ -52,13 +52,13 @@ export function DestinationsSection() {
       >
         <div>
           <p
-            className="font-[family-name:var(--font-body)] text-sm tracking-widest uppercase"
+            className="font-(family-name:--font-body) text-sm tracking-widest uppercase"
             style={{ color: "var(--color-gold)" }}
           >
             Top Destinations
           </p>
           <h2
-            className="font-[family-name:var(--font-display)] text-4xl md:text-5xl text-white mt-2"
+            className="font-(family-name:--font-display) text-4xl md:text-5xl text-white mt-2"
           >
             Explore the World
           </h2>
@@ -106,10 +106,10 @@ export function DestinationsSection() {
       {/* Desktop: horizontal scroll */}
       <div
         ref={scrollRef}
-        className="hidden md:flex gap-6 max-w-7xl mx-auto px-4 md:px-8 overflow-x-auto pb-4 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="hidden md:flex gap-6 max-w-7xl mx-auto px-4 md:px-8 overflow-x-auto pb-4 scroll-smooth scrollbar-none [&::-webkit-scrollbar]:hidden"
       >
         {dummyDestinations.map((dest) => (
-          <div key={dest.id} className="flex-shrink-0 w-72">
+          <div key={dest.id} className="shrink-0 w-72">
             <DestinationCard destination={dest} />
           </div>
         ))}

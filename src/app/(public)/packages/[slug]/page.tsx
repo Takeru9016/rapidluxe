@@ -1,6 +1,7 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Calendar,
@@ -18,6 +19,7 @@ import {
 import { dummyPackages } from "@/lib/dummy/packages";
 import { dummyDestinations } from "@/lib/dummy/destinations";
 import { dummyReviews } from "@/lib/dummy/reviews";
+import { dummyDeals } from "@/lib/dummy/deals";
 import { formatPrice, calculateGST, formatDate } from "@/lib/utils";
 
 import { useWishlistStore } from "@/store/wishlistStore";
@@ -107,26 +109,51 @@ export default function PackageDetailPage({
   const { toggle, has } = useWishlistStore();
   const isWishlisted = has(pkg.id);
 
+  const searchParams = useSearchParams();
+  const activeDeal = useMemo(() => {
+    const dealId = searchParams.get("deal");
+    if (!dealId) return null;
+    return dummyDeals.find((d) => d.id === dealId && d.packageId === pkg.id && d.isActive) ?? null;
+  }, [searchParams, pkg.id]);
+
+  const effectivePrice = activeDeal
+    ? Math.round(pkg.pricePerPerson * (1 - activeDeal.discountPct / 100))
+    : pkg.pricePerPerson;
+  const effectiveOriginalPrice = activeDeal ? pkg.pricePerPerson : pkg.originalPrice;
+
   const travelers = adults + children;
-  const subtotal = pkg.pricePerPerson * travelers;
+  const subtotal = effectivePrice * travelers;
   const { gst, total } = calculateGST(subtotal);
 
   return (
     <>
+      {/* Deal banner */}
+      {activeDeal && (
+        <div className="bg-linear-to-r from-(--color-coral)/15 via-(--color-coral)/5 to-(--color-gold)/10 border-b border-(--color-coral)/30 py-3 text-center">
+          <p className="font-sans text-sm text-(--color-white-muted)">
+            <span className="text-(--color-coral) font-semibold">⚡ {activeDeal.discountPct}% off</span>
+            {" "}applied — deal expires in{" "}
+            <span className="font-mono text-(--color-coral)">
+              {Math.ceil((activeDeal.expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))}d
+            </span>
+          </p>
+        </div>
+      )}
+
       {/* Breadcrumb */}
       <div className="border-b border-(--color-navy-border) bg-(--color-navy-surface)">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-3">
           <nav className="flex items-center gap-2 text-sm text-(--color-text-secondary)">
             <Link
               href="/"
-              className="hover:text-(--color-white) transition-colors"
+              className="hover:text-white transition-colors"
             >
               Home
             </Link>
             <ChevronRight size={14} className="shrink-0" />
             <Link
               href="/packages"
-              className="hover:text-(--color-white) transition-colors"
+              className="hover:text-white transition-colors"
             >
               Packages
             </Link>
@@ -156,7 +183,7 @@ export default function PackageDetailPage({
                 </div>
               )}
 
-              <h1 className="font-display text-3xl md:text-4xl font-light text-(--color-white) mb-4">
+              <h1 className="font-display text-3xl md:text-4xl font-light text-white mb-4">
                 {pkg.title}
               </h1>
 
@@ -189,7 +216,7 @@ export default function PackageDetailPage({
                 />
                 <button
                   onClick={() => toggle(pkg.id)}
-                  className="flex items-center gap-1.5 text-sm text-(--color-text-secondary) hover:text-(--color-white) transition-colors"
+                  className="flex items-center gap-1.5 text-sm text-(--color-text-secondary) hover:text-white transition-colors"
                 >
                   <Heart
                     size={18}
@@ -222,7 +249,7 @@ export default function PackageDetailPage({
                   <TabsTrigger
                     key={tab}
                     value={tab}
-                    className="capitalize flex-1 px-3 py-3 rounded-none border-b-2 border-transparent bg-transparent text-(--color-text-secondary) hover:text-(--color-white) transition-colors data-active:border-(--color-gold) data-active:text-(--color-gold) data-active:bg-transparent text-xs md:text-sm"
+                    className="capitalize flex-1 px-3 py-3 rounded-none border-b-2 border-transparent bg-transparent text-(--color-text-secondary) hover:text-white transition-colors data-active:border-(--color-gold) data-active:text-(--color-gold) data-active:bg-transparent text-xs md:text-sm"
                   >
                     {tab}
                   </TabsTrigger>
@@ -237,7 +264,7 @@ export default function PackageDetailPage({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-5">
-                    <h3 className="font-display text-lg text-(--color-white) mb-4">
+                    <h3 className="font-display text-lg text-white mb-4">
                       What&apos;s Included
                     </h3>
                     <ul className="flex flex-col gap-2.5">
@@ -257,7 +284,7 @@ export default function PackageDetailPage({
                   </div>
 
                   <div className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-5">
-                    <h3 className="font-display text-lg text-(--color-white) mb-4">
+                    <h3 className="font-display text-lg text-white mb-4">
                       Not Included
                     </h3>
                     <ul className="flex flex-col gap-2.5">
@@ -279,7 +306,7 @@ export default function PackageDetailPage({
 
                 {pkg.cancellationPolicy && pkg.cancellationPolicy.length > 0 && (
                   <div className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-5">
-                    <h3 className="font-display text-lg text-(--color-white) mb-4">
+                    <h3 className="font-display text-lg text-white mb-4">
                       Cancellation Policy
                     </h3>
                     <ul className="flex flex-col gap-3">
@@ -326,12 +353,12 @@ export default function PackageDetailPage({
                       value={`day-${day.day}`}
                       className="border-(--color-navy-border) px-5"
                     >
-                      <AccordionTrigger className="py-4 hover:no-underline text-(--color-white)">
+                      <AccordionTrigger className="py-4 hover:no-underline text-white">
                         <div className="flex items-center gap-3">
                           <span className="font-mono text-xs text-(--color-gold) bg-(--color-gold)/10 px-2 py-1 rounded-md w-14 text-center shrink-0">
                             Day {day.day}
                           </span>
-                          <span className="font-display text-base font-normal text-(--color-white) text-left">
+                          <span className="font-display text-base font-normal text-white text-left">
                             {day.title}
                           </span>
                         </div>
@@ -408,7 +435,7 @@ export default function PackageDetailPage({
             {/* Similar packages */}
             {similarPackages.length > 0 && (
               <section>
-                <h2 className="font-display text-2xl font-light text-(--color-white) mb-6">
+                <h2 className="font-display text-2xl font-light text-white mb-6">
                   You May Also Like
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -424,8 +451,8 @@ export default function PackageDetailPage({
           <aside className="hidden lg:block w-80 xl:w-96 shrink-0 sticky top-24">
             <div className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-6 flex flex-col gap-5">
               <PriceDisplay
-                price={pkg.pricePerPerson}
-                originalPrice={pkg.originalPrice}
+                price={effectivePrice}
+                originalPrice={effectiveOriginalPrice}
                 size="lg"
                 showDiscount
               />
@@ -451,7 +478,7 @@ export default function PackageDetailPage({
                         size={14}
                         className="text-(--color-gold) shrink-0"
                       />
-                      <span className={date ? "text-(--color-white)" : ""}>
+                      <span className={date ? "text-white" : ""}>
                         {date ? formatDate(date) : "Select a date"}
                       </span>
                     </button>
@@ -481,7 +508,7 @@ export default function PackageDetailPage({
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-(--color-white)">Adults</p>
+                      <p className="text-sm text-white">Adults</p>
                       <p className="text-xs text-(--color-text-secondary)">
                         Age 12+
                       </p>
@@ -492,11 +519,11 @@ export default function PackageDetailPage({
                           setAdults((prev) => Math.max(1, prev - 1))
                         }
                         disabled={adults <= 1}
-                        className="w-7 h-7 flex items-center justify-center rounded-full border border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/40 hover:text-(--color-white) transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="w-7 h-7 flex items-center justify-center rounded-full border border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/40 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         <Minus size={12} />
                       </button>
-                      <span className="font-mono text-sm text-(--color-white) w-4 text-center">
+                      <span className="font-mono text-sm text-white w-4 text-center">
                         {adults}
                       </span>
                       <button
@@ -506,7 +533,7 @@ export default function PackageDetailPage({
                           )
                         }
                         disabled={adults + children >= pkg.maxGroupSize}
-                        className="w-7 h-7 flex items-center justify-center rounded-full border border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/40 hover:text-(--color-white) transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="w-7 h-7 flex items-center justify-center rounded-full border border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/40 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         <Plus size={12} />
                       </button>
@@ -515,7 +542,7 @@ export default function PackageDetailPage({
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-(--color-white)">Children</p>
+                      <p className="text-sm text-white">Children</p>
                       <p className="text-xs text-(--color-text-secondary)">
                         Age 2–11
                       </p>
@@ -526,11 +553,11 @@ export default function PackageDetailPage({
                           setChildren((prev) => Math.max(0, prev - 1))
                         }
                         disabled={children <= 0}
-                        className="w-7 h-7 flex items-center justify-center rounded-full border border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/40 hover:text-(--color-white) transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="w-7 h-7 flex items-center justify-center rounded-full border border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/40 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         <Minus size={12} />
                       </button>
-                      <span className="font-mono text-sm text-(--color-white) w-4 text-center">
+                      <span className="font-mono text-sm text-white w-4 text-center">
                         {children}
                       </span>
                       <button
@@ -540,7 +567,7 @@ export default function PackageDetailPage({
                           )
                         }
                         disabled={adults + children >= pkg.maxGroupSize}
-                        className="w-7 h-7 flex items-center justify-center rounded-full border border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/40 hover:text-(--color-white) transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="w-7 h-7 flex items-center justify-center rounded-full border border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/40 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         <Plus size={12} />
                       </button>
@@ -555,7 +582,7 @@ export default function PackageDetailPage({
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-(--color-text-secondary)">
-                    {formatPrice(pkg.pricePerPerson)} ×{" "}
+                    {formatPrice(effectivePrice)} ×{" "}
                     {travelers} traveller{travelers !== 1 ? "s" : ""}
                   </span>
                   <span className="font-mono text-(--color-white-muted)">
@@ -572,7 +599,7 @@ export default function PackageDetailPage({
                 </div>
                 <Separator className="bg-(--color-navy-border) my-1" />
                 <div className="flex justify-between">
-                  <span className="text-sm font-medium text-(--color-white)">
+                  <span className="text-sm font-medium text-white">
                     Total
                   </span>
                   <span className="font-mono font-semibold text-(--color-gold)">
@@ -604,12 +631,12 @@ export default function PackageDetailPage({
       {/* Mobile sticky bottom bar */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-(--color-navy-surface) border-t border-(--color-navy-border) px-4 py-3 flex items-center justify-between gap-4">
         <PriceDisplay
-          price={pkg.pricePerPerson}
-          originalPrice={pkg.originalPrice}
+          price={effectivePrice}
+          originalPrice={effectiveOriginalPrice}
           size="sm"
           prefix=""
           suffix="/ person"
-          showDiscount={false}
+          showDiscount={!!activeDeal}
         />
         <Link href={`/book/${pkg.id}`} className="shrink-0">
           <Button className="bg-(--color-coral) hover:bg-(--color-coral)/90 text-white font-body font-medium">

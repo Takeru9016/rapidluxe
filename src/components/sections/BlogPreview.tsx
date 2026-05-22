@@ -10,7 +10,7 @@ function BlogCard({ post }: { post: (typeof dummyBlogPosts)[number] }) {
   return (
     <Link href={`/blog/${post.slug}`} className="block group">
       <article
-        className="rounded-xl overflow-hidden bg-[var(--color-navy-surface)] border border-[var(--color-navy-border)] hover:border-[var(--color-gold)]/30 hover:-translate-y-1 transition-all duration-200"
+        className="rounded-xl overflow-hidden bg-(--color-navy-surface) border border-(--color-navy-border) hover:border-(--color-gold)/30 hover:-translate-y-1 transition-all duration-200"
       >
         {/* Image */}
         <div className="aspect-video relative overflow-hidden">
@@ -29,12 +29,12 @@ function BlogCard({ post }: { post: (typeof dummyBlogPosts)[number] }) {
         {/* Content */}
         <div className="p-5">
           <h3
-            className="font-[family-name:var(--font-display)] text-xl text-white mt-3 line-clamp-2 group-hover:text-[var(--color-gold-light)] transition-colors"
+            className="font-(family-name:--font-display) text-xl text-white mt-3 line-clamp-2 group-hover:text-(--color-gold-light) transition-colors"
           >
             {post.title}
           </h3>
           <p
-            className="font-[family-name:var(--font-body)] text-sm mt-2 line-clamp-3"
+            className="font-(family-name:--font-body) text-sm mt-2 line-clamp-3"
             style={{ color: "var(--color-white-muted)" }}
           >
             {post.excerpt}
@@ -42,10 +42,10 @@ function BlogCard({ post }: { post: (typeof dummyBlogPosts)[number] }) {
 
           {/* Meta */}
           <div
-            className="mt-4 flex items-center gap-3 text-xs font-[family-name:var(--font-body)]"
+            className="mt-4 flex items-center gap-3 text-xs font-(family-name:--font-body)"
             style={{ color: "var(--color-text-secondary)" }}
           >
-            <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 relative">
+            <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 relative">
               <Image
                 src={post.authorAvatarUrl}
                 alt={post.author}
@@ -74,18 +74,18 @@ export function BlogPreview() {
       {/* Header */}
       <div className="text-center mb-12 px-4">
         <p
-          className="font-[family-name:var(--font-body)] text-sm tracking-widest uppercase"
+          className="font-(family-name:--font-body) text-sm tracking-widest uppercase"
           style={{ color: "var(--color-gold)" }}
         >
           From the Journal
         </p>
         <h2
-          className="font-[family-name:var(--font-display)] text-4xl md:text-5xl text-white mt-2"
+          className="font-(family-name:--font-display) text-4xl md:text-5xl text-white mt-2"
         >
           Travel Stories &amp; Guides
         </h2>
         <p
-          className="font-[family-name:var(--font-body)] text-sm mt-3 max-w-md mx-auto"
+          className="font-(family-name:--font-body) text-sm mt-3 max-w-md mx-auto"
           style={{ color: "var(--color-text-secondary)" }}
         >
           Expert tips, destination guides, and insider stories to inspire your next journey.
@@ -105,7 +105,7 @@ export function BlogPreview() {
       <div className="mt-10 text-center">
         <Link href="/blog">
           <span
-            className="inline-block font-[family-name:var(--font-body)] font-medium text-sm px-8 py-3 rounded-lg transition-colors"
+            className="inline-block font-(family-name:--font-body) font-medium text-sm px-8 py-3 rounded-lg transition-colors"
             style={{
               border: "1px solid var(--color-gold)",
               color: "var(--color-gold)",

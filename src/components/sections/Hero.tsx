@@ -78,7 +78,7 @@ export function Hero() {
       <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
         <p
           ref={eyebrowRef}
-          className="font-[family-name:var(--font-body)] font-medium text-sm tracking-[0.2em] uppercase"
+          className="font-(family-name:--font-body) font-medium text-sm tracking-[0.2em] uppercase"
           style={{ color: "var(--color-gold)" }}
         >
           India&apos;s Premier Luxury Travel Experience
@@ -86,7 +86,7 @@ export function Hero() {
 
         <h1
           ref={h1Ref}
-          className="mt-4 font-[family-name:var(--font-display)] text-5xl md:text-6xl lg:text-7xl font-light text-white leading-[1.05]"
+          className="mt-4 font-(family-name:--font-display) text-5xl md:text-6xl lg:text-7xl font-light text-white leading-[1.05]"
         >
           Discover the World,
           <br />
@@ -95,7 +95,7 @@ export function Hero() {
 
         <p
           ref={subRef}
-          className="mt-6 font-[family-name:var(--font-body)] text-lg max-w-xl mx-auto"
+          className="mt-6 font-(family-name:--font-body) text-lg max-w-xl mx-auto"
           style={{ color: "var(--color-white-muted)" }}
         >
           Curated packages. Expert guidance. Memories that last a lifetime.
@@ -115,7 +115,7 @@ export function Hero() {
             style={{ color: "var(--color-white-muted)" }}
           />
           <span
-            className="text-xs font-[family-name:var(--font-body)]"
+            className="text-xs font-(family-name:--font-body)"
             style={{ color: "var(--color-text-secondary)" }}
           >
             Scroll to explore
