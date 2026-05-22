@@ -3,9 +3,9 @@
 ## Current Build State
 
 ```
-Phase:          1D — Package Pages
-Active Task:    1E-1
-Last Completed: 1D-Package Pages "Phase 1D - Package List & Detail Pages Completed"
+Phase:          1E — Supporting Pages
+Active Task:    1F-1
+Last Completed: 1E-ALL "Phase 1E Supporting Pages Completed"
 ```
 
 > Update after every completed task.

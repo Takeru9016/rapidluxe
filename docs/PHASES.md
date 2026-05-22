@@ -340,14 +340,14 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
 
 ### Phase 1E — Supporting Pages
 
-- [ ] **1E-1** — `app/(public)/destinations/page.tsx`
+- [x] **1E-1** — `app/(public)/destinations/page.tsx`
   - Hero with SearchBar
   - Continent tab filter (shadcn Tabs): All | Asia | Europe | Africa | Americas | Middle East | Oceania
   - Destination grid 4→3→2→1 col
   - "Popular Destinations" curated horizontal scroll section
   - "Best places this month" seasonal section (dummy)
 
-- [ ] **1E-2** — `app/(public)/destinations/[slug]/page.tsx`
+- [x] **1E-2** — `app/(public)/destinations/[slug]/page.tsx`
   - Hero full-bleed + destination name overlay
   - Quick facts grid: Best time | Currency | Language | Visa for Indians
   - About section (dummy rich text paragraphs — Phase 2E wires to Sanity)
@@ -357,19 +357,19 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
   - Travel Tips section (dummy — Phase 2E wires to Sanity)
   - `MapEmbed` placeholder
 
-- [ ] **1E-3** — `app/(public)/deals/page.tsx`
+- [x] **1E-3** — `app/(public)/deals/page.tsx`
   - Flash sale banner: full-width coral/gold gradient + CountdownTimer blocks variant
   - Deal cards grid (DealCard)
   - "Early Bird Deals" section (separate DealCard grid)
   - "Last-Minute Deals" section
 
-- [ ] **1E-4** — `app/(public)/blog/page.tsx`
+- [x] **1E-4** — `app/(public)/blog/page.tsx`
   - Featured post: large hero card (image + title + excerpt + read time)
   - Category filter tabs
   - Blog grid 3→2→1 (image, badge, title, excerpt, author, date)
   - Sidebar (desktop): Popular posts, tags cloud, Newsletter CTA
 
-- [ ] **1E-5** — `app/(public)/blog/[slug]/page.tsx`
+- [x] **1E-5** — `app/(public)/blog/[slug]/page.tsx`
   - Full-width hero image
   - Post header: title, author (avatar + name), date, read time, share buttons
   - Body: styled dummy paragraphs (Phase 2E → Portable Text)
@@ -377,15 +377,15 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
   - Related posts (3 cards)
   - CTA banner: "Ready to travel? Browse Packages →"
 
-- [ ] **1E-6** — `app/(public)/about/page.tsx`
+- [x] **1E-6** — `app/(public)/about/page.tsx`
   - All sections with dummy data: Hero, Our Story, Stats bar, Team (4 cards), Awards/Press logos grid, CTA
 
-- [ ] **1E-7** — `app/(public)/contact/page.tsx`
+- [x] **1E-7** — `app/(public)/contact/page.tsx`
   - Contact form (React Hook Form: name, email, phone, subject dropdown, message) — `console.log` on submit Phase 1
   - Contact details block: phone, email, WhatsApp CTA button (links to wa.me)
   - `MapEmbed` placeholder for office location
 
-- [ ] **1E-8** — `app/(public)/corporate/page.tsx`
+- [x] **1E-8** — `app/(public)/corporate/page.tsx`
   - All sections: Hero, Features (centralized billing, GST invoices, account manager), How It Works, Client Logos, Testimonials, Corporate Contact Form
 
 ---
