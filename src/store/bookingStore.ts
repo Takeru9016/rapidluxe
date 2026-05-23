@@ -34,6 +34,7 @@ interface BookingStore {
     discountAmount: number,
   ) => void;
   setBookingResult: (bookingId: string, bookingRef: string) => void;
+  updateAmounts: (baseAmount: number, discountAmount?: number) => void;
   reset: () => void;
 }
 
@@ -94,6 +95,11 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
   },
 
   setBookingResult: (bookingId, bookingRef) => set({ bookingId, bookingRef }),
+
+  updateAmounts: (baseAmount, discountAmount) => {
+    const discount = discountAmount ?? get().discountAmount;
+    set({ baseAmount, discountAmount: discount, ...computeTotals(baseAmount, discount) });
+  },
 
   reset: () => set(DEFAULT_STATE),
 }));

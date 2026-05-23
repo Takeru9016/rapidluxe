@@ -14,13 +14,13 @@ export default function WishlistPage() {
   const count = filteredPackages.length;
 
   return (
-    <main className="min-h-screen bg-[var(--color-navy)] pt-24">
+    <main className="min-h-screen bg-(--color-navy) pt-24">
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-[var(--color-white)]">
+          <h1 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-white">
             My Wishlist
           </h1>
-          <span className="font-['JetBrains_Mono'] text-sm text-[var(--color-text-secondary)]">
+          <span className="font-['JetBrains_Mono'] text-sm text-(--color-text-secondary)">
             {count} saved package{count !== 1 ? "s" : ""}
           </span>
         </div>

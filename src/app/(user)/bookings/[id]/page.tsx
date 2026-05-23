@@ -120,7 +120,7 @@ const statusConfig: Record<
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-xs font-['DM_Sans'] font-medium uppercase tracking-widest text-[var(--color-gold)] mb-4">
+    <p className="text-xs font-['DM_Sans'] font-medium uppercase tracking-widest text-(--color-gold) mb-4">
       {children}
     </p>
   );
@@ -143,34 +143,34 @@ export default function BookingDetailPage({
   const { base, gst, total } = calculateGST(booking.baseAmount);
 
   return (
-    <main className="min-h-screen bg-[var(--color-navy)] pt-24">
+    <main className="min-h-screen bg-(--color-navy) pt-24">
       <div className="max-w-3xl mx-auto px-4 md:px-8 py-12 space-y-8">
 
         {/* Back */}
         <Link
           href="/bookings"
-          className="inline-flex items-center gap-2 text-sm font-['DM_Sans'] text-[var(--color-text-secondary)] hover:text-[var(--color-gold)] transition-colors"
+          className="inline-flex items-center gap-2 text-sm font-['DM_Sans'] text-(--color-text-secondary) hover:text-(--color-gold) transition-colors"
         >
           <ArrowLeft size={14} />
           All Bookings
         </Link>
 
         {/* ── Booking Header ── */}
-        <div className="bg-[var(--color-navy-surface)] rounded-xl border border-[var(--color-navy-border)] p-6">
+        <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <Badge variant={variant} size="sm" className="mb-3">
                 {label}
               </Badge>
-              <p className="font-['JetBrains_Mono'] text-2xl md:text-3xl text-[var(--color-white)]">
+              <p className="font-['JetBrains_Mono'] text-2xl md:text-3xl text-white">
                 #{booking.bookingRef}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xs font-['DM_Sans'] text-[var(--color-text-secondary)] mb-1">
+              <p className="text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1">
                 Travel Dates
               </p>
-              <p className="font-['DM_Sans'] text-sm text-[var(--color-white-muted)]">
+              <p className="font-['DM_Sans'] text-sm text-(--color-white-muted)">
                 {formatDate(booking.departureDate)} → {formatDate(booking.returnDate)}
               </p>
             </div>
@@ -178,7 +178,7 @@ export default function BookingDetailPage({
         </div>
 
         {/* ── Package Summary ── */}
-        <div className="bg-[var(--color-navy-surface)] rounded-xl border border-[var(--color-navy-border)] overflow-hidden">
+        <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) overflow-hidden">
           <div className="relative h-48 w-full">
             <Image
               src={
@@ -190,21 +190,21 @@ export default function BookingDetailPage({
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 768px"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-navy-surface)] to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-(--color-navy-surface) to-transparent" />
           </div>
           <div className="p-6 -mt-8 relative">
             <SectionLabel>Package</SectionLabel>
-            <h2 className="font-['Cormorant_Garamond'] text-2xl text-[var(--color-white)] leading-tight mb-1">
+            <h2 className="font-['Cormorant_Garamond'] text-2xl text-white leading-tight mb-1">
               {pkg.title}
             </h2>
-            <p className="font-['DM_Sans'] text-sm text-[var(--color-text-secondary)]">
+            <p className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
               {pkg.durationNights} nights · {booking.packageType}
             </p>
           </div>
         </div>
 
         {/* ── Trip Details ── */}
-        <div className="bg-[var(--color-navy-surface)] rounded-xl border border-[var(--color-navy-border)] p-6">
+        <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
           <SectionLabel>Trip Details</SectionLabel>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
@@ -231,13 +231,13 @@ export default function BookingDetailPage({
             ].map(({ icon: Icon, label, value }) => (
               <div
                 key={label}
-                className="flex flex-col gap-1 p-3 rounded-lg bg-[var(--color-navy)]/50"
+                className="flex flex-col gap-1 p-3 rounded-lg bg-(--color-navy)/50"
               >
-                <Icon size={14} className="text-[var(--color-gold)]" />
-                <p className="text-xs font-['DM_Sans'] text-[var(--color-text-secondary)] mt-1">
+                <Icon size={14} className="text-(--color-gold)" />
+                <p className="text-xs font-['DM_Sans'] text-(--color-text-secondary) mt-1">
                   {label}
                 </p>
-                <p className="text-sm font-['DM_Sans'] text-[var(--color-white)]">
+                <p className="text-sm font-['DM_Sans'] text-white">
                   {value}
                 </p>
               </div>
@@ -246,16 +246,16 @@ export default function BookingDetailPage({
         </div>
 
         {/* ── Traveler Info ── */}
-        <div className="bg-[var(--color-navy-surface)] rounded-xl border border-[var(--color-navy-border)] p-6">
+        <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
           <SectionLabel>Traveler Information</SectionLabel>
           <div className="overflow-x-auto">
             <table className="w-full text-sm font-['DM_Sans']">
               <thead>
-                <tr className="border-b border-[var(--color-navy-border)]">
+                <tr className="border-b border-(--color-navy-border)">
                   {["Name", "Passport No.", "Date of Birth"].map((h) => (
                     <th
                       key={h}
-                      className="text-left text-xs text-[var(--color-text-secondary)] uppercase tracking-wide pb-3 pr-4"
+                      className="text-left text-xs text-(--color-text-secondary) uppercase tracking-wide pb-3 pr-4"
                     >
                       {h}
                     </th>
@@ -264,16 +264,16 @@ export default function BookingDetailPage({
               </thead>
               <tbody>
                 <tr>
-                  <td className="pt-4 pr-4 text-[var(--color-white)]">
+                  <td className="pt-4 pr-4 text-white">
                     {booking.traveler.name}
-                    <span className="ml-2 text-xs text-[var(--color-teal)] font-medium">
+                    <span className="ml-2 text-xs text-(--color-teal) font-medium">
                       Lead
                     </span>
                   </td>
-                  <td className="pt-4 pr-4 font-['JetBrains_Mono'] text-[var(--color-white-muted)]">
+                  <td className="pt-4 pr-4 font-['JetBrains_Mono'] text-(--color-white-muted)">
                     {booking.traveler.passport}
                   </td>
-                  <td className="pt-4 text-[var(--color-white-muted)]">
+                  <td className="pt-4 text-(--color-white-muted)">
                     {formatDate(booking.traveler.dob)}
                   </td>
                 </tr>
@@ -283,45 +283,45 @@ export default function BookingDetailPage({
         </div>
 
         {/* ── Payment Summary ── */}
-        <div className="bg-[var(--color-navy-surface)] rounded-xl border border-[var(--color-navy-border)] p-6">
+        <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
           <SectionLabel>Payment Summary</SectionLabel>
           <div className="space-y-3">
             <div className="flex justify-between text-sm font-['DM_Sans']">
-              <span className="text-[var(--color-white-muted)]">Base Amount</span>
-              <span className="text-[var(--color-white)]">
+              <span className="text-(--color-white-muted)">Base Amount</span>
+              <span className="text-white">
                 {formatPrice(base)}
               </span>
             </div>
             <div className="flex justify-between text-sm font-['DM_Sans']">
-              <span className="text-[var(--color-white-muted)]">GST (5%)</span>
-              <span className="text-[var(--color-white)]">
+              <span className="text-(--color-white-muted)">GST (5%)</span>
+              <span className="text-white">
                 {formatPrice(gst)}
               </span>
             </div>
-            <div className="h-px bg-[var(--color-navy-border)]" />
+            <div className="h-px bg-(--color-navy-border)" />
             <div className="flex justify-between font-['DM_Sans']">
-              <span className="text-[var(--color-white)] font-medium">
+              <span className="text-white font-medium">
                 Total Paid
               </span>
-              <span className="font-['JetBrains_Mono'] text-[var(--color-gold)] font-bold text-lg">
+              <span className="font-['JetBrains_Mono'] text-(--color-gold) font-bold text-lg">
                 {formatPrice(total)}
               </span>
             </div>
-            <div className="h-px bg-[var(--color-navy-border)]" />
+            <div className="h-px bg-(--color-navy-border)" />
             <div className="flex justify-between text-sm font-['DM_Sans']">
-              <span className="text-[var(--color-text-secondary)]">
+              <span className="text-(--color-text-secondary)">
                 Payment Method
               </span>
-              <span className="flex items-center gap-1.5 text-[var(--color-white-muted)]">
+              <span className="flex items-center gap-1.5 text-(--color-white-muted)">
                 <CreditCard size={13} />
                 {booking.paymentMethod}
               </span>
             </div>
             <div className="flex justify-between text-sm font-['DM_Sans']">
-              <span className="text-[var(--color-text-secondary)]">
+              <span className="text-(--color-text-secondary)">
                 Transaction ID
               </span>
-              <span className="font-['JetBrains_Mono'] text-xs text-[var(--color-white-muted)]">
+              <span className="font-['JetBrains_Mono'] text-xs text-(--color-white-muted)">
                 {booking.transactionId}
               </span>
             </div>
@@ -333,7 +333,7 @@ export default function BookingDetailPage({
           <button
             disabled
             title="Available after payment"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--color-navy-border)] text-[var(--color-text-secondary)] text-sm font-['DM_Sans'] cursor-not-allowed opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-(--color-navy-border) text-(--color-text-secondary) text-sm font-['DM_Sans'] cursor-not-allowed opacity-50"
           >
             <Download size={14} />
             Download Voucher
@@ -342,7 +342,7 @@ export default function BookingDetailPage({
           <button
             disabled
             title="Available after payment"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--color-navy-border)] text-[var(--color-text-secondary)] text-sm font-['DM_Sans'] cursor-not-allowed opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-(--color-navy-border) text-(--color-text-secondary) text-sm font-['DM_Sans'] cursor-not-allowed opacity-50"
           >
             <Download size={14} />
             Download Invoice
@@ -350,14 +350,14 @@ export default function BookingDetailPage({
 
           <Link
             href="/contact"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--color-gold)]/40 text-[var(--color-gold)] text-sm font-['DM_Sans'] hover:bg-[var(--color-gold)]/10 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-(--color-gold)/40 text-(--color-gold) text-sm font-['DM_Sans'] hover:bg-(--color-gold)/10 transition-colors"
           >
             <HelpCircle size={14} />
             Need Help?
           </Link>
 
           {booking.status === "upcoming" && (
-            <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--color-coral)]/60 text-[var(--color-coral)] text-sm font-['DM_Sans'] hover:bg-[var(--color-coral)]/10 transition-colors">
+            <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-(--color-coral)/60 text-(--color-coral) text-sm font-['DM_Sans'] hover:bg-(--color-coral)/10 transition-colors">
               Cancel Booking
             </button>
           )}
