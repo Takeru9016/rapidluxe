@@ -464,11 +464,11 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
 
 **Note:** Admin sidebar layout wraps all admin pages.
 
-- [ ] **1H-1** — Admin layout: `app/(admin)/admin/layout.tsx`
+- [x] **1H-1** — Admin layout: `app/(admin)/admin/layout.tsx`
   - Sidebar (`components/admin/Sidebar.tsx`) + main content area
   - Sidebar fixed left, w-64, full-height, dark
 
-- [ ] **1H-2** — `components/admin/Sidebar.tsx` _(client)_
+- [x] **1H-2** — `components/admin/Sidebar.tsx` _(client)_
   - Nav groups with separators:
     - Dashboard
     - Packages | Destinations | Blog
@@ -478,21 +478,21 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
     - ← Back to Site
   - Active link: `bg-gold/10 text-gold`
 
-- [ ] **1H-3** — `components/admin/StatsCard.tsx` — icon, value (JetBrains Mono), label, change indicator (↑ teal / ↓ coral)
+- [x] **1H-3** — `components/admin/StatsCard.tsx` — icon, value (JetBrains Mono), label, change indicator (↑ teal / ↓ coral)
 
-- [ ] **1H-4** — `components/admin/DataTable.tsx` — generic table built on `@tanstack/react-table`, dark theme, skeleton loading state
+- [x] **1H-4** — `components/admin/DataTable.tsx` — generic table built on `@tanstack/react-table`, dark theme, skeleton loading state
 
-- [ ] **1H-5** — `app/(admin)/admin/page.tsx` — Dashboard
+- [x] **1H-5** — `app/(admin)/admin/page.tsx` — Dashboard
   - Stats row: Total Bookings | Revenue MTD | Active Packages | New Users
   - Recent bookings table (DataTable, 10 rows dummy)
   - Revenue bar chart (Recharts, dummy monthly data)
   - Quick actions: "Add Package" | "Create Deal" | "View Enquiries"
 
-- [ ] **1H-6** — `app/(admin)/admin/packages/page.tsx`
+- [x] **1H-6** — `app/(admin)/admin/packages/page.tsx`
   - DataTable: name, destination, price, status (Draft/Published badge), actions (Edit | Archive | Delete)
   - "Add New Package" coral button
 
-- [ ] **1H-7** — `app/(admin)/admin/packages/new/page.tsx` + `[id]/page.tsx`
+- [x] **1H-7** — `app/(admin)/admin/packages/new/page.tsx` + `[id]/page.tsx`
   - Full form per RAPIDLUXE.md §04 admin spec
   - Title, slug (auto-gen), description (Textarea)
   - Destination (Select from dummy destinations)
@@ -508,46 +508,46 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
   - Image upload placeholder (shows URL input Phase 1 → Cloudinary Phase 2F)
   - SEO fields (meta title, meta description)
 
-- [ ] **1H-8** — `app/(admin)/admin/destinations/page.tsx`
+- [x] **1H-8** — `app/(admin)/admin/destinations/page.tsx`
   - DataTable: name, country, continent, packages count, actions
   - "Add Destination" button
 
-- [ ] **1H-9** — `app/(admin)/admin/destinations/new/page.tsx` + `[id]/page.tsx`
+- [x] **1H-9** — `app/(admin)/admin/destinations/new/page.tsx` + `[id]/page.tsx`
   - Postgres fields: name, slug, country, continent, imageUrl, bestTimeFrom, bestTimeTo, visaType, currency, language
   - Sanity editorial fields: About (Tiptap placeholder → Phase 2E), Travel Tips (Tiptap placeholder)
   - SEO fields
   - Note: "Dual-write on submit: Postgres + Sanity (Phase 2E)"
 
-- [ ] **1H-10** — `app/(admin)/admin/bookings/page.tsx`
+- [x] **1H-10** — `app/(admin)/admin/bookings/page.tsx`
   - DataTable with filter tabs: All | Upcoming | Completed | Cancelled | Refunded
   - Columns: ID, user, package, dates, travelers, total, payment status, booking status, actions
   - "Update Status" dropdown per row (UI only Phase 1)
 
-- [ ] **1H-11** — `app/(admin)/admin/users/page.tsx`
+- [x] **1H-11** — `app/(admin)/admin/users/page.tsx`
   - DataTable: avatar, name, email, bookings count, joined date, role badge
   - Click row → view user details
 
-- [ ] **1H-12** — `app/(admin)/admin/reviews/page.tsx`
+- [x] **1H-12** — `app/(admin)/admin/reviews/page.tsx`
   - DataTable: reviewer, package, rating (stars), body preview, date, status (Approved/Hidden badge)
   - "Approve" | "Hide" action buttons (UI only Phase 1)
 
-- [ ] **1H-13** — `app/(admin)/admin/deals/page.tsx`
+- [x] **1H-13** — `app/(admin)/admin/deals/page.tsx`
   - Active deals table + "Create Deal" button
   - Deal form: select package, type (FLASH_SALE / EARLY_BIRD / LAST_MINUTE), discount %, expiry date picker, active toggle
 
-- [ ] **1H-14** — `app/(admin)/admin/coupons/page.tsx`
+- [x] **1H-14** — `app/(admin)/admin/coupons/page.tsx`
   - Coupons table: code, type (% or ₹), value, min amount, uses/max-uses, expiry, active toggle
   - "Create Coupon" button → modal or inline form
 
-- [ ] **1H-15** — `app/(admin)/admin/enquiries/page.tsx`
+- [x] **1H-15** — `app/(admin)/admin/enquiries/page.tsx`
   - DataTable: name, email, subject, message preview, date, "Read" toggle
   - Click row → expand full message panel
 
-- [ ] **1H-16** — `app/(admin)/admin/blog/page.tsx`
+- [x] **1H-16** — `app/(admin)/admin/blog/page.tsx`
   - DataTable: title, author, category, date, status
   - "New Post" button
 
-- [ ] **1H-17** — `app/(admin)/admin/blog/new/page.tsx` + `[id]/page.tsx`
+- [x] **1H-17** — `app/(admin)/admin/blog/new/page.tsx` + `[id]/page.tsx`
   - Title, slug (auto-gen from title)
   - Author (Select, dummy authors)
   - Category (Select, dummy categories)
@@ -556,13 +556,13 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
   - Main image (URL input Phase 1 → Cloudinary Phase 2E)
   - SEO fields
 
-- [ ] **1H-18** — `app/(admin)/admin/analytics/page.tsx`
+- [x] **1H-18** — `app/(admin)/admin/analytics/page.tsx`
   - Revenue over time line chart (Recharts, 12 months dummy)
   - Top 5 packages by bookings (horizontal bar chart, Recharts)
   - Top destinations (donut chart, Recharts)
   - User acquisition sources (dummy bar chart)
 
-- [ ] **1H-19** — `app/(admin)/admin/settings/page.tsx`
+- [x] **1H-19** — `app/(admin)/admin/settings/page.tsx`
   - Site settings form: contact email, WhatsApp number, GST number, invoice prefix, company name, address
   - "Save Settings" gold button (UI only Phase 1)
 
