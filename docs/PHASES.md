@@ -392,22 +392,22 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
 
 ### Phase 1F — Auth + User Pages
 
-- [ ] **1F-1** — `app/(auth)/sign-in/[[...sign-in]]/page.tsx`
+- [x] **1F-1** — `app/(auth)/sign-in/[[...sign-in]]/page.tsx`
   - Clerk `<SignIn>` component, centered, RapidLuxe dark layout wrapper
 
-- [ ] **1F-2** — `app/(auth)/sign-up/[[...sign-up]]/page.tsx`
+- [x] **1F-2** — `app/(auth)/sign-up/[[...sign-up]]/page.tsx`
   - Clerk `<SignUp>` component, same dark wrapper
 
-- [ ] **1F-3** — `app/(user)/profile/page.tsx`
+- [x] **1F-3** — `app/(user)/profile/page.tsx`
   - Profile header: Clerk avatar, name, email, "Edit Profile" button
   - Tabs: My Bookings | Wishlist | Personal Details (form) | Travel Preferences | Notifications (toggles)
   - All tab content UI with dummy data
 
-- [ ] **1F-4** — `app/(user)/bookings/page.tsx`
+- [x] **1F-4** — `app/(user)/bookings/page.tsx`
   - Filter tabs: All | Upcoming | Completed | Cancelled
   - Booking cards (dummy): package image, name, dates, travelers, status badge (teal/coral/ghost), booking ID (JetBrains Mono), "View Details" link
 
-- [ ] **1F-5** — `app/(user)/bookings/[id]/page.tsx`
+- [x] **1F-5** — `app/(user)/bookings/[id]/page.tsx`
   - Booking header: ID, status badge, package name + thumbnail
   - Trip summary: dates, travelers, package details
   - Traveler details table
@@ -415,7 +415,7 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
   - "Download Voucher" button (disabled Phase 1) | "Raise a Request" | "Cancel Booking" (if policy allows)
   - Invoice download button (disabled Phase 1)
 
-- [ ] **1F-6** — `app/(user)/wishlist/page.tsx`
+- [x] **1F-6** — `app/(user)/wishlist/page.tsx`
   - Grid of PackageCard (compact) from dummy wishlistStore
   - Remove heart → removes from wishlistStore
   - EmptyState when `wishlistStore.count === 0`

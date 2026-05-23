@@ -3,9 +3,9 @@
 ## Current Build State
 
 ```
-Phase:          1F — Auth + User Pages
-Active Task:    1F-4
-Last Completed: 1F-3 "Profile page built + Navbar auth fix"
+Phase:          1G — Booking Flow
+Active Task:    1G-1
+Last Completed: 1F-ALL "Phase 1F Auth & User Pages Completed"
 ```
 
 > Update after every completed task.
