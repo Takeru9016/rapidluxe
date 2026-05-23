@@ -424,7 +424,7 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
 
 ### Phase 1G — Booking Flow
 
-- [ ] **1G-1** — `store/bookingStore.ts` — complete Zustand store
+- [x] **1G-1** — `store/bookingStore.ts` — complete Zustand store
 
   ```ts
   currentStep: 1 | 2 | 3 | 4
@@ -447,7 +447,7 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
   setCoupon / setBookingResult / reset
   ```
 
-- [ ] **1G-2** — `app/(booking)/book/[packageId]/page.tsx`
+- [x] **1G-2** — `app/(booking)/book/[packageId]/page.tsx`
   - Step indicator: 4 circles (gold filled = active, gold check = done, ghost = future)
   - Sticky booking summary sidebar (desktop): package name, dates, travelers, base, GST line, total
   - **Step 1 — Review Package:** package summary card, date picker, travelers selector, coupon input + "Apply" (UI only Phase 1)
