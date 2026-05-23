@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, MouseEvent } from "react";
 import Link from "next/link";
 import { Menu } from "lucide-react";
+import { useUser, UserButton } from "@clerk/nextjs";
 
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
@@ -23,6 +24,7 @@ const plainLinks = [
 
 
 export function Navbar() {
+  const { isSignedIn } = useUser();
   const [scrolled, setScrolled] = useState(false);
   const [hoverPill, setHoverPill] = useState({ opacity: 0, left: 0, width: 0 });
   const plainLinksRef = useRef<HTMLDivElement>(null);
@@ -106,21 +108,43 @@ export function Navbar() {
           <ThemeToggle />
 
           <div className="hidden md:flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-sm rounded-full"
-              asChild
-            >
-              <Link href="/sign-in">Sign In</Link>
-            </Button>
-            <Button
-              size="sm"
-              className="bg-(--color-coral) text-white px-4 h-9 rounded-full text-sm font-medium hover:bg-(--color-coral)/90 transition-colors"
-              asChild
-            >
-              <Link href="/book">Book Now</Link>
-            </Button>
+            {isSignedIn ? (
+              <>
+                <UserButton
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-8 h-8",
+                    },
+                  }}
+                  userProfileUrl="/profile"
+                />
+                <Button
+                  size="sm"
+                  className="bg-(--color-coral) text-white px-4 h-9 rounded-full text-sm font-medium hover:bg-(--color-coral)/90 transition-colors"
+                  asChild
+                >
+                  <Link href="/book">Book Now</Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-sm rounded-full"
+                  asChild
+                >
+                  <Link href="/sign-in">Sign In</Link>
+                </Button>
+                <Button
+                  size="sm"
+                  className="bg-(--color-coral) text-white px-4 h-9 rounded-full text-sm font-medium hover:bg-(--color-coral)/90 transition-colors"
+                  asChild
+                >
+                  <Link href="/book">Book Now</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile hamburger */}

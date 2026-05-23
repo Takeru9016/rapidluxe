@@ -3,9 +3,9 @@
 ## Current Build State
 
 ```
-Phase:          1E — Supporting Pages
-Active Task:    1F-1
-Last Completed: 1E-ALL "Phase 1E Supporting Pages Completed"
+Phase:          1F — Auth + User Pages
+Active Task:    1F-4
+Last Completed: 1F-3 "Profile page built + Navbar auth fix"
 ```
 
 > Update after every completed task.
