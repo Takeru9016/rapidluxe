@@ -572,7 +572,7 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
 
 ### Phase 1I — Polish + QA
 
-- [ ] **1I-1** — `loading.tsx` files for all key routes:
+- [x] **1I-1** — `loading.tsx` files for all key routes:
 
   ```
   app/(public)/packages/loading.tsx         ← PackageCardSkeleton 3×3 grid
@@ -582,7 +582,7 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
   app/(admin)/admin/loading.tsx             ← StatsCard skeletons + table skeleton
   ```
 
-- [ ] **1I-2** — `error.tsx` files:
+- [x] **1I-2** — `error.tsx` files:
 
   ```
   app/(public)/packages/error.tsx
@@ -592,9 +592,9 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
 
   Each: "Something went wrong" heading + description + "Try again" + "Go home" buttons
 
-- [ ] **1I-3** — `app/not-found.tsx` — branded 404 with illustration or large "404" in Cormorant, description, "Go Home" coral button
+- [x] **1I-3** — `app/not-found.tsx` — branded 404 with illustration or large "404" in Cormorant, description, "Go Home" coral button
 
-- [ ] **1I-4** — `app/opengraph-image.tsx` — default OG image (dark, gold "RapidLuxe" wordmark, tagline), 1200×630
+- [x] **1I-4** — `app/opengraph-image.tsx` — default OG image (dark, gold "RapidLuxe" wordmark, tagline), 1200×630
 
 - [ ] **1I-5** — Cross-browser audit: Chrome, Safari, Firefox — layout + fonts + animations
 - [ ] **1I-6** — Mobile audit: test at 375px, 390px, 430px — no horizontal overflow, tap targets ≥44px
