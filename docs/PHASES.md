@@ -16,19 +16,18 @@
 | **1D** | Package Pages — listing + detail (all tabs)                             | Days 10–13 |
 | **1E** | Supporting Pages — destinations, deals, blog, about, contact, corporate | Days 14–18 |
 | **1F** | Auth + User Pages — Clerk, profile, bookings, wishlist                  | Days 19–21 |
-| **1G** | Booking Flow — 4-step with GST + PAN logic                              | Days 22–24 |
-| **1H** | Admin Panel — all 16 admin pages                                        | Days 25–29 |
+| **1G** | Booking Flow — redesigned 4-step with GST + PAN + new request model     | Days 22–24 |
+| **1H** | Admin Panel — all admin pages incl. new booking workflow                | Days 25–29 |
 | **1I** | Polish + QA — loading states, errors, audits                            | Days 30–32 |
 | **2A** | DB + Auth Foundation — Neon, Prisma, Clerk, webhooks                    | Week 5     |
 | **2B** | Package + Search APIs — all read endpoints                              | Week 5     |
-| **2C** | Booking + Payments — Razorpay, GST, PAN, MSG91                          | Week 6     |
+| **2C** | Booking Request Model — enquiry→quote→payment flow, Razorpay, MSG91     | Week 6     |
 | **2D** | Reviews + Wishlist — verified gate, optimistic UI                       | Week 6     |
 | **2E** | CMS + Communications — Sanity, Resend, contact form                     | Week 7     |
-| **2F** | Admin Backend + Media — Cloudinary, invoices, CRUD                      | Week 7     |
-| **3A** | AI Trip Planner — OpenAI streaming, rate limiting                       | Week 8     |
-| **3B** | Third-Party APIs — Maps, weather, Viator, Booking.com                   | Week 8–9   |
-| **3C** | Analytics + SEO — PostHog, Sentry, metadata, sitemap                    | Week 9     |
-| **3D** | Performance + Final QA — bundle, Lighthouse, audit                      | Week 10    |
+| **2F** | Admin Backend + Media — Cloudinary, invoices, booking workflow CRUD     | Week 7     |
+| **3A** | Third-Party APIs — Mapbox, weather, Viator, Booking.com, Useful Links   | Week 8     |
+| **3B** | Analytics + SEO — PostHog, Sentry, metadata, sitemap                    | Week 9     |
+| **3C** | Performance + Final QA — bundle, Lighthouse, audit                      | Week 10    |
 
 ---
 
@@ -265,8 +264,8 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
   - Scroll indicator with bounce
   - GSAP timeline on mount: eyebrow → H1 → sub → search (stagger 0.2s, y:30→0, opacity:0→1)
 
-- [x] **1C-2** — `components/sections/TrustBar.tsx`
-  - 4 stats with Lucide icons: "10,000+ Trips" | "4.8★ Rated" | "100% Money-Back" | "24/7 Support"
+- [x] **1C-2** — `components/sections/TrustBar.tsx` _(updated)_
+  - Savings-focused: "₹17 Crores+ saved" · "10,000+ Trips" · "4.8★ Rated" · "24/7 Support"
   - Numbers in gold JetBrains Mono, labels DM Sans
   - Horizontal scroll on mobile
 
@@ -287,27 +286,52 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
   - "See All Deals →" CTA
 
 - [x] **1C-6** — `components/sections/HowItWorks.tsx` _(client for GSAP)_
-  - 3 steps: Search → Book → Travel
+  - 3 steps: **Enquire → Get Your Quote → Travel** _(updated for new booking model)_
   - Numbered circles + icon + title + description
   - Connector line between steps (desktop)
   - GSAP stagger on scroll
 
-- [x] **1C-7** — `components/sections/Testimonials.tsx`
-  - Section heading with gold ★
-  - 3-col grid of ReviewCard
+- [ ] **1C-7** — `components/sections/TravelerCarousel.tsx` _(client — replaces Testimonials)_
+  - Full-bleed portrait destination photos in horizontal carousel
+  - Each card: full-height photo · bottom gradient overlay · traveler name + "📍 Destination, Country"
+  - Desktop: 3 cards visible with prev/next arrows, auto-scroll every 4s
+  - Mobile: single card, swipeable (touch drag)
+  - Dummy data: 6 traveler cards from `src/lib/dummy/travelers.ts` (name, location, destination photo URL)
 
 - [x] **1C-8** — `components/sections/BlogPreview.tsx`
   - 3 blog post preview cards from dummy data
   - Image + category badge + title + excerpt + read time
   - "Read More on the Blog →" CTA
 
-- [x] **1C-9** — `components/sections/Newsletter.tsx`
+- [ ] **1C-9** — `components/sections/FAQAccordion.tsx` _(new)_
+  - Section heading: "Still have questions?"
+  - shadcn Accordion, 5 items (content from PAGES.md FAQ section)
+  - Item: question (DM Sans 500, text-white) → answer (DM Sans 400, text-white-muted)
+  - Border: border-navy-border. Active item: gold left border accent strip
+  - Max-width: max-w-3xl mx-auto (centered, not full-width)
+
+- [ ] **1C-10** — `components/sections/FinalCTAStrip.tsx` _(new)_
+  - Background: subtle navy-surface strip, gold decorative line top
+  - Stats row: 4 stat blocks — 1,000+ Vacations · ₹17 Cr+ Savings · 50+ Destinations · 4.9★ Rating
+    - Number: JetBrains Mono, text-gold, text-3xl
+    - Label: DM Sans, text-white-muted, text-sm
+  - 4 travel destination photos below stats — 4-col grid (desktop) / 2-col (mobile) — aspect-[3/2] rounded-lg, overflow-hidden
+  - "Plan My Trip" coral button (h-12, centered, below photos)
+  - Heading above stats: Cormorant H2 "Ready for your best vacation yet?"
+
+- [x] **1C-11** — `components/sections/Newsletter.tsx`
   - Lead magnet copy + email input + "Subscribe" gold button
   - Background: subtle gradient or slightly lighter navy strip
 
-- [x] **1C-10** — `app/(public)/page.tsx` — assemble all sections in order with Navbar + Footer
+- [ ] **1C-12** — `app/(public)/page.tsx` — assemble all sections in order:
+  Navbar → Hero → TrustBar → FeaturedPackages → Destinations → HotDeals → HowItWorks → TravelerCarousel → BlogPreview → FAQAccordion → FinalCTAStrip → Newsletter → Footer
 
-**1C Gate:** Full homepage end-to-end. GSAP triggers on scroll. No hydration errors. Correct on 375px.
+  > Note: 1C-10 (page.tsx) was previously done as 1C-10. Re-index and rebuild with new sections added.
+
+**Dummy data needed:**
+- `src/lib/dummy/travelers.ts` — 6 items: `{ name: string, location: string, destination: string, imageUrl: string }`
+
+**1C Gate:** Full homepage end-to-end including new sections. GSAP triggers on scroll. No hydration errors. Correct on 375px.
 
 ---
 
@@ -323,18 +347,35 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
   - Filter state in `searchStore`
 
 - [x] **1D-2** — `app/(public)/packages/[slug]/page.tsx` ⭐ Most complex page
-  - `ImageGallery` full-width
+  - `<DetailPhotoGrid />` — 1 large left + 2×2 right + "View gallery" (see component spec)
   - Header: title, destination, duration, rating, share icon, wishlist button
-  - Desktop sticky sidebar (right, w-80): price, date picker (shadcn Calendar), travelers selector, total calculator, "Book Now" coral CTA, "Get Custom Quote" ghost → Dialog modal
+  - **Attribute quality badges strip** — horizontal row below header:
+    Public Transport · Proximity to Attractions · Walkability · Neighbourhood Vibrancy · Safety
+    Each badge: label (DM Sans text-sm text-white-muted) + quality chip (GREAT=teal · GOOD=gold · AVERAGE=ghost)
+    Data from `pkg.attributes` JSON field in dummy data
+  - **Multi-platform ratings row** — below attribute strip:
+    Platform logo (16px) + score (JetBrains Mono text-sm text-white) + review count (text-text-secondary)
+    Platforms: TripAdvisor · Google · Booking.com | "See all reviews →" gold link at end
+    Data from `pkg.platformRatings` array in dummy data
+  - Desktop sticky sidebar (right, w-80): price, date picker, travelers selector, total calculator, "Submit Booking Request" coral CTA → `/book/[packageId]`, "Get Custom Quote" ghost → Dialog modal
   - Tabs (shadcn): Overview | Itinerary | Hotels | Activities | Reviews
-  - **Overview tab:** description, highlights, inclusions (✓) / exclusions (✗), `MapEmbed` placeholder, cancellation policy
+  - **Overview tab:** description, highlights, inclusions (✓) / exclusions (✗), `<MapEmbed />` placeholder (Phase 3A: Mapbox), cancellation policy
   - **Itinerary tab:** day-by-day shadcn Accordion
   - **Hotels tab:** grid of `HotelCard` from `pkg.hotels` dummy JSON
-  - **Activities tab:** "Included" section + "Optional Add-Ons" section using `ActivityCard`
-  - **Reviews tab:** summary block (avg + bar breakdown), list of `ReviewCard`, `ReviewForm` (disabled in Phase 1)
+  - **Activities tab:** "Included" section + "Optional Add-Ons" section using `ActivityCard`. Each activity has `<ProviderBookingCard />` below it (provider logo + "RECOMMENDED" badge + price + BOOK ↗ external link)
+  - **Reviews tab:**
+    - `<ReviewSummaryCards />` — "What guests love" (teal border) + "What guests dislike" (coral border), 3 bullet points each, dummy data
+    - Rating summary block (avg + bar breakdown)
+    - ReviewCard list
+    - ReviewForm (disabled Phase 1)
   - Similar packages horizontal scroll (compact PackageCard) at bottom
 
-- [x] **1D-3** — `store/bookingStore.ts` — Zustand booking state (see CLAUDE.md for full interface)
+- [x] **1D-3** — `store/bookingStore.ts` — Zustand booking state (updated — see Phase 1G)
+
+**New dummy data fields needed:**
+- `pkg.attributes`: `[{ label: string, quality: 'GREAT' | 'GOOD' | 'AVERAGE' }]`
+- `pkg.platformRatings`: `[{ platform: string, score: number, reviewCount: number }]`
+- `pkg.reviewSummary`: `{ loves: string[], dislikes: string[] }`
 
 ---
 
@@ -347,15 +388,21 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
   - "Popular Destinations" curated horizontal scroll section
   - "Best places this month" seasonal section (dummy)
 
-- [x] **1E-2** — `app/(public)/destinations/[slug]/page.tsx`
-  - Hero full-bleed + destination name overlay
+- [ ] **1E-2** — `app/(public)/destinations/[slug]/page.tsx` _(needs rebuild with new sections)_
+  - `<DetailPhotoGrid />` — 1 large left + 2×2 right + "View gallery"
   - Quick facts grid: Best time | Currency | Language | Visa for Indians
   - About section (dummy rich text paragraphs — Phase 2E wires to Sanity)
   - Packages from this destination (filtered grid, PackageCard)
-  - "Things To Do" — ActivityCard grid (dummy Viator-shaped data)
-  - Weather widget (static dummy data table: monthly temp + rainfall)
+  - "Things To Do" — ActivityCard grid (dummy Viator-shaped data — Phase 3A: Viator API)
+  - **`<WhenToVisitTable />`** — 12-month table with Crowd Level badge · Weather note · Availability · Recommendation
+    - Phase 1: dummy data from `dest.whenToVisit` JSON field
+    - Phase 3A: populated from OpenWeatherMap + tourism API
+    - "Show fewer months" accordion toggle (show 6 by default, expand to 12)
+  - **`<HowToGetThere />`** — list of transport modes
+    - Each: transport icon (Lucide or custom) + mode name (DM Sans 500) + optional "Recommended" teal badge + description paragraph
+    - Phase 1: dummy data from `dest.howToGetThere` JSON field
   - Travel Tips section (dummy — Phase 2E wires to Sanity)
-  - `MapEmbed` placeholder
+  - `<MapEmbed />` placeholder — Phase 1: styled placeholder. Phase 3A: Mapbox dark-theme interactive map with destination pin + surroundings panel (nearby attractions + distances, tabs: Attractions / Transport / Food)
 
 - [x] **1E-3** — `app/(public)/deals/page.tsx`
   - Flash sale banner: full-width coral/gold gradient + CountdownTimer blocks variant
@@ -387,6 +434,10 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
 
 - [x] **1E-8** — `app/(public)/corporate/page.tsx`
   - All sections: Hero, Features (centralized billing, GST invoices, account manager), How It Works, Client Logos, Testimonials, Corporate Contact Form
+
+**New dummy data fields needed:**
+- `dest.whenToVisit`: array of 12 month objects `{ month: string, crowdLevel: 'LOW'|'MEDIUM'|'HIGH', weather: string, availability: 'Open'|'Closed', recommended: boolean, reason: string }`
+- `dest.howToGetThere`: array `{ mode: string, description: string, isRecommended: boolean }`
 
 ---
 
@@ -422,41 +473,126 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
 
 ---
 
-### Phase 1G — Booking Flow
+### Phase 1G — Booking Flow _(REDESIGNED)_
 
-- [x] **1G-1** — `store/bookingStore.ts` — complete Zustand store
+- [ ] **1G-1** — `store/bookingStore.ts` — updated Zustand store
 
   ```ts
   currentStep: 1 | 2 | 3 | 4
   packageId: string | null
-  departureDate: Date | null
+  // Step 1
   adults: number (default 2)
   children: number (default 0)
   infants: number (default 0)
-  travelerDetails: TravelerDetail[]
-  specialRequests: string
-  baseAmount: number
-  gstAmount: number          // 5% via calculateGST()
-  discountAmount: number
-  totalAmount: number
+  occasion: string | null          // 'leisure' | 'honeymoon' | 'birthday' | 'anniversary' | 'bachelorette'
+  dateMode: 'exact' | 'flexible'
+  departureDate: Date | null       // exact mode
+  returnDate: Date | null          // exact mode
+  flexibleDuration: 7 | 14 | 21 | null  // flexible mode
+  flexibleMonths: string[]         // flexible mode — e.g. ['Sep 2026', 'Oct 2026']
   couponCode: string | null
   appliedCoupon: Coupon | null
+  // Step 2
+  travelerDetails: TravelerDetail[]
+  dietaryRequirements: string[]    // ['vegetarian', 'halal', etc.]
+  panCard: string | null
+  specialRequests: string
+  // Calculated
+  baseAmount: number
+  gstAmount: number
+  discountAmount: number
+  totalAmount: number
+  // Result
   bookingId: string | null
   bookingRef: string | null
-  setStep / setDates / setTravelers / setTravelerDetails
-  setCoupon / setBookingResult / reset
+  // Actions
+  setStep / setTravelers / setOccasion / setDateMode / setExactDates / setFlexibleOptions
+  setTravelerDetails / setDietary / setCoupon / setBookingResult / reset
   ```
 
-- [x] **1G-2** — `app/(booking)/book/[packageId]/page.tsx`
-  - Step indicator: 4 circles (gold filled = active, gold check = done, ghost = future)
-  - Sticky booking summary sidebar (desktop): package name, dates, travelers, base, GST line, total
-  - **Step 1 — Review Package:** package summary card, date picker, travelers selector, coupon input + "Apply" (UI only Phase 1)
-  - **Step 2 — Traveler Details:** lead traveler form (name, DOB, passport no., email, phone) + additional travelers; PAN card field (conditional: shows when `totalAmount > 200000`); special requests
-  - **Step 3 — Review & Pay:** final price breakdown (Base: ₹X | GST 5%: ₹Y | Discount: -₹Z | **Total: ₹W**), payment method selector UI (UPI / Card / EMI / Netbanking), "Pay Now" coral button (no real payment Phase 1)
-  - **Step 4 — Confirmation:** success animation, booking ID, "Download Voucher" (disabled), "View My Bookings" link
-  - Back/Next navigation buttons
+- [ ] **1G-2** — `app/(booking)/book/[packageId]/page.tsx` _(full rebuild)_
 
-**1G Gate:** All 4 steps navigate correctly. GST displayed in Step 3. PAN field conditional. bookingStore persists across steps.
+  **Step indicator — Rimigo-style:**
+  ```
+  [1 ✓]————[2 ✓]————[3]————[4]
+  Travel      Travelers   Submit   Confirmed
+  Details
+  ~14 nights  2 Adults
+  ```
+  - Numbered circles with connector lines
+  - Completed: gold fill + Lucide CheckIcon
+  - Active: gold fill + white number
+  - Future: border-navy-border + text-text-secondary number
+  - Summary label under each completed step (e.g. "29 Jun – 6 Jul", "2 Adults, 0 Children")
+
+  **Sticky sidebar (desktop):** package image + name + selected dates + travelers + price breakdown (base + GST + discount + total)
+
+  ---
+
+  **Step 1 — Travel Details:**
+
+  Card: "Who's traveling?"
+  - 3 counter groups: Adults (Age 13+) · Children (Age 2–12) · Infants (Under 2)
+  - Each: circular `−` button · count (DM Sans 500, min-w-[2rem] text-center) · circular `+` button
+  - `+` button: bg-gold text-navy when count > 0, outline-gold when 0
+  - Age label: DM Sans text-xs text-text-secondary below each group
+
+  Card: "What's the occasion?"
+  - Pill chips: 🎉 Leisure · 💍 Honeymoon · 🎂 Birthday · 🥂 Anniversary · 🎊 Bachelorette/Bachelor
+  - Active: border-gold text-gold bg-gold/10 + Lucide Check icon left
+  - Inactive: border-navy-border text-white-muted
+
+  Card: "When do you want to travel?"
+  - Toggle pills: [📅 Exact Dates] [🕐 I'm Flexible]
+  - **Exact Dates:** dual-month calendar (desktop, side by side) / single month (mobile)
+    - Date range selection, selected range gold fill, between-range gold/10
+    - Prev/Next month arrows
+  - **I'm Flexible:**
+    - "How long do you want to stay?" — 3 pill options: [7 days] [14 days] [21 days]
+    - "When do you want to go?" — month grid (next 12 months, 4 cols)
+    - Each: `{ Month\nYear }` pill, gold fill on selected, multi-select
+
+  Coupon input: text input + "Apply" gold button at bottom
+
+  ---
+
+  **Step 2 — Traveler Details:**
+  - Lead traveler form: name · DOB · passport number · email · phone
+  - Additional travelers: same fields (if adults + children > 1)
+  - PAN card field: CONDITIONAL — `show only when totalAmount > 200000`
+    - Label: "PAN Card Number (Required for bookings above ₹2,00,000)"
+    - Validation: PAN format regex
+
+  Section: "Any dietary requirements?"
+  - Multi-select pill chips: Vegetarian · Vegan · Halal · Kosher · Gluten-free · None
+  - Active: gold border + gold text + bg-gold/10
+  - "None" selection clears all others
+
+  Section: "Anything else we should know?"
+  - Textarea, placeholder: "Share any specific requirements, accessibility needs, or preferences..."
+
+  ---
+
+  **Step 3 — Review & Submit:**
+  - Final price breakdown: Base · GST 5% · Discount · **Estimated Total** (JetBrains Mono, text-gold, text-2xl)
+  - Package summary card (read-only): name, dates, travelers, occasion
+  - **Important notice** (bg-gold/5, border-l-2 border-gold, rounded-r-lg):
+    "Our team will review your request and contact you within 2 hours via WhatsApp to confirm availability and finalize your quote."
+  - "Submit Booking Request" coral button full-width h-12
+  - Phase 1: advances to Step 4 directly. Phase 2C: POST /api/bookings → status ENQUIRY + notifications.
+
+  ---
+
+  **Step 4 — Request Confirmed:**
+  - Lucide CheckCircle2 (teal, 64px) centered
+  - "Request Received!" Cormorant H1
+  - Booking ref (JetBrains Mono, text-gold, text-2xl)
+  - "We'll WhatsApp you within 2 hours to confirm your trip" — DM Sans, text-white-muted
+  - **Status timeline** (horizontal, 4 steps):
+    Enquiry Received ✓ (gold) → Quote Being Prepared (active pulse) → Payment Link Sent → Trip Confirmed
+  - Buttons: "View My Bookings" (outline-gold) · "Browse More Packages" (ghost → /packages)
+
+**1G Gate:** All 4 steps navigate correctly. Traveler counter logic correct (infants can't exceed adults). GST displayed in Step 3. PAN field conditional. bookingStore persists across steps. Flexible/Exact date toggle works correctly. Dietary requirements stored in store.
 
 ---
 
@@ -507,6 +643,9 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
   - Featured toggle, Status (Draft/Published) select
   - Image upload placeholder (shows URL input Phase 1 → Cloudinary Phase 2F)
   - SEO fields (meta title, meta description)
+  - **Attribute quality section** _(new)_: 5 rows — Public Transport · Walkability · Proximity to Attractions · Neighbourhood Vibrancy · Safety — each with select: GREAT/GOOD/AVERAGE
+  - **Platform ratings section** _(new)_: TripAdvisor score · Google score · Booking.com score (number inputs 0–10)
+  - **Review summary section** _(new)_: "What guests love" — 3 textarea inputs + "What guests dislike" — 3 textarea inputs
 
 - [x] **1H-8** — `app/(admin)/admin/destinations/page.tsx`
   - DataTable: name, country, continent, packages count, actions
@@ -517,11 +656,18 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
   - Sanity editorial fields: About (Tiptap placeholder → Phase 2E), Travel Tips (Tiptap placeholder)
   - SEO fields
   - Note: "Dual-write on submit: Postgres + Sanity (Phase 2E)"
+  - **"When to visit" builder** _(new)_: 12-row table, each row: month (read-only) · Crowd Level select (LOW/MEDIUM/HIGH) · Weather note input · Availability toggle · Recommended toggle · Reason textarea
+  - **"How to get there" builder** _(new)_: repeatable list, each item: Mode name input · Description textarea · Is Recommended toggle
 
-- [x] **1H-10** — `app/(admin)/admin/bookings/page.tsx`
-  - DataTable with filter tabs: All | Upcoming | Completed | Cancelled | Refunded
-  - Columns: ID, user, package, dates, travelers, total, payment status, booking status, actions
-  - "Update Status" dropdown per row (UI only Phase 1)
+- [ ] **1H-10** — `app/(admin)/admin/bookings/page.tsx` _(needs rebuild)_
+  - DataTable with filter tabs: All | Enquiries | Quote Sent | Awaiting Payment | Paid | Confirmed | Cancelled
+  - Columns: ID · user · package · dates · travelers · quoted amount · total · booking status · actions
+  - Booking status badges: ENQUIRY (ghost) · QUOTE_SENT (gold) · AWAITING_PAYMENT (coral) · PAID (teal) · CONFIRMED (teal) · CANCELLED (muted)
+  - **Per-row action buttons:**
+    - "Send Quote" (if ENQUIRY) → modal: quoted amount + quote notes + payment due date → UI only Phase 1
+    - "Send Payment Link" (if QUOTE_SENT) → shows generated `/pay/[token]` URL + copy button → UI only Phase 1
+    - "Mark Confirmed" (if PAID) → updates badge → UI only Phase 1
+    - "Cancel" (if ENQUIRY or QUOTE_SENT) → confirmation dialog → updates badge
 
 - [x] **1H-11** — `app/(admin)/admin/users/page.tsx`
   - DataTable: avatar, name, email, bookings count, joined date, role badge
@@ -640,17 +786,63 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
 - [ ] Seed DB with 8 packages + 8 destinations + 4 deals
 - [ ] Replace dummy data imports with TanStack Query hooks, one page at a time
 
-### Phase 2C — Booking + Payments
+### Phase 2C — Booking Request Model + Payments
 
+> Implements the confirmed Enquiry → Quote → Payment Link flow.
+
+**Schema additions (add to Phase 2A Prisma migration):**
+```prisma
+enum BookingStatus {
+  ENQUIRY
+  QUOTE_SENT
+  AWAITING_PAYMENT
+  PAID
+  CONFIRMED
+  CANCELLED
+}
+
+model Booking {
+  // existing fields +
+  status           BookingStatus  @default(ENQUIRY)
+  occasion         String?
+  dietaryRequirements String[]
+  quotedAmount     Float?
+  quoteNotes       String?
+  paymentDueDate   DateTime?
+  paymentToken     String?        @unique  // for /pay/[token]
+  paymentTokenExpiry DateTime?
+  gstAmount        Float          @default(0)
+  panCard          String?
+}
+```
+
+- [ ] `POST /api/bookings` — create booking with status ENQUIRY
+  - Auth required
+  - Saves: packageId, travelers, dates, occasion, dietary, special requests, estimated total
+  - Sends: Resend "Request received" email to user + MSG91 WhatsApp to user
+  - Sends: Resend "New booking request" notification to admin email
+- [ ] `POST /api/coupons/validate` — checks coupon, returns discount amount
+- [ ] `POST /api/admin/bookings/[id]/send-quote` — admin only
+  - Saves: quotedAmount, quoteNotes, paymentDueDate → status = QUOTE_SENT
+  - Sends: Resend quote email to user + MSG91 WhatsApp with quote details
+- [ ] `POST /api/admin/bookings/[id]/send-payment-link` — admin only
+  - Generates unique `paymentToken` (crypto.randomUUID), sets `paymentTokenExpiry` (+48hrs)
+  - Status → AWAITING_PAYMENT
+  - Sends: Resend payment link email + MSG91 WhatsApp with `/pay/[token]` URL
+- [ ] `GET /api/pay/[token]` — public route, validates token
+  - Returns: booking details + package summary + quoted amount (for `/pay/[token]` page)
+  - Error states: token not found, token expired, already paid
 - [ ] `src/lib/razorpay.ts` — Razorpay instance
-- [ ] `POST /api/payments/create-order` — creates Razorpay order, creates Booking record (PENDING), returns `orderId`
-- [ ] `POST /api/payments/verify` — HMAC verification, updates Booking → PAID
-- [ ] `POST /api/coupons/validate` — checks coupon exists, active, within usage limit, min amount
-- [ ] Booking Step 3: wire "Pay Now" → Razorpay checkout modal (Razorpay JS SDK)
-- [ ] Post-payment: Resend booking confirmation email (template with booking ID, package, dates)
-- [ ] Post-payment: MSG91 WhatsApp confirmation message
-- [ ] GST amount stored in DB (`gstAmount` field)
-- [ ] PAN card stored in DB (`panCard` field, conditional collection)
+- [ ] `POST /api/payments/create-order` — called from `/pay/[token]` page
+  - Creates Razorpay order for `quotedAmount`
+  - Returns `orderId`
+- [ ] `POST /api/payments/verify` — HMAC verification
+  - Updates booking → PAID
+  - Sends: Resend payment confirmation email + MSG91 WhatsApp
+- [ ] `POST /api/admin/bookings/[id]/confirm` — admin only → status = CONFIRMED
+  - Sends: Resend booking confirmation email + WhatsApp with voucher details
+- [ ] `POST /api/admin/bookings/[id]/cancel` — admin only → status = CANCELLED
+  - Sends: cancellation notification email
 
 ### Phase 2D — Reviews + Wishlist
 
@@ -698,39 +890,80 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
 
 ---
 
-## ━━━━━━━━━━ PHASE 3 — AI + INTEGRATIONS ━━━━━━━━━━
+## ━━━━━━━━━━ PHASE 3 — INTEGRATIONS + SEO + PERFORMANCE ━━━━━━━━━━
 
-### Phase 3A — AI Trip Planner
+> AI Trip Planner is out of scope. No OpenAI, no Upstash, no streaming.
 
-- [ ] `src/lib/openai.ts` — OpenAI client
-- [ ] `src/lib/upstash.ts` — Upstash Redis client
-- [ ] `POST /api/ai/planner` — streaming route with Vercel AI SDK `streamText`, Upstash rate limit (10 req/user/day)
-- [ ] `app/(user)/trip-planner/page.tsx` — full-page AI planner UI with streaming response
-- [ ] `hooks/useAIPlanner.ts` — `useCompletion` hook
+---
 
-### Phase 3B — Third-Party API Integrations
+### Phase 3A — Third-Party API Integrations
 
-- [ ] **Google Maps** — interactive maps on destination detail + package detail overview tab (replace placeholder)
-- [ ] **Google Maps Embed** — static embed on contact page (replace placeholder)
-- [ ] **OpenWeatherMap** — real monthly weather data on destination detail weather widget
-- [ ] **ExchangeRate-API** — currency display on package detail (show USD/GBP/AED equivalent)
-- [ ] **Viator / TripAdvisor** — real activities per destination on destination detail "Things To Do"
+- [ ] **Mapbox GL JS** — replace all `<MapEmbed />` placeholders
+  - `NEXT_PUBLIC_MAPBOX_TOKEN` env var
+  - `src/lib/mapbox.ts` — Mapbox config + dark style URL (`mapbox://styles/mapbox/dark-v11`)
+  - `components/shared/MapboxMap.tsx` — interactive map component (replaces MapEmbed)
+    - Props: `lat`, `lng`, `zoom`, `markers?`, `height?`
+    - Dark theme tile style
+  - Destination detail: interactive map + surroundings panel
+    - Left: nearby attractions list with distances + tabs (Attractions / Transport / Food)
+    - Right: Mapbox map with destination pin + nearby POI pins
+    - Data: `dest.surroundings` JSON field from DB (Phase 1: dummy data already in destination)
+  - Contact page: static Mapbox map (office pin)
+  - Package detail overview tab: destination area map
+
+- [ ] **OpenWeatherMap** — `WhenToVisitTable` real data
+  - `OPENWEATHERMAP_API_KEY` env var
+  - `src/lib/weather.ts` — fetch monthly climate averages per city
+  - `GET /api/destinations/[slug]/weather` → fetches + caches monthly data (Redis or Next.js `revalidate`)
+  - Wire `WhenToVisitTable` on destination detail → real crowd + weather data
+
+- [ ] **Viator / TripAdvisor API** — real activities on destination detail
+  - Via RapidAPI: `travel-advisor.p.rapidapi.com`
+  - `src/lib/viator.ts` — fetch attractions by lat/lng
+  - `GET /api/destinations/[slug]/activities` → returns top 6 activities
+  - Wire "Things To Do" section → real ActivityCard data
+
 - [ ] **Booking.com Affiliate API** — hotel enrichment on package detail Hotels tab
-- [ ] **TripAdvisor Content API** — supplemental reviews display on destination pages
-- [ ] **Amadeus** — flight search (if scope allows)
+  - Via RapidAPI: `booking-com.p.rapidapi.com`
+  - `src/lib/bookingcom.ts` — search hotels by destination + dates
+  - Wire Hotels tab on package detail → show real pricing from Booking.com alongside static hotel data
 
-### Phase 3C — Analytics + SEO
+- [ ] **ExchangeRate-API** — currency display on package detail
+  - `src/lib/currency.ts` — fetch INR → USD/GBP/AED rates
+  - Show equivalent price on package detail sidebar: "≈ $1,200 USD" (text-text-secondary, small)
+  - Cache rates for 24h via Next.js `revalidate`
 
-- [ ] PostHog: install + pageview tracking + custom booking funnel events
+- [ ] **Useful Links data** (Must Have section on destination detail / package detail)
+  - No API needed — static curated links stored in Sanity or destination JSON
+  - Links: Niyo Global Card · Scapia Credit Card · Visa2Fly · eSIM provider (Airalo)
+  - Each: logo + name + description + external link
+  - `components/shared/UsefulLinks.tsx` — card grid, each card: logo · name · description · "Visit →" ghost button (external link, opens new tab)
+  - Add to destination detail page as a new section: "Travel Essentials"
+
+- [ ] **RapidAPI setup** — subscribe to all required APIs at rapidapi.com
+  - Single `RAPIDAPI_KEY` env var for all
+  - APIs: Sky Scrapper (flights display) · Booking.com · Travel Advisor · OpenWeatherMap · Currency Exchange · Visa Check
+
+---
+
+### Phase 3B — Analytics + SEO
+
+- [ ] PostHog: install + pageview tracking + custom events
+  - Key events: `booking_request_submitted`, `quote_viewed`, `payment_completed`, `package_viewed`, `destination_viewed`
 - [ ] Vercel Analytics: enable in vercel.json
 - [ ] Sentry: install, configure DSN, error boundary integration
 - [ ] `generateMetadata()` export on all public pages
+  - `/packages/[slug]`: title = package name, description = first 160 chars, OG image = package cover
+  - `/destinations/[slug]`: title = destination name, OG image = destination hero
+  - `/blog/[slug]`: title = post title, OG image = post hero (Phase 2E: from Sanity)
 - [ ] `app/opengraph-image.tsx` — dynamic OG for packages + destinations via `next/og`
 - [ ] JSON-LD `TouristTrip` schema on `/packages/[slug]` pages
 - [ ] `app/sitemap.ts` — auto-generated XML sitemap (packages + destinations + blog posts)
 - [ ] `app/robots.ts` — disallow `/admin`, `/api`, allow everything else
 
-### Phase 3D — Performance + Final QA
+---
+
+### Phase 3C — Performance + Final QA
 
 - [ ] `@next/bundle-analyzer` — identify and eliminate large dependencies
 - [ ] Edge runtime on eligible route handlers (`export const runtime = 'edge'`)
@@ -743,4 +976,4 @@ Mobile-first. Dummy data from src/lib/dummy/[file].ts.
 
 ---
 
-_RapidLuxe | Developer: Sahil Jadhav | Updated: May 2026_
+_RapidLuxe | Developer: Sahil Jadhav | Updated: June 2026_

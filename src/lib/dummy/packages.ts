@@ -152,9 +152,36 @@ export const dummyPackages: Package[] = [
     ],
     images: [
       "https://images.unsplash.com/photo-1537996088002-8e4f8e9e3c3e?w=800&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1537996088002-8e4f8e9e3c3e?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1555400206-1e9bc986efd0?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1504233529578-6d46baba6d34?w=800&auto=format&fit=crop&q=80",
     ],
     tags: ["Honeymoon", "Luxury", "Beach", "Adventure"],
+    attributes: [
+      { label: "Public Transport", quality: "GOOD" },
+      { label: "Proximity to Attractions", quality: "GREAT" },
+      { label: "Walkability", quality: "GOOD" },
+      { label: "Neighbourhood Vibrancy", quality: "GREAT" },
+      { label: "Safety", quality: "GOOD" },
+    ],
+    platformRatings: [
+      { platform: "TripAdvisor", score: 4.8, reviewCount: 2847 },
+      { platform: "Google", score: 4.9, reviewCount: 1203 },
+      { platform: "Booking.com", score: 9.2, reviewCount: 642 },
+    ],
+    reviewSummary: {
+      loves: [
+        "Expertly curated temple visits with a knowledgeable local guide",
+        "Villa accommodations with private pools and exceptional service",
+        "Perfectly balanced itinerary with cultural experiences and leisure time",
+      ],
+      dislikes: [
+        "Traffic in Seminyak and Kuta can cause significant delays",
+        "Some tourist areas feel overcrowded during peak season",
+        "Humidity and rain can affect outdoor activities in monsoon months",
+      ],
+    },
     cancellationPolicy: CANCELLATION_POLICY,
     isFeatured: true,
     includesFlights: false,
@@ -296,9 +323,36 @@ export const dummyPackages: Package[] = [
     ],
     images: [
       "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1500634245200-e5245c7574ef?w=800&auto=format&fit=crop&q=80",
     ],
     tags: ["Honeymoon", "Luxury", "Beach"],
+    attributes: [
+      { label: "Public Transport", quality: "AVERAGE" },
+      { label: "Proximity to Attractions", quality: "GREAT" },
+      { label: "Walkability", quality: "AVERAGE" },
+      { label: "Neighbourhood Vibrancy", quality: "GOOD" },
+      { label: "Safety", quality: "GREAT" },
+    ],
+    platformRatings: [
+      { platform: "TripAdvisor", score: 5.0, reviewCount: 1892 },
+      { platform: "Google", score: 4.9, reviewCount: 847 },
+      { platform: "Booking.com", score: 9.6, reviewCount: 431 },
+    ],
+    reviewSummary: {
+      loves: [
+        "Stunning overwater bungalow with direct lagoon access and total privacy",
+        "Manta ray and reef shark encounters exceeded all expectations",
+        "Seamless all-inclusive service — nothing left to organise or worry about",
+      ],
+      dislikes: [
+        "Limited connectivity — internet is slow and intermittent at the resort",
+        "Very limited options outside the resort for dining and independent activities",
+        "Seaplane transfers are weather-dependent and can cause delays",
+      ],
+    },
     cancellationPolicy: CANCELLATION_POLICY,
     isFeatured: true,
     includesFlights: true,
@@ -473,9 +527,36 @@ export const dummyPackages: Package[] = [
     ],
     images: [
       "https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=800&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1566552881560-0be862a7c445?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=800&auto=format&fit=crop&q=80",
     ],
     tags: ["Family", "Adventure", "Budget"],
+    attributes: [
+      { label: "Public Transport", quality: "GOOD" },
+      { label: "Proximity to Attractions", quality: "GREAT" },
+      { label: "Walkability", quality: "GOOD" },
+      { label: "Neighbourhood Vibrancy", quality: "GREAT" },
+      { label: "Safety", quality: "GREAT" },
+    ],
+    platformRatings: [
+      { platform: "TripAdvisor", score: 4.6, reviewCount: 3421 },
+      { platform: "Google", score: 4.7, reviewCount: 2103 },
+      { platform: "Booking.com", score: 9.0, reviewCount: 876 },
+    ],
+    reviewSummary: {
+      loves: [
+        "Houseboat experience through the backwaters was magical and completely serene",
+        "Exceptional heritage hotel stays in Fort Kochi with personalised service",
+        "Spice plantation and Kathakali performance were the cultural highlights",
+      ],
+      dislikes: [
+        "Long road transfers between cities (Munnar-Alleppey 4hrs) can be tiring",
+        "Monsoon season brings heavy rain that limits some outdoor activities",
+        "Munnar roads are narrow and winding — not ideal for those prone to motion sickness",
+      ],
+    },
     cancellationPolicy: CANCELLATION_POLICY,
     isFeatured: false,
     includesFlights: false,
@@ -661,9 +742,36 @@ export const dummyPackages: Package[] = [
     ],
     images: [
       "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&auto=format&fit=crop&q=80",
     ],
     tags: ["Luxury", "Adventure", "Honeymoon"],
+    attributes: [
+      { label: "Public Transport", quality: "GREAT" },
+      { label: "Proximity to Attractions", quality: "GREAT" },
+      { label: "Walkability", quality: "GREAT" },
+      { label: "Neighbourhood Vibrancy", quality: "GREAT" },
+      { label: "Safety", quality: "GREAT" },
+    ],
+    platformRatings: [
+      { platform: "TripAdvisor", score: 4.7, reviewCount: 1654 },
+      { platform: "Google", score: 4.8, reviewCount: 932 },
+      { platform: "Booking.com", score: 9.3, reviewCount: 512 },
+    ],
+    reviewSummary: {
+      loves: [
+        "Glacier Express journey through the Alps was breathtaking and utterly memorable",
+        "Swiss Travel Pass made navigating the entire rail network effortless",
+        "Jungfraujoch experience at 3,454m was a genuinely once-in-a-lifetime moment",
+      ],
+      dislikes: [
+        "Switzerland is expensive — personal expenses and dining out add up quickly",
+        "Weather at high altitudes is unpredictable; Jungfraujoch views may be clouded",
+        "Schengen visa process requires advance planning and detailed documentation",
+      ],
+    },
     cancellationPolicy: CANCELLATION_POLICY,
     isFeatured: false,
     includesFlights: true,
@@ -761,7 +869,7 @@ export const dummyPackages: Package[] = [
         stars: 5,
         location: "Oia, Santorini",
         imageUrl:
-          "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800&auto=format&fit=crop&q=80",
+          "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&auto=format&fit=crop&q=80",
         included: true,
         description:
           "Iconic cave-carved suites with private plunge pools and direct caldera views.",
@@ -771,7 +879,7 @@ export const dummyPackages: Package[] = [
         stars: 5,
         location: "Oia, Santorini",
         imageUrl:
-          "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800&auto=format&fit=crop&q=80",
+          "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&auto=format&fit=crop&q=80",
         included: false,
         description:
           "Available as an upgrade option — cliffside luxury with a clifftop pool.",
@@ -815,10 +923,37 @@ export const dummyPackages: Package[] = [
       },
     ],
     images: [
-      "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1548574505-5e239809ee19?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&auto=format&fit=crop&q=80",
     ],
     tags: ["Honeymoon", "Luxury", "Beach"],
+    attributes: [
+      { label: "Public Transport", quality: "GOOD" },
+      { label: "Proximity to Attractions", quality: "GREAT" },
+      { label: "Walkability", quality: "GREAT" },
+      { label: "Neighbourhood Vibrancy", quality: "GREAT" },
+      { label: "Safety", quality: "GREAT" },
+    ],
+    platformRatings: [
+      { platform: "TripAdvisor", score: 4.8, reviewCount: 4231 },
+      { platform: "Google", score: 4.9, reviewCount: 2108 },
+      { platform: "Booking.com", score: 9.4, reviewCount: 789 },
+    ],
+    reviewSummary: {
+      loves: [
+        "Oia sunset from our caldera suite was the most beautiful sight we have ever witnessed",
+        "Catamaran cruise with champagne at sunset was the perfect anniversary evening",
+        "Volcanic winery tasting offered wines unlike anything available back home",
+      ],
+      dislikes: [
+        "Oia becomes extremely crowded at sunset — arrive well early for the best viewing spots",
+        "The caldera staircases are steep and numerous, challenging for those with mobility issues",
+        "International flights and Schengen visa add considerable extra cost to the trip",
+      ],
+    },
     cancellationPolicy: CANCELLATION_POLICY,
     isFeatured: false,
     includesFlights: false,
@@ -963,9 +1098,36 @@ export const dummyPackages: Package[] = [
     ],
     images: [
       "https://images.unsplash.com/photo-1512453979798-5ea266f7fb2b?w=800&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1512453979798-5ea266f7fb2b?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1580674684081-7617fbf3d745?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?w=800&auto=format&fit=crop&q=80",
     ],
     tags: ["Luxury", "Family", "Adventure"],
+    attributes: [
+      { label: "Public Transport", quality: "GREAT" },
+      { label: "Proximity to Attractions", quality: "GREAT" },
+      { label: "Walkability", quality: "GOOD" },
+      { label: "Neighbourhood Vibrancy", quality: "GREAT" },
+      { label: "Safety", quality: "GREAT" },
+    ],
+    platformRatings: [
+      { platform: "TripAdvisor", score: 4.5, reviewCount: 6723 },
+      { platform: "Google", score: 4.6, reviewCount: 3841 },
+      { platform: "Booking.com", score: 8.8, reviewCount: 1209 },
+    ],
+    reviewSummary: {
+      loves: [
+        "Desert safari with BBQ dinner under the stars was the highlight of our trip",
+        "Burj Khalifa At The Top experience delivered incredible 360° views of the city",
+        "Old Dubai souk walk offered a fascinating contrast to the ultra-modern skyline",
+      ],
+      dislikes: [
+        "Dubai requires a car for most travel — walking between attractions is often impractical",
+        "Summer temperatures can exceed 40°C, limiting outdoor activities significantly",
+        "Alcohol is very expensive and available only at licensed venues; plan accordingly",
+      ],
+    },
     cancellationPolicy: CANCELLATION_POLICY,
     isFeatured: false,
     includesFlights: false,
@@ -1145,9 +1307,36 @@ export const dummyPackages: Package[] = [
     ],
     images: [
       "https://images.unsplash.com/photo-1516026672322-375526dff3e5?w=800&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1516026672322-375526dff3e5?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1598091385862-a7c535ba92f2?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1531261985581-1e24714bfb06?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&auto=format&fit=crop&q=80",
     ],
     tags: ["Adventure", "Family", "Luxury"],
+    attributes: [
+      { label: "Public Transport", quality: "GOOD" },
+      { label: "Proximity to Attractions", quality: "GREAT" },
+      { label: "Walkability", quality: "GOOD" },
+      { label: "Neighbourhood Vibrancy", quality: "GREAT" },
+      { label: "Safety", quality: "GOOD" },
+    ],
+    platformRatings: [
+      { platform: "TripAdvisor", score: 4.7, reviewCount: 5103 },
+      { platform: "Google", score: 4.8, reviewCount: 2734 },
+      { platform: "Booking.com", score: 9.1, reviewCount: 934 },
+    ],
+    reviewSummary: {
+      loves: [
+        "Heritage palace hotels delivered an authentic maharaja living experience",
+        "Sam Dunes camel safari at sunset was romantic and utterly unforgettable",
+        "Mehrangarh Fort is among India's finest — the audio guide is world-class",
+      ],
+      dislikes: [
+        "Long road transfers between cities (Jodhpur–Jaisalmer 5hrs) can be exhausting",
+        "Persistent touts near major monuments require patience and firm but polite refusals",
+        "Some roads in Rajasthan are in poor condition, making journeys bumpy and tiring",
+      ],
+    },
     cancellationPolicy: CANCELLATION_POLICY,
     isFeatured: false,
     includesFlights: false,
@@ -1234,7 +1423,7 @@ export const dummyPackages: Package[] = [
         stars: 5,
         location: "Orchard Road, Singapore",
         imageUrl:
-          "https://images.unsplash.com/photo-1537996088002-8e4f8e9e3c3e?w=800&auto=format&fit=crop&q=80",
+          "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800&auto=format&fit=crop&q=80",
         included: true,
         description:
           "Iconic garden hotel on Orchard Road with 15 acres of tropical gardens.",
@@ -1244,7 +1433,7 @@ export const dummyPackages: Package[] = [
         stars: 4,
         location: "Orchard, Singapore",
         imageUrl:
-          "https://images.unsplash.com/photo-1537996088002-8e4f8e9e3c3e?w=800&auto=format&fit=crop&q=80",
+          "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800&auto=format&fit=crop&q=80",
         included: false,
         description:
           "Contemporary 4-star hotel connected directly to Orchard Gateway Mall.",
@@ -1296,10 +1485,37 @@ export const dummyPackages: Package[] = [
       },
     ],
     images: [
-      "https://images.unsplash.com/photo-1537996088002-8e4f8e9e3c3e?w=800&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1537996088002-8e4f8e9e3c3e?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1565967511849-76a60a516170?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1494893719264-bca5c96b8c57?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1508009603885-50cf7c8a3d13?w=800&auto=format&fit=crop&q=80",
     ],
     tags: ["Family", "Adventure", "Budget"],
+    attributes: [
+      { label: "Public Transport", quality: "GREAT" },
+      { label: "Proximity to Attractions", quality: "GREAT" },
+      { label: "Walkability", quality: "GREAT" },
+      { label: "Neighbourhood Vibrancy", quality: "GREAT" },
+      { label: "Safety", quality: "GREAT" },
+    ],
+    platformRatings: [
+      { platform: "TripAdvisor", score: 4.6, reviewCount: 3892 },
+      { platform: "Google", score: 4.7, reviewCount: 1763 },
+      { platform: "Booking.com", score: 9.0, reviewCount: 821 },
+    ],
+    reviewSummary: {
+      loves: [
+        "Universal Studios delivers a fantastic full-day experience for all ages",
+        "Singapore's MRT system makes navigating the entire city effortless and affordable",
+        "Gardens by the Bay is stunning both by day and for the evening Supertree light show",
+      ],
+      dislikes: [
+        "Singapore is one of Asia's most expensive cities — dining and drinks outside hawker centres add up",
+        "Limited natural landscape — travellers seeking nature may find Singapore underwhelming",
+        "Six nights can feel rushed; the island genuinely rewards a slower pace of exploration",
+      ],
+    },
     cancellationPolicy: CANCELLATION_POLICY,
     isFeatured: false,
     includesFlights: false,

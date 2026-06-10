@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Search, Calendar, Plane, LucideIcon } from "lucide-react";
+import { Search, MessageSquare, Plane, LucideIcon } from "lucide-react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -18,23 +18,23 @@ const steps: Step[] = [
   {
     step: "01",
     icon: Search,
-    title: "Search & Discover",
+    title: "Enquire",
     description:
-      "Browse curated packages across 50+ destinations. Filter by budget, duration, and travel style.",
+      "Browse curated packages across 50+ destinations. Submit a booking request with your travel dates and preferences — no payment required.",
   },
   {
     step: "02",
-    icon: Calendar,
-    title: "Book with Confidence",
+    icon: MessageSquare,
+    title: "Get Your Quote",
     description:
-      "Secure your spot with our flexible booking. 100% money-back guarantee on all packages.",
+      "Our travel experts review your request and contact you within 2 hours via WhatsApp to confirm availability and provide a tailored quote.",
   },
   {
     step: "03",
     icon: Plane,
-    title: "Travel & Explore",
+    title: "Travel",
     description:
-      "Let us handle the details. You focus on creating memories that last a lifetime.",
+      "Once you're happy with the quote, complete payment securely via the link we send you. Then sit back and look forward to your trip.",
   },
 ];
 
@@ -54,7 +54,7 @@ export function HowItWorks() {
         opacity: 1,
         y: 0,
         duration: 0.7,
-        stagger: 0.2,
+        stagger: 0.15,
         ease: "power2.out",
         scrollTrigger: {
           trigger: stepsRef.current,
@@ -67,96 +67,63 @@ export function HowItWorks() {
 
   return (
     <section className="py-20 md:py-32">
-      {/* Header */}
       <div className="text-center mb-16 px-4">
         <p
-          className="font-(family-name:--font-body) text-sm tracking-widest uppercase"
-          style={{ color: "var(--color-gold)" }}
+          className="text-xs tracking-widest uppercase"
+          style={{ fontFamily: "var(--font-body)", color: "var(--color-gold)" }}
         >
           How It Works
         </p>
         <h2
-          className="font-(family-name:--font-display) text-4xl md:text-5xl text-white mt-2"
+          className="text-4xl md:text-5xl text-white mt-2"
+          style={{ fontFamily: "var(--font-display)" }}
         >
           Three Simple Steps
         </h2>
       </div>
 
-      {/* Steps */}
       <div className="max-w-4xl mx-auto px-4 md:px-8">
-        {/* Desktop connector line */}
-        <div className="relative hidden md:block">
+        <div className="relative">
+          {/* Desktop connector line */}
           <div
-            className="absolute top-6 left-[16%] right-[16%] h-px"
+            className="absolute top-12 left-[16%] right-[16%] h-px hidden md:block"
             style={{ backgroundColor: "var(--color-navy-border)" }}
           />
 
-          <div ref={stepsRef} className="grid grid-cols-3 gap-8">
+          {/* Steps grid — desktop 3-col, mobile flex-col */}
+          <div
+            ref={stepsRef}
+            className="grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8"
+          >
             {steps.map(({ step, icon: Icon, title, description }) => (
               <div key={step} className="flex flex-col items-center text-center">
                 <div
-                  className="relative z-10 w-12 h-12 rounded-full flex items-center justify-center"
-                  style={{
-                    border: "1px solid var(--color-navy-border)",
-                    backgroundColor: "var(--color-navy-surface)",
-                  }}
+                  className="relative z-10 w-24 h-24 rounded-full border-2 flex items-center justify-center"
+                  style={{ borderColor: "var(--color-gold)" }}
                 >
-                  <span
-                    className="font-mono text-sm"
-                    style={{ color: "var(--color-gold)" }}
-                  >
-                    {step}
-                  </span>
+                  <Icon size={32} style={{ color: "var(--color-gold)" }} />
                 </div>
-                <Icon size={32} className="mt-6" style={{ color: "var(--color-gold)" }} />
+                <p
+                  className="text-xs tracking-widest mt-4 mb-2"
+                  style={{ fontFamily: "var(--font-body)", color: "var(--color-gold)" }}
+                >
+                  STEP {step}
+                </p>
                 <h3
-                  className="font-(family-name:--font-display) text-xl text-white mt-4"
+                  className="text-2xl text-white"
+                  style={{ fontFamily: "var(--font-display)" }}
                 >
                   {title}
                 </h3>
                 <p
-                  className="font-(family-name:--font-body) text-sm leading-relaxed mt-2"
-                  style={{ color: "var(--color-white-muted)" }}
+                  className="text-sm leading-relaxed mt-3"
+                  style={{ fontFamily: "var(--font-body)", color: "var(--color-white-muted)" }}
                 >
                   {description}
                 </p>
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Mobile stacked */}
-        <div className="flex flex-col gap-10 md:hidden">
-          {steps.map(({ step, icon: Icon, title, description }) => (
-            <div key={step} className="flex flex-col items-center text-center">
-              <div
-                className="w-12 h-12 rounded-full flex items-center justify-center"
-                style={{
-                  border: "1px solid var(--color-navy-border)",
-                  backgroundColor: "var(--color-navy-surface)",
-                }}
-              >
-                <span
-                  className="font-mono text-sm"
-                  style={{ color: "var(--color-gold)" }}
-                >
-                  {step}
-                </span>
-              </div>
-              <Icon size={32} className="mt-6" style={{ color: "var(--color-gold)" }} />
-              <h3
-                className="font-(family-name:--font-display) text-xl text-white mt-4"
-              >
-                {title}
-              </h3>
-              <p
-                className="font-(family-name:--font-body) text-sm leading-relaxed mt-2"
-                style={{ color: "var(--color-white-muted)" }}
-              >
-                {description}
-              </p>
-            </div>
-          ))}
         </div>
       </div>
     </section>

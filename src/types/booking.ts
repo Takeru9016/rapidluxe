@@ -18,8 +18,8 @@ export interface TravelerDetail {
   name: string;
   dob: string;
   passportNo: string;
-  email: string;
-  phone: string;
+  email?: string;
+  phone?: string;
   isLead: boolean;
 }
 

@@ -1,4 +1,4 @@
-import { Luggage, Star, ShieldCheck, Headphones, LucideIcon } from "lucide-react";
+import { PiggyBank, Luggage, Star, Headphones, LucideIcon } from "lucide-react";
 
 interface Stat {
   icon: LucideIcon;
@@ -7,9 +7,9 @@ interface Stat {
 }
 
 const stats: Stat[] = [
-  { icon: Luggage, number: "10,000+", label: "Happy Travellers" },
+  { icon: PiggyBank, number: "₹17 Cr+", label: "Saved by Travellers" },
+  { icon: Luggage, number: "10,000+", label: "Trips Planned" },
   { icon: Star, number: "4.8★", label: "Average Rating" },
-  { icon: ShieldCheck, number: "100%", label: "Money-Back Guarantee" },
   { icon: Headphones, number: "24/7", label: "Expert Support" },
 ];
 
@@ -32,7 +32,7 @@ export function TrustBar() {
                 className="flex flex-col md:flex-row items-center gap-3 shrink-0"
               >
                 <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
                   style={{ backgroundColor: "color-mix(in srgb, var(--color-gold) 10%, transparent)" }}
                 >
                   <Icon size={20} style={{ color: "var(--color-gold)" }} />
@@ -45,8 +45,11 @@ export function TrustBar() {
                     {stat.number}
                   </span>
                   <span
-                    className="font-(family-name:--font-body) text-sm"
-                    style={{ color: "var(--color-white-muted)" }}
+                    className="text-sm"
+                    style={{
+                      fontFamily: "var(--font-body)",
+                      color: "var(--color-white-muted)",
+                    }}
                   >
                     {stat.label}
                   </span>

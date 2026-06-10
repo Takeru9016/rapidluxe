@@ -5,13 +5,17 @@ export { DestinationCard } from "./cards/DestinationCard";
 export { HotelCard } from "./cards/HotelCard";
 export { ReviewCard } from "./cards/ReviewCard";
 
+export { AttributeQualityBadges } from "./shared/AttributeQualityBadges";
 export { Badge } from "./shared/Badge";
 export { CountdownTimer } from "./shared/CountdownTimer";
+export { DetailPhotoGrid } from "./shared/DetailPhotoGrid";
 export { ImageGallery } from "./shared/ImageGallery";
 export { MapEmbed } from "./shared/MapEmbed";
+export { MultiPlatformRatings } from "./shared/MultiPlatformRatings";
 export { PriceDisplay } from "./shared/PriceDisplay";
 export { Rating } from "./shared/Rating";
 export { ReviewForm } from "./shared/ReviewForm";
+export { ReviewSummaryCards } from "./shared/ReviewSummaryCards";
 export { SearchBar } from "./shared/SearchBar";
 export {
   PackageCardSkeleton,
@@ -30,11 +34,13 @@ export { Footer } from "./layout/Footer";
 export { NewsletterForm } from "./layout/NewsletterForm";
 
 export { BlogPreview } from "./sections/BlogPreview";
+export { FAQAccordion } from "./sections/FAQAccordion";
+export { FinalCTAStrip } from "./sections/FinalCTAStrip";
 export { DestinationsSection } from "./sections/DestinationsSection";
 export { FeaturedPackages } from "./sections/FeaturedPackages"
 export { Hero } from "./sections/Hero";
 export { HotDealsSection } from "./sections/HotDealsSection";
 export { HowItWorks } from "./sections/HowItWorks";
 export { Newsletter } from "./sections/Newsletter"
-export { Testimonials } from "./sections/Testimonials";
+export { TravelerCarousel } from "./sections/TravelerCarousel";
 export { TrustBar } from "./sections/TrustBar";

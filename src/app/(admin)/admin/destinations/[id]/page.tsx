@@ -1,12 +1,14 @@
 // On submit: Phase 2F writes to Postgres + Sanity (see docs/SANITY_CMS.md)
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { useForm, useFieldArray, Controller, type SubmitHandler } from "react-hook-form";
 import { ArrowLeft, Plus, X } from "lucide-react";
 
 import { generateSlug } from "@/lib/utils";
+import { dummyDestinations } from "@/lib/dummy/destinations";
 import {
   Select,
   SelectContent,
@@ -45,11 +47,12 @@ interface DestinationFormValues {
   language: string;
 
   // ── Sanity editorial fields ──────────────────────────────────────────────
-  // Phase 2E: replace textareas with Tiptap / PortableText editor
   about: string;
   travelTips: string;
   metaTitle: string;
   metaDescription: string;
+
+  // ── New JSON fields ───────────────────────────────────────────────────────
   whenToVisit: WhenToVisitRow[];
   howToGetThere: TransportRow[];
 }
@@ -157,7 +160,15 @@ function ToggleSwitch({
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default function NewDestinationPage() {
+export default function EditDestinationPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
+  const dest = dummyDestinations.find((d) => d.id === id);
+  if (!dest) notFound();
+
   const [slugManual, setSlugManual] = useState(false);
 
   const {
@@ -169,27 +180,34 @@ export default function NewDestinationPage() {
     formState: { errors },
   } = useForm<DestinationFormValues>({
     defaultValues: {
-      name: "",
-      slug: "",
-      country: "",
-      continent: "ASIA",
-      imageUrl: "",
-      bestTimeFrom: "",
-      bestTimeTo: "",
-      visaType: "",
-      currency: "",
-      language: "",
-      about: "",
+      name: dest.name,
+      slug: dest.slug,
+      country: dest.country,
+      continent: dest.continent,
+      imageUrl: dest.imageUrl ?? "",
+      bestTimeFrom: dest.bestTimeFrom ?? "",
+      bestTimeTo: dest.bestTimeTo ?? "",
+      visaType: dest.visaType ?? "",
+      currency: dest.currency ?? "",
+      language: dest.language ?? "",
+      about: dest.description ?? "",
       travelTips: "",
       metaTitle: "",
       metaDescription: "",
-      whenToVisit: MONTHS.map(() => ({
-        crowdLevel: "" as CrowdLevel | "",
-        weather: "",
-        availability: "" as AvailabilityStatus | "",
-        recommended: false,
-      })),
-      howToGetThere: [],
+      whenToVisit: MONTHS.map((month) => {
+        const row = dest.whenToVisit?.find((w) => w.month === month);
+        return {
+          crowdLevel: (row?.crowdLevel ?? "") as CrowdLevel | "",
+          weather: row?.weather ?? "",
+          availability: (row?.availability ?? "") as AvailabilityStatus | "",
+          recommended: row?.recommendation === "Recommended",
+        };
+      }),
+      howToGetThere: dest.howToGetThere?.map((t) => ({
+        name: t.name,
+        description: t.description,
+        recommended: t.isRecommended ?? false,
+      })) ?? [],
     },
   });
 
@@ -209,7 +227,6 @@ export default function NewDestinationPage() {
 
   return (
     <div className="px-4 md:px-8 py-6 max-w-3xl mx-auto">
-      {/* Back */}
       <Link
         href="/admin/destinations"
         className="inline-flex items-center gap-2 text-sm font-['DM_Sans'] text-(--color-text-secondary) hover:text-(--color-gold) transition-colors mb-6"
@@ -219,16 +236,13 @@ export default function NewDestinationPage() {
       </Link>
 
       <h1 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white mb-8">
-        New Destination
+        Edit Destination
       </h1>
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
 
         {/* ── Postgres: Core Fields ── */}
-        <SectionCard
-          title="Core Details"
-          subtitle="Saved to Postgres"
-        >
+        <SectionCard title="Core Details" subtitle="Saved to Postgres">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Name" className="sm:col-span-2">
               <input
@@ -309,10 +323,7 @@ export default function NewDestinationPage() {
         </SectionCard>
 
         {/* ── Postgres: Best Time ── */}
-        <SectionCard
-          title="Best Time to Visit"
-          subtitle="Saved to Postgres"
-        >
+        <SectionCard title="Best Time to Visit" subtitle="Saved to Postgres">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="From Month">
               <select {...register("bestTimeFrom")} className={selectCls}>
@@ -339,7 +350,6 @@ export default function NewDestinationPage() {
           subtitle="Saved to Sanity CMS — see docs/SANITY_CMS.md"
         >
           <div className="space-y-4">
-            {/* Phase 2E: replace with Tiptap / PortableText editor */}
             <Field label="About (Phase 2E: replace with Tiptap / PortableText)">
               <textarea
                 {...register("about")}
@@ -348,8 +358,6 @@ export default function NewDestinationPage() {
                 className={inputCls + " resize-y"}
               />
             </Field>
-
-            {/* Phase 2E: replace with Tiptap / PortableText editor */}
             <Field label="Travel Tips (Phase 2E: replace with Tiptap / PortableText)">
               <textarea
                 {...register("travelTips")}
@@ -362,10 +370,7 @@ export default function NewDestinationPage() {
         </SectionCard>
 
         {/* ── Sanity: SEO ── */}
-        <SectionCard
-          title="SEO"
-          subtitle="Saved to Sanity CMS"
-        >
+        <SectionCard title="SEO" subtitle="Saved to Sanity CMS">
           <div className="space-y-4">
             <Field label="Meta Title">
               <input
@@ -396,7 +401,6 @@ export default function NewDestinationPage() {
             </p>
           </div>
           <div className="space-y-3">
-            {/* Header row */}
             <div className="hidden md:grid md:grid-cols-[100px_1fr_2fr_1fr_80px] gap-3 items-center">
               <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">Month</span>
               <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">Crowd</span>

@@ -1,5 +1,23 @@
 export type PackageStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 
+export type AttributeQuality = "GREAT" | "GOOD" | "AVERAGE";
+
+export interface PackageAttribute {
+  label: string;
+  quality: AttributeQuality;
+}
+
+export interface PlatformRating {
+  platform: string;
+  score: number;
+  reviewCount?: number;
+}
+
+export interface ReviewSummary {
+  loves: string[];
+  dislikes: string[];
+}
+
 export interface ItineraryDay {
   day: number;
   title: string;
@@ -49,6 +67,9 @@ export interface Package {
   images: string[];
   tags: string[];
   cancellationPolicy?: CancellationPolicy[];
+  attributes?: PackageAttribute[];
+  platformRatings?: PlatformRating[];
+  reviewSummary?: ReviewSummary;
   isFeatured: boolean;
   includesFlights: boolean;
   status: PackageStatus;

@@ -1,13 +1,15 @@
 // This form dual-writes to Postgres in Phase 2F
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { useForm, useFieldArray, Controller, type SubmitHandler } from "react-hook-form";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 
 import { generateSlug } from "@/lib/utils";
 import { dummyDestinations } from "@/lib/dummy/destinations";
+import { dummyPackages } from "@/lib/dummy/packages";
 import {
   Select,
   SelectContent,
@@ -156,7 +158,15 @@ const selectCls = inputCls + " cursor-pointer";
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default function NewPackagePage() {
+export default function EditPackagePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
+  const pkg = dummyPackages.find((p) => p.id === id);
+  if (!pkg) notFound();
+
   const [slugManual, setSlugManual] = useState(false);
 
   const {
@@ -168,42 +178,86 @@ export default function NewPackagePage() {
     formState: { errors },
   } = useForm<PackageFormValues>({
     defaultValues: {
-      title: "",
-      slug: "",
-      status: "DRAFT",
-      destinationId: "",
+      title: pkg.title,
+      slug: pkg.slug,
+      status: pkg.status,
+      destinationId: pkg.destinationId,
       country: "",
-      durationNights: 7,
-      minGroupSize: 1,
-      maxGroupSize: 12,
-      pricePerPerson: 0,
-      originalPrice: 0,
-      description: "",
-      images: [{ url: "" }],
-      itinerary: [
-        {
-          day: 1,
-          title: "",
-          description: "",
-          meals: { breakfast: false, lunch: false, dinner: false },
-        },
-      ],
-      hotels: [
-        { name: "", stars: 5, location: "", imageUrl: "", included: true },
-      ],
-      activities: [
-        { name: "", duration: "", included: true, price: 0 },
-      ],
-      inclusions: [{ value: "" }],
-      exclusions: [{ value: "" }],
-      tags: [],
-      cancellationPolicy: DEFAULT_CANCELLATION,
-      metaTitle: "",
-      metaDescription: "",
-      isFeatured: false,
-      attributes: ATTRIBUTE_LABELS.map(() => ({ quality: "" as const })),
-      platformRatings: PLATFORM_LABELS.map(() => ({ score: 0, reviewCount: 0 })),
-      reviewSummary: { loves: ["", "", ""], dislikes: ["", "", ""] },
+      durationNights: pkg.durationNights,
+      minGroupSize: pkg.minGroupSize,
+      maxGroupSize: pkg.maxGroupSize,
+      pricePerPerson: pkg.pricePerPerson,
+      originalPrice: pkg.originalPrice ?? 0,
+      description: pkg.description,
+      images: pkg.images.length > 0 ? pkg.images.map((url) => ({ url })) : [{ url: "" }],
+      itinerary:
+        pkg.itinerary.length > 0
+          ? pkg.itinerary.map((d) => ({
+              day: d.day,
+              title: d.title,
+              description: d.description,
+              meals: {
+                breakfast: d.meals.includes("Breakfast"),
+                lunch: d.meals.includes("Lunch"),
+                dinner: d.meals.includes("Dinner"),
+              },
+            }))
+          : [{ day: 1, title: "", description: "", meals: { breakfast: false, lunch: false, dinner: false } }],
+      hotels:
+        pkg.hotels.length > 0
+          ? pkg.hotels.map((h) => ({
+              name: h.name,
+              stars: h.stars,
+              location: h.location,
+              imageUrl: h.imageUrl,
+              included: h.included,
+            }))
+          : [{ name: "", stars: 5, location: "", imageUrl: "", included: true }],
+      activities:
+        pkg.activities.length > 0
+          ? pkg.activities.map((a) => ({
+              name: a.name,
+              duration: a.duration,
+              included: a.included,
+              price: a.price ?? 0,
+            }))
+          : [{ name: "", duration: "", included: true, price: 0 }],
+      inclusions:
+        pkg.inclusions.length > 0
+          ? pkg.inclusions.map((v) => ({ value: v }))
+          : [{ value: "" }],
+      exclusions:
+        pkg.exclusions.length > 0
+          ? pkg.exclusions.map((v) => ({ value: v }))
+          : [{ value: "" }],
+      tags: pkg.tags,
+      cancellationPolicy:
+        pkg.cancellationPolicy && pkg.cancellationPolicy.length > 0
+          ? pkg.cancellationPolicy
+          : DEFAULT_CANCELLATION,
+      metaTitle: pkg.metaTitle ?? "",
+      metaDescription: pkg.metaDescription ?? "",
+      isFeatured: pkg.isFeatured,
+      attributes: ATTRIBUTE_LABELS.map((label) => {
+        const found = pkg.attributes?.find((a) => a.label === label);
+        return { quality: (found?.quality ?? "") as AttributeQuality | "" };
+      }),
+      platformRatings: PLATFORM_LABELS.map((platform) => {
+        const found = pkg.platformRatings?.find((r) => r.platform === platform);
+        return { score: found?.score ?? 0, reviewCount: found?.reviewCount ?? 0 };
+      }),
+      reviewSummary: {
+        loves: [
+          pkg.reviewSummary?.loves[0] ?? "",
+          pkg.reviewSummary?.loves[1] ?? "",
+          pkg.reviewSummary?.loves[2] ?? "",
+        ],
+        dislikes: [
+          pkg.reviewSummary?.dislikes[0] ?? "",
+          pkg.reviewSummary?.dislikes[1] ?? "",
+          pkg.reviewSummary?.dislikes[2] ?? "",
+        ],
+      },
     },
   });
 
@@ -265,7 +319,6 @@ export default function NewPackagePage() {
 
   return (
     <div className="px-4 md:px-8 py-6 max-w-4xl mx-auto">
-      {/* Back */}
       <Link
         href="/admin/packages"
         className="inline-flex items-center gap-2 text-sm font-['DM_Sans'] text-(--color-text-secondary) hover:text-(--color-gold) transition-colors mb-6"
@@ -275,7 +328,7 @@ export default function NewPackagePage() {
       </Link>
 
       <h1 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white mb-8">
-        New Package
+        Edit Package
       </h1>
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
@@ -636,7 +689,6 @@ export default function NewPackagePage() {
         {/* ── Inclusions / Exclusions ── */}
         <SectionCard title="Inclusions & Exclusions">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Inclusions */}
             <div>
               <p className="font-['DM_Sans'] text-xs font-medium text-(--color-teal) uppercase tracking-widest mb-3">
                 Inclusions
@@ -671,7 +723,6 @@ export default function NewPackagePage() {
               </button>
             </div>
 
-            {/* Exclusions */}
             <div>
               <p className="font-['DM_Sans'] text-xs font-medium text-(--color-coral) uppercase tracking-widest mb-3">
                 Exclusions

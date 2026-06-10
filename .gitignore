@@ -49,6 +49,7 @@ docs
 prompts
 CLAUDE.md
 RAPIDLUXE.md
+FILE_REGISTRY.md
 
 # Environment
 .env.local
