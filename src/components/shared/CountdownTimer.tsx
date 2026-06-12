@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 import { cn } from "@/lib/utils";
 
 import { useCountdown } from "@/hooks/useCountdown";
@@ -19,6 +21,8 @@ export function CountdownTimer({
   variant = "inline",
   className,
 }: CountdownTimerProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const { days, hours, minutes, seconds, expired } = useCountdown(expiresAt);
 
   if (variant === "inline") {
@@ -61,21 +65,23 @@ export function CountdownTimer({
     { value: seconds, label: "Secs" },
   ];
 
-  return (
-    <div className={cn("flex gap-3", className)}>
-      {blocks.map(({ value, label }) => (
-        <div
-          key={label}
-          className="bg-(--color-navy-surface) border border-(--color-coral)/30 rounded-lg px-3 py-2 flex flex-col items-center min-w-[56px]"
-        >
-          <span className="font-mono text-2xl font-bold text-(--color-coral) leading-none">
-            {pad(value)}
-          </span>
-          <span className="font-sans text-xs text-(--color-text-secondary) uppercase tracking-wider mt-1">
-            {label}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
+  if (!mounted) {
+    return (
+      <div className={cn("flex gap-3", className)}>
+        {blocks.map(({ value, label }) => (
+          <div
+            key={label}
+            className="bg-(--color-navy-surface) border border-(--color-coral)/30 rounded-lg px-3 py-2 flex flex-col items-center min-w-[56px]"
+          >
+            <span className="font-mono text-2xl font-bold text-(--color-coral) leading-none">
+              {pad(value)}
+            </span>
+            <span className="font-sans text-xs text-(--color-text-secondary) uppercase tracking-wider mt-1">
+              {label}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  }
 }

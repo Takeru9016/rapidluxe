@@ -1,14 +1,31 @@
-import { clerkMiddleware } from '@clerk/nextjs/server';
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-export default clerkMiddleware();
+const isAdminRoute = createRouteMatcher(["/admin(.*)", "/studio(.*)"]);
+
+const isUserRoute = createRouteMatcher([
+  "/profile(.*)",
+  "/bookings(.*)",
+  "/wishlist(.*)",
+  "/book(.*)",
+]);
+
+export default clerkMiddleware(async (auth, req) => {
+  if (isAdminRoute(req)) {
+    const { sessionClaims } = await auth();
+    if (sessionClaims?.metadata?.role !== "admin") {
+      const url = new URL("/sign-in", req.url);
+      url.searchParams.set("redirect_url", req.url);
+      return Response.redirect(url);
+    }
+  }
+  if (isUserRoute(req)) {
+    await auth.protect();
+  }
+});
 
 export const config = {
-    matcher: [
-        // Skip Next.js internals and all static files, unless found in search params
-        '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-        // Always run for Clerk's auto-proxy path
-        '/__clerk/(.*)',
-        // Always run for API routes
-        '/(api|trpc)(.*)',
-    ],
+  matcher: [
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/(api|trpc)(.*)",
+  ],
 };
