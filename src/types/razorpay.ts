@@ -17,6 +17,18 @@ export interface RazorpayCheckoutOptions {
   modal?: { ondismiss?: () => void };
 }
 
+export interface RazorpayWebhookEvent {
+  event: string;
+  payload: {
+    payment: {
+      entity: {
+        id: string;
+        order_id: string;
+      };
+    };
+  };
+}
+
 export interface RazorpayInstance {
   open: () => void;
 }

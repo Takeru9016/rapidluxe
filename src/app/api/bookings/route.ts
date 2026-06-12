@@ -1,4 +1,4 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
@@ -61,24 +61,13 @@ export async function POST(req: NextRequest) {
 
     const { gst, total } = calculateGST(baseAmount - discountAmount);
 
-    // No Clerk→DB user sync exists yet, so upsert instead of 404ing
-    const clerkUser = await currentUser();
-    const email = clerkUser?.emailAddresses[0]?.emailAddress;
-    if (!email) {
+    // User must exist via Clerk webhook sync
+    const dbUser = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+    if (!dbUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    const dbUser = await prisma.user.upsert({
-      where: { clerkId: userId },
-      update: {},
-      create: {
-        clerkId: userId,
-        email,
-        name:
-          [clerkUser?.firstName, clerkUser?.lastName]
-            .filter(Boolean)
-            .join(" ") || null,
-      },
-    });
 
     const bookingRef = `RL-${Date.now().toString(36).toUpperCase().slice(-6)}`;
 

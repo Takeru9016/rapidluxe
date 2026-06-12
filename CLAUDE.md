@@ -3,9 +3,9 @@
 ## Current Build State
 
 ```
-Phase:          2C — Bookings + Payments (Razorpay)
-Active Task:    2C-1 "Booking flow: Enquiry → Quote → Payment Link → Paid"
-Last Completed: 2B-3 "Wire pages to real API via TanStack Query — packages, destinations, homepage"
+Phase:          2D — Reviews + Wishlist
+Active Task:    2D-1 "Reviews API"
+Last Completed: 2C-2 "Booking webhooks (Razorpay + Clerk), traveler details, user cancel"
 ```
 
 > Update after every completed task.
