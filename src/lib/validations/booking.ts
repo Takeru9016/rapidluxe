@@ -32,5 +32,12 @@ export const saveTravelersSchema = z.object({
   dietaryRequirements: z.array(z.string()).default([]),
 });
 
+export const sendQuoteSchema = z.object({
+  quotedAmount: z.coerce.number().positive(),
+  quoteNotes: z.string().optional(),
+  paymentDueDate: z.string().datetime().optional(),
+});
+
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
 export type SaveTravelersInput = z.infer<typeof saveTravelersSchema>;
+export type SendQuoteInput = z.infer<typeof sendQuoteSchema>;

@@ -32,15 +32,16 @@ export { Navbar } from "./layout/Navbar";
 export { MobileMenu } from "./layout/MobileMenu";
 export { Footer } from "./layout/Footer";
 export { NewsletterForm } from "./layout/NewsletterForm";
+export { SiteChrome } from "./layout/SiteChrome";
 
 export { BlogPreview } from "./sections/BlogPreview";
 export { FAQAccordion } from "./sections/FAQAccordion";
 export { FinalCTAStrip } from "./sections/FinalCTAStrip";
 export { DestinationsSection } from "./sections/DestinationsSection";
-export { FeaturedPackages } from "./sections/FeaturedPackages"
+export { FeaturedPackages } from "./sections/FeaturedPackages";
 export { Hero } from "./sections/Hero";
 export { HotDealsSection } from "./sections/HotDealsSection";
 export { HowItWorks } from "./sections/HowItWorks";
-export { Newsletter } from "./sections/Newsletter"
+export { Newsletter } from "./sections/Newsletter";
 export { TravelerCarousel } from "./sections/TravelerCarousel";
 export { TrustBar } from "./sections/TrustBar";

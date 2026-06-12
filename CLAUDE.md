@@ -3,9 +3,9 @@
 ## Current Build State
 
 ```
-Phase:          2A — Database Setup (Neon + Prisma)
-Active Task:    2A-2 (next)
-Last Completed: 2A-1 "Prisma schema + Neon migrations + seed (8 destinations, 3 packages, 3 coupons)"
+Phase:          2C — Bookings + Payments (Razorpay)
+Active Task:    2C-1 "Booking flow: Enquiry → Quote → Payment Link → Paid"
+Last Completed: 2B-3 "Wire pages to real API via TanStack Query — packages, destinations, homepage"
 ```
 
 > Update after every completed task.

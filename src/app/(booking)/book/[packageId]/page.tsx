@@ -197,21 +197,29 @@ function BookingSidebar({ pkg }: { pkg: Package }) {
       <div className="flex flex-col gap-2 text-sm font-['DM_Sans']">
         <div className="flex justify-between">
           <span className="text-(--color-text-secondary)">Base</span>
-          <span className="text-(--color-white-muted)">{formatPrice(baseAmount)}</span>
+          <span className="text-(--color-white-muted)">
+            {formatPrice(baseAmount)}
+          </span>
         </div>
         <div className="flex justify-between">
           <span className="text-(--color-text-secondary)">GST (5%)</span>
-          <span className="text-(--color-white-muted)">{formatPrice(gstAmount)}</span>
+          <span className="text-(--color-white-muted)">
+            {formatPrice(gstAmount)}
+          </span>
         </div>
         {discountAmount > 0 && (
           <div className="flex justify-between">
             <span className="text-(--color-text-secondary)">Discount</span>
-            <span className="text-(--color-coral)">−{formatPrice(discountAmount)}</span>
+            <span className="text-(--color-coral)">
+              −{formatPrice(discountAmount)}
+            </span>
           </div>
         )}
         <Separator className="bg-(--color-navy-border) my-1" />
         <div className="flex justify-between items-center">
-          <span className="font-['DM_Sans'] font-semibold text-white text-sm">Total</span>
+          <span className="font-['DM_Sans'] font-semibold text-white text-sm">
+            Total
+          </span>
           <span className="font-['JetBrains_Mono'] text-xl text-(--color-gold)">
             {formatPrice(totalAmount)}
           </span>
@@ -435,9 +443,7 @@ function Step1({ pkg }: { pkg: Package }) {
                   <button
                     key={d}
                     type="button"
-                    onClick={() =>
-                      setFlexibleOptions(d, flexibleMonths)
-                    }
+                    onClick={() => setFlexibleOptions(d, flexibleMonths)}
                     className={`px-4 py-2 rounded-full text-sm font-['DM_Sans'] transition-colors ${
                       flexibleDuration === d
                         ? "bg-(--color-gold) text-(--color-navy) font-medium"
@@ -815,7 +821,7 @@ function Step2() {
 
 // ── Step 3 — Review & Submit ──────────────────────────────────────────────────
 
-function Step3({ pkg }: { pkg: Package }) {
+function Step3({ pkg, packageId }: { pkg: Package; packageId: string }) {
   const {
     departureDate,
     adults,
@@ -826,15 +832,48 @@ function Step3({ pkg }: { pkg: Package }) {
     discountAmount,
     totalAmount,
     setStep,
-    setBookingResult,
   } = useBookingStore();
 
-  function handleSubmit() {
-    const bookingId = "BK-" + Date.now();
-    const bookingRef =
-      "RL-" + Math.random().toString(36).slice(2, 8).toUpperCase();
-    setBookingResult(bookingId, bookingRef);
-    setStep(4);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit() {
+    const store = useBookingStore.getState();
+    if (!store.departureDate) {
+      toast.error("Please select a departure date.");
+      store.setStep(1);
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          packageId,
+          departureDate: store.departureDate.toISOString(),
+          adults: store.adults,
+          children: store.children,
+          infants: store.infants,
+          occasion: store.occasion ?? undefined,
+          dietaryRequirements: store.dietaryRequirements,
+          specialRequests: store.specialRequests || undefined,
+          couponCode: store.couponCode ?? undefined,
+        }),
+      });
+      const json = (await res.json()) as {
+        data?: { bookingId: string; bookingRef: string };
+        error?: string;
+      };
+      if (!res.ok || !json.data) {
+        throw new Error(json.error ?? "Request failed");
+      }
+      store.setBookingResult(json.data.bookingId, json.data.bookingRef);
+      store.setStep(4);
+    } catch {
+      toast.error("Failed to submit request. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -927,9 +966,10 @@ function Step3({ pkg }: { pkg: Package }) {
       <button
         type="button"
         onClick={handleSubmit}
-        className="w-full h-12 rounded-xl bg-(--color-coral) text-white font-['DM_Sans'] font-semibold text-sm hover:opacity-90 transition-opacity mt-6"
+        disabled={submitting}
+        className="w-full h-12 rounded-xl bg-(--color-coral) text-white font-['DM_Sans'] font-semibold text-sm hover:opacity-90 transition-opacity mt-6 disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        Submit Booking Request
+        {submitting ? "Submitting…" : "Submit Booking Request"}
       </button>
     </div>
   );
@@ -1025,7 +1065,7 @@ export default function BookingPage({
           <div className="flex-1 min-w-0">
             {currentStep === 1 && <Step1 pkg={pkg} />}
             {currentStep === 2 && <Step2 />}
-            {currentStep === 3 && <Step3 pkg={pkg} />}
+            {currentStep === 3 && <Step3 pkg={pkg} packageId={packageId} />}
             {currentStep === 4 && <Step4 />}
           </div>
 

@@ -12,7 +12,7 @@ import "./globals.css";
 
 import { cn } from "@/lib/utils";
 
-import { ThemeProvider, Navbar, MobileMenu, Footer } from "@/components";
+import { ThemeProvider, SiteChrome } from "@/components";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
@@ -86,10 +86,7 @@ export default function RootLayout({
         <ThemeProvider>
           <ClerkProvider>
             <QueryProvider>
-              <Navbar />
-              <MobileMenu />
-              <main className="min-h-screen pt-16">{children}</main>
-              <Footer />
+              <SiteChrome>{children}</SiteChrome>
             </QueryProvider>
           </ClerkProvider>
           <Toaster position="top-center" richColors />

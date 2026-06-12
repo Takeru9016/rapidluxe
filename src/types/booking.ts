@@ -23,6 +23,23 @@ export interface TravelerDetail {
   isLead: boolean;
 }
 
+export interface PaymentPageData {
+  bookingRef: string | null;
+  packageName: string;
+  packageImage: string | null;
+  destination?: string;
+  departureDate: string;
+  adults: number;
+  children: number;
+  quotedAmount: number | null;
+  quoteNotes: string | null;
+  gstAmount: number;
+  totalAmount: number;
+  expiresAt: string | null;
+  userName: string | null;
+  userEmail: string | null;
+}
+
 export interface Booking {
   id: string;
   bookingRef: string;
