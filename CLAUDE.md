@@ -3,9 +3,9 @@
 ## Current Build State
 
 ```
-Phase:          1I — Polish + QA
-Active Task:    1I-5
-Last Completed: 1I-4 "loading + error + not-found + og-image + build fixes"
+Phase:          2A — Database Setup (Neon + Prisma)
+Active Task:    2A-2 (next)
+Last Completed: 2A-1 "Prisma schema + Neon migrations + seed (8 destinations, 3 packages, 3 coupons)"
 ```
 
 > Update after every completed task.

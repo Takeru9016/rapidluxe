@@ -1,0 +1,216 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String     @id @default(cuid())
+  clerkId     String     @unique
+  email       String     @unique
+  name        String?
+  phone       String?
+  role        Role       @default(USER)
+  preferences Json?
+  bookings    Booking[]
+  reviews     Review[]
+  wishlist    Wishlist[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Destination {
+  id            String    @id @default(cuid())
+  name          String
+  slug          String    @unique
+  country       String
+  continent     String
+  description   String?
+  imageUrl      String?
+  bestTimeFrom  String?
+  bestTimeTo    String?
+  visaType      String?
+  currency      String?
+  language      String?
+  lat           Float?
+  lng           Float?
+  countryCode   String? // ISO-3166-1 alpha-2, e.g. "ID"
+  whenToVisit   Json? // WhenToVisitMonth[]
+  howToGetThere Json? // TransportOption[]
+  surroundings  Json? // SurroundingPlace[]
+  packages      Package[]
+  createdAt     DateTime  @default(now())
+}
+
+model Package {
+  id                 String        @id @default(cuid())
+  title              String
+  slug               String        @unique
+  description        String
+  destinationId      String
+  destination        Destination   @relation(fields: [destinationId], references: [id])
+  durationNights     Int
+  pricePerPerson     Float
+  originalPrice      Float?
+  minGroupSize       Int           @default(1)
+  maxGroupSize       Int           @default(20)
+  inclusions         String[]
+  exclusions         String[]
+  itinerary          Json // [{ day, title, description, meals }]
+  hotels             Json // [{ name, stars, location, imageUrl, included }]
+  activities         Json // [{ name, duration, included, price? }]
+  images             String[] // Cloudinary URLs
+  tags               String[] // ["Luxury", "Honeymoon", "Beach"]
+  cancellationPolicy Json? // [{ daysBeforeDeparture, refundPercent }]
+  attributes         Json? // PackageAttribute[]
+  platformRatings    Json? // PlatformRating[]
+  reviewSummary      Json? // ReviewSummary
+  isFeatured         Boolean       @default(false)
+  includesFlights    Boolean       @default(false)
+  status             PackageStatus @default(DRAFT)
+  bookings           Booking[]
+  reviews            Review[]
+  wishlist           Wishlist[]
+  deals              Deal[]
+  metaTitle          String?
+  metaDescription    String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([destinationId])
+}
+
+enum PackageStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Booking {
+  id                  String        @id @default(cuid())
+  userId              String
+  packageId           String
+  departureDate       DateTime
+  returnDate          DateTime?
+  adults              Int
+  children            Int           @default(0)
+  infants             Int           @default(0)
+  travelers           Json          @default("[]") // [{ name, dob, passportNo, email, phone, isLead }]
+  occasion            String?
+  dietaryRequirements String[]      @default([])
+  specialRequests     String?
+  status              BookingStatus @default(ENQUIRY)
+  baseAmount          Float
+  gstAmount           Float         @default(0) // 5% GST — legal requirement
+  discountAmount      Float         @default(0)
+  totalAmount         Float
+  couponCode          String?
+  quotedAmount        Float?
+  quoteNotes          String?
+  paymentDueDate      DateTime?
+  paymentToken        String?       @unique
+  paymentTokenExpiry  DateTime?
+  razorpayOrderId     String?
+  razorpayPaymentId   String?
+  panCard             String? // Required when totalAmount > ₹2,00,000 (FEMA)
+  bookingRef          String?       @unique
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  user                User          @relation(fields: [userId], references: [id])
+  package             Package       @relation(fields: [packageId], references: [id])
+
+  @@index([userId])
+  @@index([packageId])
+  @@index([status])
+  @@index([paymentToken])
+  @@index([bookingRef])
+}
+
+enum BookingStatus {
+  ENQUIRY
+  QUOTE_SENT
+  AWAITING_PAYMENT
+  PAID
+  CONFIRMED
+  CANCELLED
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  packageId  String
+  package    Package  @relation(fields: [packageId], references: [id])
+  rating     Int // 1–5
+  title      String?
+  body       String
+  images     String[]
+  isVerified Boolean  @default(false) // true only if user has COMPLETED booking
+  isApproved Boolean  @default(false) // admin moderation
+  createdAt  DateTime @default(now())
+
+  @@index([packageId])
+  @@index([isApproved])
+}
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  packageId String
+  package   Package  @relation(fields: [packageId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, packageId])
+}
+
+model Deal {
+  id          String   @id @default(cuid())
+  packageId   String
+  package     Package  @relation(fields: [packageId], references: [id])
+  type        DealType
+  discountPct Float
+  expiresAt   DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+enum DealType {
+  FLASH_SALE
+  EARLY_BIRD
+  LAST_MINUTE
+}
+
+model Enquiry {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Coupon {
+  id            String    @id @default(cuid())
+  code          String    @unique
+  discountType  String // "PERCENT" | "FIXED"
+  discountValue Float
+  minAmount     Float?
+  maxUses       Int?
+  usedCount     Int       @default(0)
+  expiresAt     DateTime?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+}

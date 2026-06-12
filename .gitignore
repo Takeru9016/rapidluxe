@@ -44,10 +44,10 @@ certificates
 
 # Claude Code
 .claude
+.agents
 CLAUDE.local.md
 docs
 prompts
-CLAUDE.md
 RAPIDLUXE.md
 FILE_REGISTRY.md
 
@@ -63,3 +63,5 @@ out/
 .sanity/
 # clerk configuration (can include secrets)
 /.clerk/
+
+/src/generated/prisma
