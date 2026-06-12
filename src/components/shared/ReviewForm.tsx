@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { Lock, Star, Upload } from "lucide-react";
+import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 
@@ -23,18 +25,18 @@ interface ReviewFormProps {
   isEligible: boolean;
 }
 
-export function ReviewForm({
-  packageId: _packageId,
-  isEligible,
-}: ReviewFormProps) {
+export function ReviewForm({ packageId, isEligible }: ReviewFormProps) {
+  const queryClient = useQueryClient();
   const [hovered, setHovered] = useState<number>(0);
   const [selected, setSelected] = useState<number>(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors },
   } = useForm<ReviewFormData>({
     defaultValues: { rating: 0, title: "", body: "" },
@@ -42,8 +44,28 @@ export function ReviewForm({
 
   const body = watch("body") ?? "";
 
-  function onSubmit(data: ReviewFormData) {
-    console.log(data);
+  async function onSubmit(data: ReviewFormData) {
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, packageId }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        toast.error(json.error ?? "Failed to submit review");
+        return;
+      }
+      toast.success("Review submitted! It will appear after approval.");
+      await queryClient.invalidateQueries({ queryKey: ["reviews", packageId] });
+      reset();
+      setSelected(0);
+    } catch {
+      toast.error("Failed to submit review. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   function handleStarClick(i: number) {
@@ -141,7 +163,7 @@ export function ReviewForm({
             </div>
           </div>
 
-          {/* Photo upload — Phase 1 disabled */}
+          {/* Photo upload — Phase 2F */}
           <div className="border border-dashed border-(--color-navy-border) rounded-lg p-4 flex flex-col items-center gap-2 text-center">
             <Upload size={20} className="text-(--color-text-secondary)" />
             <p className="font-sans text-sm text-(--color-text-secondary)">
@@ -152,9 +174,10 @@ export function ReviewForm({
           {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-(--color-coral) text-white font-sans font-medium py-3 rounded-lg hover:opacity-90 transition-opacity"
+            disabled={isSubmitting}
+            className="w-full bg-(--color-coral) text-white font-sans font-medium py-3 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Submit Review
+            {isSubmitting ? "Submitting..." : "Submit Review"}
           </button>
         </form>
       )}

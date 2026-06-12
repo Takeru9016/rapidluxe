@@ -17,12 +17,12 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { dummyReviews } from "@/lib/dummy/reviews";
 import { dummyDeals } from "@/lib/dummy/deals";
 import { formatPrice, calculateGST, formatDate } from "@/lib/utils";
 
 import { useWishlistStore } from "@/store/wishlistStore";
 import { usePackage, usePackages } from "@/hooks/api/usePackages";
+import { useReviews, useCheckEligibility } from "@/hooks/api/useReviews";
 
 import type { Package } from "@/types/package";
 
@@ -68,17 +68,6 @@ const DUMMY_RATINGS: Record<string, number> = {
   "pkg-dubai": 4.5,
   "pkg-rajasthan": 4.7,
   "pkg-singapore": 4.6,
-};
-
-const USER_MAP: Record<string, { name: string; avatarUrl?: string }> = {
-  "user-001": { name: "Priya Sharma" },
-  "user-002": { name: "Rohan Mehta" },
-  "user-003": { name: "Ananya Patel" },
-  "user-004": { name: "Vikram Nair" },
-  "user-005": { name: "Sneha Iyer" },
-  "user-006": { name: "Aditya Gupta" },
-  "user-007": { name: "Kavya Reddy" },
-  "user-008": { name: "Arjun Singh" },
 };
 
 const PROVIDERS = ["Headout", "Klook"] as const;
@@ -188,14 +177,19 @@ export default function PackageDetailPage({
 
   const pkg = pkgData?.data;
   const destination = pkg?.destination ?? null;
-  const reviews = pkg
-    ? dummyReviews
-        .filter((r) => r.packageId === pkg.id && r.isApproved)
-        .map((r) => ({
-          ...r,
-          user: USER_MAP[r.userId] ?? { name: "Traveller" },
-        }))
-    : [];
+
+  const { data: reviewsData, isLoading: reviewsLoading } = useReviews(
+    pkg?.id ?? "",
+  );
+  const { data: eligibilityData } = useCheckEligibility(pkg?.id ?? "");
+
+  const reviews = (reviewsData?.data ?? []).map((r) => ({
+    ...r,
+    createdAt: new Date(r.createdAt),
+    user: { name: r.user.name ?? "Traveller" },
+  }));
+  const isEligible = eligibilityData?.eligible ?? false;
+
   const similarPackages = (similarData?.data ?? [])
     .filter((p) => p.slug !== slug)
     .slice(0, 3);
@@ -649,11 +643,30 @@ export default function PackageDetailPage({
                 {/* Rating bar breakdown */}
                 <RatingBarBreakdown
                   avgRating={avgRating}
-                  total={reviews.length || 48}
+                  total={reviewsData?.pagination.total ?? 0}
                 />
 
                 {/* Review cards */}
-                {reviews.length > 0 ? (
+                {reviewsLoading ? (
+                  <div className="flex flex-col gap-4">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="bg-(--color-navy-surface) rounded-xl p-6 border border-(--color-navy-border) animate-pulse"
+                      >
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="h-10 w-10 rounded-full bg-(--color-navy-border)" />
+                          <div className="h-4 w-32 rounded bg-(--color-navy-border)" />
+                        </div>
+                        <div className="h-3 w-24 rounded bg-(--color-navy-border) mb-3" />
+                        <div className="space-y-2">
+                          <div className="h-3 w-full rounded bg-(--color-navy-border)" />
+                          <div className="h-3 w-4/5 rounded bg-(--color-navy-border)" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : reviews.length > 0 ? (
                   <div className="flex flex-col gap-4">
                     {reviews.map((review) => (
                       <ReviewCard key={review.id} review={review} />
@@ -665,7 +678,7 @@ export default function PackageDetailPage({
                   </p>
                 )}
 
-                <ReviewForm packageId={pkg.id} isEligible={false} />
+                <ReviewForm packageId={pkg.id} isEligible={isEligible} />
               </TabsContent>
             </Tabs>
 
