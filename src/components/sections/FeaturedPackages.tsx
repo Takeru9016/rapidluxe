@@ -1,13 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useState } from "react";
 
-import { dummyPackages } from "@/lib/dummy/packages";
+import { usePackages } from "@/hooks/api/usePackages";
+import type { ApiPackage } from "@/hooks/api/usePackages";
 
 import { PackageCard } from "@/components/cards/PackageCard";
+import { PackageCardSkeleton } from "@/components/shared/Skeletons";
 
 import type { Package } from "@/types/package";
 
@@ -17,24 +20,33 @@ type Tab = "Trending" | "Luxury" | "Budget";
 
 const TABS: Tab[] = ["Trending", "Luxury", "Budget"];
 
-function filterPackages(tab: Tab): Package[] {
-  if (tab === "Luxury") {
-    return dummyPackages.filter((p) => p.tags.includes("Luxury"));
-  }
-  if (tab === "Budget") {
-    return dummyPackages.filter((p) => p.pricePerPerson < 100000);
-  }
-  return [...dummyPackages].sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
+function filterByTab(tab: Tab, packages: ApiPackage[]): ApiPackage[] {
+  if (tab === "Luxury")
+    return packages.filter((p) => p.tags.includes("Luxury"));
+  if (tab === "Budget")
+    return packages.filter((p) => p.pricePerPerson < 100000);
+  return [...packages].sort(
+    (a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0),
+  );
 }
 
 export function FeaturedPackages() {
   const [activeTab, setActiveTab] = useState<Tab>("Trending");
-  const [packages, setPackages] = useState<Package[]>(() => filterPackages("Trending"));
   const gridRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
+  const { data, isLoading } = usePackages({ sort: "featured", limit: 50 });
+  const allPackages = data?.data ?? [];
+
+  const packages = useMemo(
+    () => filterByTab(activeTab, allPackages),
+    [activeTab, allPackages],
+  );
+
   useEffect(() => {
-    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     if (prefersReduced || !sectionRef.current) return;
 
     gsap.fromTo(
@@ -50,24 +62,23 @@ export function FeaturedPackages() {
           start: "top 80%",
           once: true,
         },
-      }
+      },
     );
   }, []);
 
   useEffect(() => {
-    const filtered = filterPackages(activeTab);
-    setPackages(filtered);
-
-    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     if (prefersReduced || !gridRef.current) return;
 
     const cards = gridRef.current.querySelectorAll<HTMLElement>(":scope > *");
     gsap.fromTo(
       cards,
       { opacity: 0, y: 20 },
-      { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: "power2.out" }
+      { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: "power2.out" },
     );
-  }, [activeTab]);
+  }, [packages]);
 
   return (
     <section ref={sectionRef} className="py-20 md:py-32">
@@ -80,9 +91,7 @@ export function FeaturedPackages() {
           Featured Packages
         </p>
 
-        <h2
-          className="font-(family-name:--font-display) text-4xl md:text-5xl text-white mt-2"
-        >
+        <h2 className="font-(family-name:--font-display) text-4xl md:text-5xl text-white mt-2">
           Handpicked Journeys for You
         </h2>
 
@@ -124,14 +133,26 @@ export function FeaturedPackages() {
 
       {/* Grid */}
       <div className="max-w-7xl mx-auto px-4 md:px-8">
-        <div
-          ref={gridRef}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
-        >
-          {packages.map((pkg) => (
-            <PackageCard key={pkg.id} package={pkg} variant="default" />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <PackageCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : (
+          <div
+            ref={gridRef}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
+          >
+            {packages.map((pkg) => (
+              <PackageCard
+                key={pkg.id}
+                package={pkg as unknown as Package}
+                variant="default"
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* CTA */}
@@ -148,7 +169,8 @@ export function FeaturedPackages() {
                 "color-mix(in srgb, var(--color-gold) 10%, transparent)";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                "transparent";
             }}
           >
             View All Packages →

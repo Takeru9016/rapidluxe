@@ -20,12 +20,26 @@ import {
 } from "lucide-react";
 
 import type { Activity } from "@/types/package";
-import type { VisaType, TransportType, CrowdLevel, AvailabilityStatus, VisitRecommendation } from "@/types/destination";
+import type {
+  VisaType,
+  TransportType,
+  CrowdLevel,
+  AvailabilityStatus,
+  VisitRecommendation,
+} from "@/types/destination";
+import type { Package } from "@/types/package";
 
-import { dummyDestinations } from "@/lib/dummy/destinations";
-import { dummyPackages } from "@/lib/dummy/packages";
+import { useDestination } from "@/hooks/api/useDestinations";
+import { usePackages } from "@/hooks/api/usePackages";
 
-import { ActivityCard, Badge, DetailPhotoGrid, MapEmbed, PackageCard } from "@/components";
+import {
+  ActivityCard,
+  Badge,
+  DetailPhotoGrid,
+  MapEmbed,
+  PackageCard,
+} from "@/components";
+import { PackageCardSkeleton } from "@/components/shared/Skeletons";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -36,13 +50,19 @@ const VISA_LABELS: Record<VisaType, string> = {
   VISA_REQUIRED: "Visa Required",
 };
 
-const CROWD_BADGE: Record<CrowdLevel, { variant: "teal" | "gold" | "coral"; label: string }> = {
+const CROWD_BADGE: Record<
+  CrowdLevel,
+  { variant: "teal" | "gold" | "coral"; label: string }
+> = {
   LOW: { variant: "teal", label: "LOW" },
   MEDIUM: { variant: "gold", label: "MEDIUM" },
   HIGH: { variant: "coral", label: "HIGH" },
 };
 
-const TRANSPORT_ICONS: Record<TransportType, React.ComponentType<{ size?: number; className?: string }>> = {
+const TRANSPORT_ICONS: Record<
+  TransportType,
+  React.ComponentType<{ size?: number; className?: string }>
+> = {
   Bus: Bus,
   Metro: Train,
   Train: Train,
@@ -68,22 +88,41 @@ const TRAVEL_TIPS = [
 ];
 
 const USEFUL_LINKS = [
-  { name: "Niyo Global Card", desc: "Zero forex markup card for international travel", url: "https://niyo.co" },
-  { name: "Scapia Credit Card", desc: "Travel credit card with zero forex fees", url: "https://scapia.in" },
-  { name: "Visa2Fly", desc: "Visa assistance and application service", url: "https://visa2fly.com" },
-  { name: "Airalo eSIM", desc: "International eSIM for seamless connectivity", url: "https://airalo.com" },
+  {
+    name: "Niyo Global Card",
+    desc: "Zero forex markup card for international travel",
+    url: "https://niyo.co",
+  },
+  {
+    name: "Scapia Credit Card",
+    desc: "Travel credit card with zero forex fees",
+    url: "https://scapia.in",
+  },
+  {
+    name: "Visa2Fly",
+    desc: "Visa assistance and application service",
+    url: "https://visa2fly.com",
+  },
+  {
+    name: "Airalo eSIM",
+    desc: "International eSIM for seamless connectivity",
+    url: "https://airalo.com",
+  },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function AvailabilityIcon({ status }: { status: AvailabilityStatus }) {
-  if (status === "Open") return <CheckCircle size={16} className="text-(--color-teal) shrink-0" />;
-  if (status === "Closed") return <XCircle size={16} className="text-(--color-coral) shrink-0" />;
+  if (status === "Open")
+    return <CheckCircle size={16} className="text-(--color-teal) shrink-0" />;
+  if (status === "Closed")
+    return <XCircle size={16} className="text-(--color-coral) shrink-0" />;
   return <AlertCircle size={16} className="text-(--color-gold) shrink-0" />;
 }
 
 function RecommendationIcon({ value }: { value: VisitRecommendation }) {
-  if (value === "Recommended") return <ThumbsUp size={16} className="text-(--color-teal) shrink-0" />;
+  if (value === "Recommended")
+    return <ThumbsUp size={16} className="text-(--color-teal) shrink-0" />;
   return <ThumbsDown size={16} className="text-(--color-coral) shrink-0" />;
 }
 
@@ -97,13 +136,55 @@ export default function DestinationDetailPage({
   const { slug } = use(params);
   const [showAllMonths, setShowAllMonths] = useState(false);
 
-  const dest = dummyDestinations.find((d) => d.slug === slug) ?? dummyDestinations[0];
-  const packages = dummyPackages.filter((p) => p.destinationId === dest.id);
-  const activities: Activity[] = packages.flatMap((p) => p.activities ?? []).slice(0, 6);
+  const { data: destData, isLoading: destLoading } = useDestination(slug);
+  const { data: pkgsData, isLoading: pkgsLoading } = usePackages({
+    destination: slug,
+    limit: 50,
+  });
 
-  const images = dest.images ?? (dest.imageUrl ? [dest.imageUrl] : []);
-  const allMonths = dest.whenToVisit ?? [];
+  const dest = destData?.data;
+  const packages = pkgsData?.data ?? [];
+  const activities: Activity[] = packages
+    .flatMap((p) => (p.activities as Activity[]) ?? [])
+    .slice(0, 6);
+
+  const images = dest?.images ?? (dest?.imageUrl ? [dest.imageUrl] : []);
+  const allMonths = dest?.whenToVisit ?? [];
   const visibleMonths = showAllMonths ? allMonths : allMonths.slice(0, 6);
+
+  if (destLoading) {
+    return (
+      <main className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-(--color-navy-surface) rounded-xl p-4 h-24 animate-pulse border border-(--color-navy-border)"
+            />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <PackageCardSkeleton key={i} />
+          ))}
+        </div>
+      </main>
+    );
+  }
+
+  if (!dest) {
+    return (
+      <main className="flex flex-col items-center justify-center py-32 text-center">
+        <p className="font-display text-2xl text-white mb-2">
+          Destination not found
+        </p>
+        <p className="font-sans text-sm text-(--color-text-secondary)">
+          The destination you&apos;re looking for doesn&apos;t exist or has been
+          removed.
+        </p>
+      </main>
+    );
+  }
 
   return (
     <main>
@@ -129,7 +210,10 @@ export default function DestinationDetailPage({
             </div>
 
             <div className="bg-(--color-navy-surface) rounded-xl p-4 text-center border border-(--color-navy-border)">
-              <CreditCard size={20} className="mx-auto mb-2 text-(--color-gold)" />
+              <CreditCard
+                size={20}
+                className="mx-auto mb-2 text-(--color-gold)"
+              />
               <p className="font-sans text-xs text-(--color-text-secondary) uppercase tracking-wider mb-1">
                 Currency
               </p>
@@ -139,7 +223,10 @@ export default function DestinationDetailPage({
             </div>
 
             <div className="bg-(--color-navy-surface) rounded-xl p-4 text-center border border-(--color-navy-border)">
-              <Languages size={20} className="mx-auto mb-2 text-(--color-gold)" />
+              <Languages
+                size={20}
+                className="mx-auto mb-2 text-(--color-gold)"
+              />
               <p className="font-sans text-xs text-(--color-text-secondary) uppercase tracking-wider mb-1">
                 Language
               </p>
@@ -168,7 +255,10 @@ export default function DestinationDetailPage({
           {/* Phase 2E: replace with Sanity Portable Text */}
           <div className="space-y-5 max-w-3xl">
             {ABOUT_PARAGRAPHS(dest.name).map((para, i) => (
-              <p key={i} className="font-sans text-base text-(--color-white-muted) leading-relaxed">
+              <p
+                key={i}
+                className="font-sans text-base text-(--color-white-muted) leading-relaxed"
+              >
                 {para}
               </p>
             ))}
@@ -176,18 +266,24 @@ export default function DestinationDetailPage({
         </section>
 
         {/* ── 4. PACKAGES ───────────────────────────────────────────────────── */}
-        {packages.length > 0 && (
-          <section className="py-12 border-t border-(--color-navy-border)">
-            <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white mb-8">
-              Packages to {dest.name}
-            </h2>
+        <section className="py-12 border-t border-(--color-navy-border)">
+          <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white mb-8">
+            Packages to {dest.name}
+          </h2>
+          {pkgsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {packages.map((pkg) => (
-                <PackageCard key={pkg.id} package={pkg} />
+              {Array.from({ length: 3 }).map((_, i) => (
+                <PackageCardSkeleton key={i} />
               ))}
             </div>
-          </section>
-        )}
+          ) : packages.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {packages.map((pkg) => (
+                <PackageCard key={pkg.id} package={pkg as unknown as Package} />
+              ))}
+            </div>
+          ) : null}
+        </section>
 
         {/* ── 5. THINGS TO DO ───────────────────────────────────────────────── */}
         {activities.length > 0 && (
@@ -380,8 +476,12 @@ export default function DestinationDetailPage({
                 className="bg-(--color-navy-surface) rounded-xl p-4 border border-(--color-navy-border) hover:border-(--color-gold)/30 transition-colors flex flex-col gap-3"
               >
                 <div>
-                  <p className="font-sans font-medium text-white mb-1">{link.name}</p>
-                  <p className="font-sans text-xs text-(--color-white-muted)">{link.desc}</p>
+                  <p className="font-sans font-medium text-white mb-1">
+                    {link.name}
+                  </p>
+                  <p className="font-sans text-xs text-(--color-white-muted)">
+                    {link.desc}
+                  </p>
                 </div>
                 <a
                   href={link.url}

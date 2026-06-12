@@ -13,7 +13,9 @@ export async function GET(
   const pkg = await prisma.package.findFirst({
     where: { slug, status: "PUBLISHED" },
     include: {
-      destination: { select: { name: true, slug: true, continent: true } },
+      destination: {
+        select: { name: true, slug: true, country: true, continent: true },
+      },
       _count: { select: { reviews: true } },
     },
   });

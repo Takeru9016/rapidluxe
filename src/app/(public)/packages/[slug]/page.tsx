@@ -17,13 +17,14 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { dummyPackages } from "@/lib/dummy/packages";
-import { dummyDestinations } from "@/lib/dummy/destinations";
 import { dummyReviews } from "@/lib/dummy/reviews";
 import { dummyDeals } from "@/lib/dummy/deals";
 import { formatPrice, calculateGST, formatDate } from "@/lib/utils";
 
 import { useWishlistStore } from "@/store/wishlistStore";
+import { usePackage, usePackages } from "@/hooks/api/usePackages";
+
+import type { Package } from "@/types/package";
 
 import { DetailPhotoGrid } from "@/components/shared/DetailPhotoGrid";
 import { AttributeQualityBadges } from "@/components/shared/AttributeQualityBadges";
@@ -38,6 +39,7 @@ import { ActivityCard } from "@/components/cards/ActivityCard";
 import { ReviewCard } from "@/components/cards/ReviewCard";
 import { PackageCard } from "@/components/cards/PackageCard";
 import { Badge } from "@/components/shared/Badge";
+import { PackageDetailSkeleton } from "@/components/shared/Skeletons";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -83,13 +85,21 @@ const PROVIDERS = ["Headout", "Klook"] as const;
 
 // ─── ProviderBookingCard ───────────────────────────────────────────────────────
 
-function ProviderBookingCard({ activityName, index }: { activityName: string; index: number }) {
+function ProviderBookingCard({
+  activityName,
+  index,
+}: {
+  activityName: string;
+  index: number;
+}) {
   const provider = PROVIDERS[index % PROVIDERS.length];
   return (
     // Phase 3A: replace href with real provider URL
     <div className="bg-(--color-navy-surface) rounded-xl p-4 border border-(--color-navy-border) mt-2 hover:border-(--color-gold)/30 transition-colors flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <span className="font-sans text-xs text-(--color-text-secondary)">{provider}</span>
+        <span className="font-sans text-xs text-(--color-text-secondary)">
+          {provider}
+        </span>
         <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-(--color-teal)/15 text-(--color-teal) border border-(--color-teal)/25">
           RECOMMENDED
         </span>
@@ -110,7 +120,13 @@ function ProviderBookingCard({ activityName, index }: { activityName: string; in
 
 // ─── RatingBarBreakdown ───────────────────────────────────────────────────────
 
-function RatingBarBreakdown({ avgRating, total }: { avgRating: number; total: number }) {
+function RatingBarBreakdown({
+  avgRating,
+  total,
+}: {
+  avgRating: number;
+  total: number;
+}) {
   const bars = [
     { label: "5★", pct: 58 },
     { label: "4★", pct: 27 },
@@ -122,14 +138,25 @@ function RatingBarBreakdown({ avgRating, total }: { avgRating: number; total: nu
     <div className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-5 mb-6">
       <div className="flex items-center gap-6">
         <div className="text-center shrink-0">
-          <p className="font-mono text-4xl font-semibold text-(--color-gold)">{avgRating.toFixed(1)}</p>
-          <Rating rating={avgRating} size="sm" showCount={false} className="justify-center mt-1" />
-          <p className="font-sans text-xs text-(--color-text-secondary) mt-1">{total} reviews</p>
+          <p className="font-mono text-4xl font-semibold text-(--color-gold)">
+            {avgRating.toFixed(1)}
+          </p>
+          <Rating
+            rating={avgRating}
+            size="sm"
+            showCount={false}
+            className="justify-center mt-1"
+          />
+          <p className="font-sans text-xs text-(--color-text-secondary) mt-1">
+            {total} reviews
+          </p>
         </div>
         <div className="flex-1 flex flex-col gap-1.5">
           {bars.map((b) => (
             <div key={b.label} className="flex items-center gap-2">
-              <span className="font-mono text-xs text-(--color-text-secondary) w-5 shrink-0">{b.label}</span>
+              <span className="font-mono text-xs text-(--color-text-secondary) w-5 shrink-0">
+                {b.label}
+              </span>
               <div className="flex-1 h-1.5 bg-(--color-navy-border) rounded-full overflow-hidden">
                 <div
                   className="h-full bg-(--color-gold) rounded-full"
@@ -156,16 +183,24 @@ export default function PackageDetailPage({
 }) {
   const { slug } = use(params);
 
-  const pkg = dummyPackages.find((p) => p.slug === slug) ?? dummyPackages[0];
-  const destination = dummyDestinations.find((d) => d.id === pkg.destinationId);
-  const reviews = dummyReviews
-    .filter((r) => r.packageId === pkg.id && r.isApproved)
-    .map((r) => ({ ...r, user: USER_MAP[r.userId] ?? { name: "Traveller" } }));
-  const similarPackages = dummyPackages
-    .filter((p) => p.id !== pkg.id && p.status === "PUBLISHED")
+  const { data: pkgData, isLoading } = usePackage(slug);
+  const { data: similarData } = usePackages({ limit: 6, sort: "featured" });
+
+  const pkg = pkgData?.data;
+  const destination = pkg?.destination ?? null;
+  const reviews = pkg
+    ? dummyReviews
+        .filter((r) => r.packageId === pkg.id && r.isApproved)
+        .map((r) => ({
+          ...r,
+          user: USER_MAP[r.userId] ?? { name: "Traveller" },
+        }))
+    : [];
+  const similarPackages = (similarData?.data ?? [])
+    .filter((p) => p.slug !== slug)
     .slice(0, 3);
 
-  const avgRating = DUMMY_RATINGS[pkg.id] ?? 4.5;
+  const avgRating = pkg ? (DUMMY_RATINGS[pkg.id] ?? 4.5) : 4.5;
 
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -173,10 +208,11 @@ export default function PackageDetailPage({
   const [children, setChildren] = useState(0);
 
   const { toggle, has } = useWishlistStore();
-  const isWishlisted = has(pkg.id);
+  const isWishlisted = pkg ? has(pkg.id) : false;
 
   const searchParams = useSearchParams();
   const activeDeal = useMemo(() => {
+    if (!pkg) return null;
     const dealId = searchParams.get("deal");
     if (!dealId) return null;
     return (
@@ -184,7 +220,31 @@ export default function PackageDetailPage({
         (d) => d.id === dealId && d.packageId === pkg.id && d.isActive,
       ) ?? null
     );
-  }, [searchParams, pkg.id]);
+  }, [searchParams, pkg]);
+
+  if (isLoading) return <PackageDetailSkeleton />;
+
+  if (!pkg) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32 text-center">
+        <p className="font-display text-2xl text-white mb-2">
+          Package not found
+        </p>
+        <p className="font-sans text-sm text-(--color-text-secondary) mb-6">
+          The package you&apos;re looking for doesn&apos;t exist or has been
+          removed.
+        </p>
+        <Link href="/packages">
+          <Button
+            variant="outline"
+            className="border-(--color-gold) text-(--color-gold)"
+          >
+            View all packages
+          </Button>
+        </Link>
+      </div>
+    );
+  }
 
   const effectivePrice = activeDeal
     ? Math.round(pkg.pricePerPerson * (1 - activeDeal.discountPct / 100))
@@ -197,7 +257,6 @@ export default function PackageDetailPage({
   const subtotal = effectivePrice * travelers;
   const { gst, total } = calculateGST(subtotal);
 
-  // Highlights derived from first 4 itinerary days
   const highlights = pkg.itinerary.slice(0, 4).map((d) => d.title);
 
   const includedActivities = pkg.activities.filter((a) => a.included);
@@ -270,7 +329,10 @@ export default function PackageDetailPage({
 
               <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-4 text-sm text-(--color-text-secondary)">
                 <span className="flex items-center gap-1.5">
-                  <Calendar size={14} className="text-(--color-gold) shrink-0" />
+                  <Calendar
+                    size={14}
+                    className="text-(--color-gold) shrink-0"
+                  />
                   {pkg.durationNights} nights
                 </span>
                 <span className="flex items-center gap-1.5">
@@ -311,12 +373,18 @@ export default function PackageDetailPage({
 
             {/* Attribute quality strip */}
             {pkg.attributes && pkg.attributes.length > 0 && (
-              <AttributeQualityBadges attributes={pkg.attributes} className="mt-4" />
+              <AttributeQualityBadges
+                attributes={pkg.attributes}
+                className="mt-4"
+              />
             )}
 
             {/* Multi-platform ratings row */}
             {pkg.platformRatings && pkg.platformRatings.length > 0 && (
-              <MultiPlatformRatings ratings={pkg.platformRatings} className="mt-3" />
+              <MultiPlatformRatings
+                ratings={pkg.platformRatings}
+                className="mt-3"
+              />
             )}
 
             {/* ── Tabs ─────────────────────────────────── */}
@@ -345,7 +413,10 @@ export default function PackageDetailPage({
               </TabsList>
 
               {/* ── Overview ── */}
-              <TabsContent value="overview" className="mt-6 flex flex-col gap-6">
+              <TabsContent
+                value="overview"
+                className="mt-6 flex flex-col gap-6"
+              >
                 {/* Highlights grid */}
                 {highlights.length > 0 && (
                   <div>
@@ -516,7 +587,10 @@ export default function PackageDetailPage({
               </TabsContent>
 
               {/* ── Activities ── */}
-              <TabsContent value="activities" className="mt-6 flex flex-col gap-8">
+              <TabsContent
+                value="activities"
+                className="mt-6 flex flex-col gap-8"
+              >
                 {includedActivities.length > 0 && (
                   <div>
                     <h3 className="font-display text-lg text-white mb-4">
@@ -526,7 +600,10 @@ export default function PackageDetailPage({
                       {includedActivities.map((activity, i) => (
                         <div key={activity.name}>
                           <ActivityCard activity={activity} />
-                          <ProviderBookingCard activityName={activity.name} index={i} />
+                          <ProviderBookingCard
+                            activityName={activity.name}
+                            index={i}
+                          />
                         </div>
                       ))}
                     </div>
@@ -570,7 +647,10 @@ export default function PackageDetailPage({
                 )}
 
                 {/* Rating bar breakdown */}
-                <RatingBarBreakdown avgRating={avgRating} total={reviews.length || 48} />
+                <RatingBarBreakdown
+                  avgRating={avgRating}
+                  total={reviews.length || 48}
+                />
 
                 {/* Review cards */}
                 {reviews.length > 0 ? (
@@ -598,7 +678,10 @@ export default function PackageDetailPage({
                 <div className="flex gap-5 overflow-x-auto pb-2">
                   {similarPackages.map((p) => (
                     <div key={p.id} className="w-72 shrink-0">
-                      <PackageCard package={p} variant="compact" />
+                      <PackageCard
+                        package={p as unknown as Package}
+                        variant="compact"
+                      />
                     </div>
                   ))}
                 </div>
@@ -617,7 +700,9 @@ export default function PackageDetailPage({
                   size="lg"
                   showDiscount
                 />
-                <p className="font-sans text-xs text-(--color-text-secondary) mt-1">per person</p>
+                <p className="font-sans text-xs text-(--color-text-secondary) mt-1">
+                  per person
+                </p>
               </div>
 
               <Separator className="bg-(--color-navy-border)" />
@@ -630,7 +715,10 @@ export default function PackageDetailPage({
                 <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                   <PopoverTrigger asChild>
                     <button className="w-full flex items-center gap-2 bg-(--color-navy-border)/50 border border-(--color-navy-border) rounded-lg px-3 py-2.5 text-sm text-(--color-white-muted) hover:border-(--color-gold)/40 transition-colors">
-                      <Calendar size={14} className="text-(--color-gold) shrink-0" />
+                      <Calendar
+                        size={14}
+                        className="text-(--color-gold) shrink-0"
+                      />
                       <span className={date ? "text-white" : ""}>
                         {date ? formatDate(date) : "Select a date"}
                       </span>
@@ -662,11 +750,15 @@ export default function PackageDetailPage({
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-white">Adults</p>
-                      <p className="text-xs text-(--color-text-secondary)">Age 12+</p>
+                      <p className="text-xs text-(--color-text-secondary)">
+                        Age 12+
+                      </p>
                     </div>
                     <div className="flex items-center gap-3">
                       <button
-                        onClick={() => setAdults((prev) => Math.max(1, prev - 1))}
+                        onClick={() =>
+                          setAdults((prev) => Math.max(1, prev - 1))
+                        }
                         disabled={adults <= 1}
                         className="w-7 h-7 flex items-center justify-center rounded-full border border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/40 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       >
@@ -692,11 +784,15 @@ export default function PackageDetailPage({
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-white">Children</p>
-                      <p className="text-xs text-(--color-text-secondary)">Age 2–11</p>
+                      <p className="text-xs text-(--color-text-secondary)">
+                        Age 2–11
+                      </p>
                     </div>
                     <div className="flex items-center gap-3">
                       <button
-                        onClick={() => setChildren((prev) => Math.max(0, prev - 1))}
+                        onClick={() =>
+                          setChildren((prev) => Math.max(0, prev - 1))
+                        }
                         disabled={children <= 0}
                         className="w-7 h-7 flex items-center justify-center rounded-full border border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/40 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       >
@@ -770,8 +866,7 @@ export default function PackageDetailPage({
               </div>
               <button
                 onClick={() => {
-                  // Phase 1: console.log — Phase 3A: open custom quote Dialog
-                  console.log("Get Custom Quote clicked for package:", pkg.id);
+                  // Phase 3A: open custom quote Dialog
                 }}
                 className="flex items-center justify-center gap-1.5 w-full border border-(--color-gold)/40 text-(--color-gold) hover:bg-(--color-gold)/10 hover:border-(--color-gold) font-sans text-sm font-medium h-9 rounded-lg transition-colors"
               >

@@ -4,11 +4,11 @@ import { Suspense, useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal, PackageSearch } from "lucide-react";
 
-import { dummyPackages } from "@/lib/dummy/packages";
-import { dummyDestinations } from "@/lib/dummy/destinations";
 import { formatPrice } from "@/lib/utils";
 
 import { useSearchStore } from "@/store/searchStore";
+import { usePackages } from "@/hooks/api/usePackages";
+import { useDestinations } from "@/hooks/api/useDestinations";
 
 import { PackageCard } from "@/components/cards/PackageCard";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -30,6 +30,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+
+import type { Package } from "@/types/package";
+import type { ApiDestination } from "@/hooks/api/useDestinations";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -61,13 +64,11 @@ const DUMMY_RATINGS: Record<string, number> = {
   "pkg-singapore": 4.6,
 };
 
-const ALL_TAGS = Array.from(
-  new Set(dummyPackages.flatMap((p) => p.tags)),
-).sort();
-
 // ─── FilterPanel ──────────────────────────────────────────────────────────────
 
 interface FilterPanelProps {
+  destinations: ApiDestination[];
+  allTags: string[];
   selectedDestinations: string[];
   selectedDurations: string[];
   budgetMax: number;
@@ -80,6 +81,8 @@ interface FilterPanelProps {
 }
 
 function FilterPanel({
+  destinations,
+  allTags,
   selectedDestinations,
   selectedDurations,
   budgetMax,
@@ -121,7 +124,7 @@ function FilterPanel({
           Destination
         </p>
         <div className="flex flex-col gap-2">
-          {dummyDestinations.map((dest) => (
+          {destinations.map((dest) => (
             <label
               key={dest.id}
               className="flex items-center gap-3 cursor-pointer group"
@@ -196,7 +199,7 @@ function FilterPanel({
           Travel Type
         </p>
         <div className="flex flex-col gap-2">
-          {ALL_TAGS.map((tag) => (
+          {allTags.map((tag) => (
             <label
               key={tag}
               className="flex items-center gap-3 cursor-pointer group"
@@ -221,7 +224,6 @@ function FilterPanel({
 // ─── PackagesPage ─────────────────────────────────────────────────────────────
 
 function PackagesContent() {
-  const [mounted, setMounted] = useState(false);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [selectedDestinations, setSelectedDestinations] = useState<string[]>(
     [],
@@ -233,12 +235,28 @@ function PackagesContent() {
   const { sort, setSort } = useSearchStore();
   const searchParams = useSearchParams();
 
+  const { data: packagesData, isLoading: packagesLoading } = usePackages({
+    limit: 50,
+    sort: "featured",
+  });
+  const { data: destinationsData } = useDestinations();
+
+  const allPackages = packagesData?.data ?? [];
+  const destinations = destinationsData?.data ?? [];
+
+  const allTags = useMemo(
+    () => Array.from(new Set(allPackages.flatMap((p) => p.tags))).sort(),
+    [allPackages],
+  );
+
   useEffect(() => {
-    setMounted(true);
     const sortParam = searchParams.get("sort");
     const valid = SORT_OPTIONS.map((o) => o.value);
-    if (sortParam && valid.includes(sortParam as typeof SORT_OPTIONS[number]["value"])) {
-      setSort(sortParam as typeof SORT_OPTIONS[number]["value"]);
+    if (
+      sortParam &&
+      valid.includes(sortParam as (typeof SORT_OPTIONS)[number]["value"])
+    ) {
+      setSort(sortParam as (typeof SORT_OPTIONS)[number]["value"]);
     }
   }, [searchParams, setSort]);
 
@@ -254,7 +272,7 @@ function PackagesContent() {
   }
 
   const filteredPackages = useMemo(() => {
-    let result = dummyPackages.filter((p) => p.status === "PUBLISHED");
+    let result = allPackages.filter((p) => p.status === "PUBLISHED");
 
     if (selectedDestinations.length > 0) {
       result = result.filter((p) =>
@@ -300,9 +318,18 @@ function PackagesContent() {
     }
 
     return sorted;
-  }, [selectedDestinations, selectedDurations, budgetMax, selectedTags, sort]);
+  }, [
+    allPackages,
+    selectedDestinations,
+    selectedDurations,
+    budgetMax,
+    selectedTags,
+    sort,
+  ]);
 
   const filterPanelProps: FilterPanelProps = {
+    destinations,
+    allTags,
     selectedDestinations,
     selectedDurations,
     budgetMax,
@@ -384,8 +411,9 @@ function PackagesContent() {
                 </Sheet>
 
                 <span className="text-sm font-body text-(--color-text-secondary)">
-                  {mounted ? filteredPackages.length : dummyPackages.length}{" "}
-                  packages found
+                  {packagesLoading
+                    ? "Loading…"
+                    : `${filteredPackages.length} packages found`}
                 </span>
               </div>
 
@@ -408,7 +436,7 @@ function PackagesContent() {
             </div>
 
             {/* Grid */}
-            {!mounted ? (
+            {packagesLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <PackageCardSkeleton key={i} />
@@ -424,7 +452,11 @@ function PackagesContent() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filteredPackages.map((pkg) => (
-                  <PackageCard key={pkg.id} package={pkg} variant="default" />
+                  <PackageCard
+                    key={pkg.id}
+                    package={pkg as unknown as Package}
+                    variant="default"
+                  />
                 ))}
               </div>
             )}

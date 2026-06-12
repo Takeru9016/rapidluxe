@@ -6,11 +6,11 @@ import Image from "next/image";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { dummyDestinations } from "@/lib/dummy/destinations";
-
-import type { Continent } from "@/types/destination";
-
+import { useDestinations } from "@/hooks/api/useDestinations";
 import { DestinationCard } from "@/components";
+import { DestinationCardSkeleton } from "@/components/shared/Skeletons";
+
+import type { Continent, Destination } from "@/types/destination";
 
 type FilterTab = "ALL" | Continent;
 
@@ -24,18 +24,14 @@ const TABS: { label: string; value: FilterTab }[] = [
   { label: "Oceania", value: "OCEANIA" },
 ];
 
-const PACKAGE_COUNT_BY_DESTINATION: Record<string, number> = {
-  "dest-bali": 4,
-  "dest-maldives": 3,
-  "dest-kerala": 5,
-  "dest-switzerland": 2,
-  "dest-santorini": 2,
-  "dest-dubai": 6,
-  "dest-rajasthan": 3,
-  "dest-singapore": 2,
-};
-
-const VALID_CONTINENTS = new Set<string>(["ASIA", "EUROPE", "AFRICA", "AMERICAS", "MIDDLE_EAST", "OCEANIA"]);
+const VALID_CONTINENTS = new Set<string>([
+  "ASIA",
+  "EUROPE",
+  "AFRICA",
+  "AMERICAS",
+  "MIDDLE_EAST",
+  "OCEANIA",
+]);
 
 function DestinationsContent() {
   const searchParams = useSearchParams();
@@ -51,10 +47,11 @@ function DestinationsContent() {
     setActiveTab(VALID_CONTINENTS.has(param) ? (param as FilterTab) : "ALL");
   }, [searchParams]);
 
-  const filtered =
-    activeTab === "ALL"
-      ? dummyDestinations
-      : dummyDestinations.filter((d) => d.continent === activeTab);
+  const { data, isLoading } = useDestinations(
+    activeTab === "ALL" ? undefined : (activeTab as Continent),
+  );
+
+  const destinations = data?.data ?? [];
 
   return (
     <section className="max-w-7xl mx-auto px-4 md:px-8 py-12">
@@ -77,13 +74,19 @@ function DestinationsContent() {
         </Tabs>
       </div>
 
-      {filtered.length > 0 ? (
+      {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filtered.map((destination) => (
+          {Array.from({ length: 8 }).map((_, i) => (
+            <DestinationCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : destinations.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {destinations.map((destination) => (
             <DestinationCard
               key={destination.id}
-              destination={destination}
-              packageCount={PACKAGE_COUNT_BY_DESTINATION[destination.id] ?? 2}
+              destination={destination as unknown as Destination}
+              packageCount={destination._count.packages}
             />
           ))}
         </div>
@@ -120,8 +123,8 @@ export default function DestinationsPage() {
             Explore Destinations
           </h1>
           <p className="mt-3 text-base md:text-lg text-(--color-white-muted) font-sans max-w-xl">
-            Discover the world&apos;s most extraordinary places, curated for
-            the discerning traveller.
+            Discover the world&apos;s most extraordinary places, curated for the
+            discerning traveller.
           </p>
         </div>
       </section>

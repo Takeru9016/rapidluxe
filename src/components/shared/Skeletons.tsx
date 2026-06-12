@@ -109,6 +109,32 @@ export function BlogCardSkeleton({ className }: { className?: string }) {
   );
 }
 
+export function PackageDetailSkeleton() {
+  return (
+    <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+      <Bone className="h-96 w-full rounded-xl mb-8" />
+      <div className="flex gap-8 items-start">
+        <div className="flex-1 min-w-0 flex flex-col gap-4">
+          <Bone className="h-8 w-2/3" />
+          <Bone className="h-5 w-1/3" />
+          <Bone className="h-5 w-1/2" />
+          <div className="flex gap-3 mt-4">
+            {["overview", "itinerary", "hotels", "activities", "reviews"].map(
+              (t) => (
+                <Bone key={t} className="h-8 w-20" />
+              ),
+            )}
+          </div>
+          <Bone className="h-48 w-full mt-4 rounded-xl" />
+        </div>
+        <aside className="hidden lg:block w-80 xl:w-96 shrink-0">
+          <Bone className="h-96 w-full rounded-xl" />
+        </aside>
+      </div>
+    </div>
+  );
+}
+
 export function BookingCardSkeleton({ className }: { className?: string }) {
   return (
     <div
