@@ -235,7 +235,11 @@ function PackagesContent() {
   const { sort, setSort } = useSearchStore();
   const searchParams = useSearchParams();
 
-  const { data: packagesData, isLoading: packagesLoading } = usePackages({
+  const {
+    data: packagesData,
+    isLoading: packagesLoading,
+    isError: packagesError,
+  } = usePackages({
     limit: 50,
     sort: "featured",
   });
@@ -448,6 +452,16 @@ function PackagesContent() {
                 title="No packages found"
                 description="Try adjusting your filters to discover more travel options."
                 action={{ label: "Reset Filters", onClick: handleReset }}
+              />
+            ) : packagesError ? (
+              <EmptyState
+                icon={PackageSearch}
+                title="Unable to load packages"
+                description="We're having trouble fetching packages right now. Please try again in a moment."
+                action={{
+                  label: "Retry",
+                  onClick: () => window.location.reload(),
+                }}
               />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
