@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
-import { razorpay } from "@/lib/razorpay";
+import { getRazorpay } from "@/lib/razorpay";
 import { calculateGST } from "@/lib/utils";
 
 const createOrderSchema = z.object({ token: z.string().min(1) });
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
     const { total } = calculateGST(booking.quotedAmount);
 
-    const razorpayOrder = await razorpay.orders.create({
+    const razorpayOrder = await getRazorpay().orders.create({
       amount: Math.round(total * 100),
       currency: "INR",
       receipt: booking.bookingRef ?? `rl_${Date.now()}`,
