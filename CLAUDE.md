@@ -34,6 +34,38 @@ Dark-first luxury travel agency. Next.js 16 App Router · Tailwind v4 · shadcn/
 
 ---
 
+## Project Structure (Next.js src/ layout)
+
+Package manager: pnpm — never npm
+
+Root level (config only):
+- prisma/ — schema, migrations, seed
+- docs/ — DESIGN_RULES, PHASES, PROMPTS etc.
+- public/ — static assets
+
+src/ (all application code):
+- src/app/ — ALL routes, pages, API routes
+- src/app/api/ — API route handlers
+- src/components/ — shadcn + custom components
+- src/lib/ — prisma.ts, utils, validations, rate-limit, resend, etc.
+- src/hooks/ — react hooks
+- src/store/ — zustand stores
+- src/types/ — typescript interfaces and types
+- src/emails/ — React Email templates (Phase 2E)
+- src/proxy.ts — Clerk auth middleware
+
+Path alias: @/ → src/
+- @/lib/prisma = src/lib/prisma.ts
+- @/lib/validations/ = src/lib/validations/
+- @/components/ = src/components/
+- @/hooks/ = src/hooks/
+- @/store/ = src/store/
+- @/types/ = src/types/
+
+API routes live at: src/app/api/[route]/route.ts
+
+---
+
 ## Non-Negotiable Rules
 
 1. No `any` TypeScript — proper interfaces in `src/types/`
