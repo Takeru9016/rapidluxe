@@ -154,7 +154,7 @@ function BookingSidebar({ pkg }: { pkg: Package }) {
 
   return (
     <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6 space-y-5">
-      <div className="relative aspect-[16/9] rounded-lg overflow-hidden">
+      <div className="relative aspect-video rounded-lg overflow-hidden">
         <Image
           src={pkg.images[0]}
           alt={pkg.title}
@@ -325,7 +325,7 @@ function Step1({ pkg }: { pkg: Package }) {
                   >
                     <Minus size={16} />
                   </button>
-                  <span className="font-['DM_Sans'] font-medium text-white text-xl min-w-[2rem] text-center">
+                  <span className="font-['DM_Sans'] font-medium text-white text-xl min-w-8 text-center">
                     {count}
                   </span>
                   <button
