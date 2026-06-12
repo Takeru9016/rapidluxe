@@ -4,8 +4,8 @@
 
 ```
 Phase:          2D — Reviews + Wishlist
-Active Task:    2D-1 "Reviews API"
-Last Completed: 2C-2 "Booking webhooks (Razorpay + Clerk), traveler details, user cancel"
+Active Task:    2E-1 "Sanity CMS setup"
+Last Completed: 2D-2 "Wishlist API, useWishlist hook, PackageCard + /wishlist page wired"
 ```
 
 > Update after every completed task.

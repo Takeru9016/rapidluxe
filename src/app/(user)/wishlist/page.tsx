@@ -2,16 +2,17 @@
 
 import { Heart } from "lucide-react";
 
-import { useWishlistStore } from "@/store/wishlistStore";
-import { dummyPackages } from "@/lib/dummy/packages";
+import { useWishlist } from "@/hooks/api/useWishlist";
+
+import type { Package } from "@/types/package";
 
 import { PackageCard } from "@/components/cards/PackageCard";
+import { PackageCardSkeleton } from "@/components/shared/Skeletons";
 import { EmptyState } from "@/components/shared/EmptyState";
 
 export default function WishlistPage() {
-  const { ids } = useWishlistStore();
-  const filteredPackages = dummyPackages.filter((p) => ids.includes(p.id));
-  const count = filteredPackages.length;
+  const { packages, isLoading } = useWishlist();
+  const count = packages.length;
 
   return (
     <main className="min-h-screen bg-(--color-navy) pt-24">
@@ -21,11 +22,19 @@ export default function WishlistPage() {
             My Wishlist
           </h1>
           <span className="font-['JetBrains_Mono'] text-sm text-(--color-text-secondary)">
-            {count} saved package{count !== 1 ? "s" : ""}
+            {isLoading
+              ? "—"
+              : `${count} saved package${count !== 1 ? "s" : ""}`}
           </span>
         </div>
 
-        {count === 0 ? (
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <PackageCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : count === 0 ? (
           <EmptyState
             icon={Heart}
             title="Your wishlist is empty"
@@ -34,8 +43,8 @@ export default function WishlistPage() {
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredPackages.map((p) => (
-              <PackageCard key={p.id} package={p} />
+            {packages.map((p) => (
+              <PackageCard key={p.id} package={p as unknown as Package} />
             ))}
           </div>
         )}

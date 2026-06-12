@@ -3,12 +3,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Heart } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 
 import type { Package } from "@/types/package";
 
-import { useWishlistStore } from "@/store/wishlistStore";
+import { useWishlist } from "@/hooks/api/useWishlist";
 
 import { Rating } from "@/components/shared/Rating";
 import { Badge } from "@/components/shared/Badge";
@@ -33,7 +35,9 @@ export function PackageCard({
   variant = "default",
   className,
 }: PackageCardProps) {
-  const { has, toggle } = useWishlistStore();
+  const { isSignedIn } = useAuth();
+  const router = useRouter();
+  const { has, toggle } = useWishlist();
   const isWishlisted = has(pkg.id);
 
   return (
@@ -74,6 +78,10 @@ export function PackageCard({
               }
               onClick={(e) => {
                 e.preventDefault();
+                if (!isSignedIn) {
+                  router.push("/sign-in");
+                  return;
+                }
                 toggle(pkg.id);
               }}
               className="p-1.5 rounded-full bg-black/30 backdrop-blur-sm transition-colors"
