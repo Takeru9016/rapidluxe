@@ -13,6 +13,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 
 import { ThemeProvider, Navbar, MobileMenu, Footer } from "@/components";
+import { QueryProvider } from "@/components/providers/QueryProvider";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -56,7 +57,9 @@ export const metadata: Metadata = {
     locale: "en_IN",
     siteName: "RapidLuxe",
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://localhost:3000'),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://localhost:3000",
+  ),
 };
 
 export const viewport: Viewport = {
@@ -82,10 +85,12 @@ export default function RootLayout({
       <body className={dmSans.className}>
         <ThemeProvider>
           <ClerkProvider>
-            <Navbar />
-            <MobileMenu />
-            <main className="min-h-screen pt-16">{children}</main>
-            <Footer />
+            <QueryProvider>
+              <Navbar />
+              <MobileMenu />
+              <main className="min-h-screen pt-16">{children}</main>
+              <Footer />
+            </QueryProvider>
           </ClerkProvider>
           <Toaster position="top-center" richColors />
         </ThemeProvider>
