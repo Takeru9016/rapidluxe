@@ -3,11 +3,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm, type SubmitHandler } from "react-hook-form";
+import { toast } from "sonner";
 import { ArrowLeft, X } from "lucide-react";
+import type { PortableTextBlock } from "@portabletext/react";
 
 import { generateSlug } from "@/lib/utils";
 import { dummyTeam } from "@/lib/dummy/team";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
+import type { AdminPostPayload } from "@/types/blog";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -20,8 +25,7 @@ interface BlogFormValues {
   readTime: number;
   publishedAt: string;
   tags: string[];
-  // Phase 2E: replace with RichTextEditor/Tiptap
-  body: string;
+  body: PortableTextBlock[];
   // Phase 2F: replace with CloudinaryUpload
   imageUrl: string;
   metaTitle: string;
@@ -130,7 +134,10 @@ function TagsInput({
           {tag}
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); removeTag(tag); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              removeTag(tag);
+            }}
             className="hover:opacity-70 transition-opacity"
           >
             <X size={10} />
@@ -142,10 +149,16 @@ function TagsInput({
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter") { e.preventDefault(); addTag(input); }
-          if (e.key === "Backspace" && !input && tags.length) removeTag(tags[tags.length - 1]);
+          if (e.key === "Enter") {
+            e.preventDefault();
+            addTag(input);
+          }
+          if (e.key === "Backspace" && !input && tags.length)
+            removeTag(tags[tags.length - 1]);
         }}
-        onBlur={() => { if (input) addTag(input); }}
+        onBlur={() => {
+          if (input) addTag(input);
+        }}
         placeholder={tags.length === 0 ? "Type and press Enter…" : ""}
         className="flex-1 min-w-[120px] bg-transparent outline-none text-sm font-['DM_Sans'] text-white placeholder:text-(--color-text-secondary)"
       />
@@ -156,7 +169,9 @@ function TagsInput({
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function NewBlogPostPage() {
+  const router = useRouter();
   const [slugManual, setSlugManual] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const {
     register,
@@ -174,7 +189,7 @@ export default function NewBlogPostPage() {
       readTime: 5,
       publishedAt: new Date().toISOString().split("T")[0],
       tags: [],
-      body: "",
+      body: [],
       imageUrl: "",
       metaTitle: "",
       metaDescription: "",
@@ -192,9 +207,49 @@ export default function NewBlogPostPage() {
 
   const tags = watch("tags");
   const excerpt = watch("excerpt");
+  const body = watch("body");
 
-  const onSubmit: SubmitHandler<BlogFormValues> = (data) => {
-    console.log(data);
+  const onSubmit: SubmitHandler<BlogFormValues> = async (data) => {
+    setSubmitting(true);
+    try {
+      const payload: AdminPostPayload = {
+        title: data.title,
+        slug: data.slug || generateSlug(data.title),
+        excerpt: data.excerpt,
+        readTime: data.readTime,
+        // Only send a published date when the editor hit "Publish".
+        publishedAt: data.status === "PUBLISHED" ? data.publishedAt : undefined,
+        tags: data.tags,
+        body: data.body,
+        mainImageUrl: data.imageUrl || undefined,
+        metaTitle: data.metaTitle || undefined,
+        metaDescription: data.metaDescription || undefined,
+        // author/category are Sanity references — wired once the Sanity-backed
+        // author & category admin pages exist (see SANITY_CMS.md admin table).
+      };
+
+      const res = await fetch("/api/admin/sanity/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const err = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        throw new Error(err?.error ?? "Failed to save post");
+      }
+
+      toast.success(
+        data.status === "PUBLISHED" ? "Post published" : "Draft saved",
+      );
+      router.push("/admin/blog");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const onSaveDraft = () => {
@@ -223,7 +278,6 @@ export default function NewBlogPostPage() {
       </h1>
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-
         {/* ── Basic Info ── */}
         <SectionCard title="Basic Info">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -271,7 +325,9 @@ export default function NewBlogPostPage() {
             <Field label="Category">
               <select {...register("category")} className={selectCls}>
                 {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </Field>
@@ -290,10 +346,7 @@ export default function NewBlogPostPage() {
         {/* ── Content ── */}
         <SectionCard title="Content">
           <div className="space-y-4">
-            <Field
-              label="Excerpt"
-              hint={`${excerpt?.length ?? 0}/160`}
-            >
+            <Field label="Excerpt" hint={`${excerpt?.length ?? 0}/160`}>
               <textarea
                 {...register("excerpt", { maxLength: 160 })}
                 rows={3}
@@ -309,13 +362,10 @@ export default function NewBlogPostPage() {
               />
             </Field>
 
-            {/* Phase 2E: replace with RichTextEditor/Tiptap */}
-            <Field label="Body (Phase 2E: replace with RichTextEditor/Tiptap)">
-              <textarea
-                {...register("body")}
-                rows={12}
-                placeholder="Write your post content here…"
-                className={inputCls + " resize-y"}
+            <Field label="Body">
+              <RichTextEditor
+                value={body ?? []}
+                onChange={(blocks) => setValue("body", blocks)}
               />
             </Field>
           </div>
@@ -362,19 +412,20 @@ export default function NewBlogPostPage() {
           <button
             type="button"
             onClick={onSaveDraft}
-            className="px-6 py-2.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm font-medium hover:border-(--color-gold)/40 hover:text-white transition-colors"
+            disabled={submitting}
+            className="px-6 py-2.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm font-medium hover:border-(--color-gold)/40 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Save Draft
           </button>
           <button
             type="button"
             onClick={onPublish}
-            className="px-6 py-2.5 rounded-lg bg-(--color-gold) text-(--color-navy) font-['DM_Sans'] text-sm font-bold hover:bg-(--color-gold)/90 transition-colors"
+            disabled={submitting}
+            className="px-6 py-2.5 rounded-lg bg-(--color-gold) text-(--color-navy) font-['DM_Sans'] text-sm font-bold hover:bg-(--color-gold)/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Publish
+            {submitting ? "Saving…" : "Publish"}
           </button>
         </div>
-
       </form>
     </div>
   );

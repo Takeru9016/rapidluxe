@@ -3,9 +3,9 @@
 ## Current Build State
 
 ```
-Phase:          2D — Reviews + Wishlist
-Active Task:    2E-1 "Sanity CMS setup"
-Last Completed: 2D-2 "Wishlist API, useWishlist hook, PackageCard + /wishlist page wired"
+Phase:          2E — CMS + Communications
+Active Task:    2E-2 "Email notifications (Resend — all booking stages)"
+Last Completed: 2E-1 "Sanity CMS — schemas, clients, GROQ, blog wired to Sanity, destination editorial, admin posts API + Tiptap editor"
 ```
 
 > Update after every completed task.

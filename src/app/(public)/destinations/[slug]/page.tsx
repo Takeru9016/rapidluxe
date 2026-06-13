@@ -31,6 +31,8 @@ import type { Package } from "@/types/package";
 
 import { useDestination } from "@/hooks/api/useDestinations";
 import { usePackages } from "@/hooks/api/usePackages";
+import { useDestinationEditorial } from "@/hooks/api/useDestinationEditorial";
+import { PortableTextBody } from "@/components/shared/PortableTextBody";
 
 import {
   ActivityCard,
@@ -141,7 +143,9 @@ export default function DestinationDetailPage({
     destination: slug,
     limit: 50,
   });
+  const { data: editorialData } = useDestinationEditorial(slug);
 
+  const editorial = editorialData?.data;
   const dest = destData?.data;
   const packages = pkgsData?.data ?? [];
   const activities: Activity[] = packages
@@ -252,17 +256,23 @@ export default function DestinationDetailPage({
           <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white mb-8">
             About {dest.name}
           </h2>
-          {/* Phase 2E: replace with Sanity Portable Text */}
-          <div className="space-y-5 max-w-3xl">
-            {ABOUT_PARAGRAPHS(dest.name).map((para, i) => (
-              <p
-                key={i}
-                className="font-sans text-base text-(--color-white-muted) leading-relaxed"
-              >
-                {para}
-              </p>
-            ))}
-          </div>
+          {editorial?.about?.length ? (
+            <PortableTextBody
+              value={editorial.about}
+              className="space-y-5 max-w-3xl"
+            />
+          ) : (
+            <div className="space-y-5 max-w-3xl">
+              {ABOUT_PARAGRAPHS(dest.name).map((para, i) => (
+                <p
+                  key={i}
+                  className="font-sans text-base text-(--color-white-muted) leading-relaxed"
+                >
+                  {para}
+                </p>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* ── 4. PACKAGES ───────────────────────────────────────────────────── */}
@@ -441,21 +451,27 @@ export default function DestinationDetailPage({
           <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white mb-8">
             Travel Tips
           </h2>
-          {/* Phase 2E: replace with Sanity content */}
-          <ul className="space-y-4 max-w-2xl">
-            {TRAVEL_TIPS.map((tip, i) => (
-              <li key={i} className="flex items-start gap-3">
-                <span className="mt-1 shrink-0 w-5 h-5 rounded-full bg-(--color-gold)/15 border border-(--color-gold)/40 flex items-center justify-center">
-                  <span className="font-['JetBrains_Mono'] text-xs text-(--color-gold)">
-                    {i + 1}
+          {editorial?.travelTips?.length ? (
+            <PortableTextBody
+              value={editorial.travelTips}
+              className="space-y-4 max-w-2xl"
+            />
+          ) : (
+            <ul className="space-y-4 max-w-2xl">
+              {TRAVEL_TIPS.map((tip, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <span className="mt-1 shrink-0 w-5 h-5 rounded-full bg-(--color-gold)/15 border border-(--color-gold)/40 flex items-center justify-center">
+                    <span className="font-['JetBrains_Mono'] text-xs text-(--color-gold)">
+                      {i + 1}
+                    </span>
                   </span>
-                </span>
-                <p className="font-sans text-base text-(--color-white-muted) leading-relaxed">
-                  {tip}
-                </p>
-              </li>
-            ))}
-          </ul>
+                  <p className="font-sans text-base text-(--color-white-muted) leading-relaxed">
+                    {tip}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         {/* ── 9. MAP ────────────────────────────────────────────────────────── */}
