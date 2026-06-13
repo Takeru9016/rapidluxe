@@ -11,6 +11,7 @@ import type { PortableTextBlock } from "@portabletext/react";
 
 import { generateSlug } from "@/lib/utils";
 import { dummyTeam } from "@/lib/dummy/team";
+import { CloudinaryUpload } from "@/components/admin/CloudinaryUpload";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import type { AdminPostPayload } from "@/types/blog";
 
@@ -372,18 +373,12 @@ export default function NewBlogPostPage() {
         </SectionCard>
 
         {/* ── Media ── */}
-        <SectionCard
-          title="Main Image"
-          subtitle="Phase 2F: replace with CloudinaryUpload"
-        >
-          {/* Phase 2F: replace with CloudinaryUpload */}
-          <Field label="Image URL">
-            <input
-              {...register("imageUrl")}
-              placeholder="https://images.unsplash.com/…"
-              className={inputCls}
-            />
-          </Field>
+        <SectionCard title="Main Image">
+          <CloudinaryUpload
+            folder="rapidluxe/blog"
+            currentUrl={watch("imageUrl")}
+            onUpload={(url) => setValue("imageUrl", url)}
+          />
         </SectionCard>
 
         {/* ── SEO ── */}

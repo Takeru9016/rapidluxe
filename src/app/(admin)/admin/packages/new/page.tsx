@@ -3,11 +3,17 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useForm, useFieldArray, Controller, type SubmitHandler } from "react-hook-form";
+import {
+  useForm,
+  useFieldArray,
+  Controller,
+  type SubmitHandler,
+} from "react-hook-form";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 
 import { generateSlug } from "@/lib/utils";
 import { dummyDestinations } from "@/lib/dummy/destinations";
+import { CloudinaryUpload } from "@/components/admin/CloudinaryUpload";
 import {
   Select,
   SelectContent,
@@ -191,9 +197,7 @@ export default function NewPackagePage() {
       hotels: [
         { name: "", stars: 5, location: "", imageUrl: "", included: true },
       ],
-      activities: [
-        { name: "", duration: "", included: true, price: 0 },
-      ],
+      activities: [{ name: "", duration: "", included: true, price: 0 }],
       inclusions: [{ value: "" }],
       exclusions: [{ value: "" }],
       tags: [],
@@ -202,7 +206,10 @@ export default function NewPackagePage() {
       metaDescription: "",
       isFeatured: false,
       attributes: ATTRIBUTE_LABELS.map(() => ({ quality: "" as const })),
-      platformRatings: PLATFORM_LABELS.map(() => ({ score: 0, reviewCount: 0 })),
+      platformRatings: PLATFORM_LABELS.map(() => ({
+        score: 0,
+        reviewCount: 0,
+      })),
       reviewSummary: { loves: ["", "", ""], dislikes: ["", "", ""] },
     },
   });
@@ -279,7 +286,6 @@ export default function NewPackagePage() {
       </h1>
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-
         {/* ── Basic Info ── */}
         <SectionCard title="Basic Info">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -406,23 +412,28 @@ export default function NewPackagePage() {
 
         {/* ── Images ── */}
         <SectionCard title="Images">
-          <div className="space-y-2">
+          <div className="space-y-4">
             {images.fields.map((field, i) => (
-              <div key={field.id} className="flex gap-2">
-                <input
-                  {...register(`images.${i}.url`)}
-                  placeholder="https://..."
-                  className={inputCls}
+              <div key={field.id} className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-['JetBrains_Mono'] text-xs text-(--color-text-secondary)">
+                    Image {i + 1}
+                  </span>
+                  {images.fields.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => images.remove(i)}
+                      className="p-1 text-(--color-coral) hover:bg-(--color-coral)/10 rounded transition-colors"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
+                </div>
+                <CloudinaryUpload
+                  folder="rapidluxe/packages"
+                  currentUrl={field.url}
+                  onUpload={(url) => setValue(`images.${i}.url`, url)}
                 />
-                {images.fields.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => images.remove(i)}
-                    className="shrink-0 p-2 text-(--color-coral) hover:bg-(--color-coral)/10 rounded-lg transition-colors"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )}
               </div>
             ))}
           </div>
@@ -458,7 +469,11 @@ export default function NewPackagePage() {
                     </button>
                   )}
                 </div>
-                <input type="hidden" {...register(`itinerary.${i}.day`)} value={i + 1} />
+                <input
+                  type="hidden"
+                  {...register(`itinerary.${i}.day`)}
+                  value={i + 1}
+                />
                 <Field label="Title">
                   <input
                     {...register(`itinerary.${i}.title`)}
@@ -538,20 +553,39 @@ export default function NewPackagePage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Field label="Hotel Name">
-                    <input {...register(`hotels.${i}.name`)} placeholder="e.g. Four Seasons" className={inputCls} />
+                    <input
+                      {...register(`hotels.${i}.name`)}
+                      placeholder="e.g. Four Seasons"
+                      className={inputCls}
+                    />
                   </Field>
                   <Field label="Stars">
-                    <select {...register(`hotels.${i}.stars`, { valueAsNumber: true })} className={selectCls}>
+                    <select
+                      {...register(`hotels.${i}.stars`, {
+                        valueAsNumber: true,
+                      })}
+                      className={selectCls}
+                    >
                       {[1, 2, 3, 4, 5].map((s) => (
-                        <option key={s} value={s}>{s} ★</option>
+                        <option key={s} value={s}>
+                          {s} ★
+                        </option>
                       ))}
                     </select>
                   </Field>
                   <Field label="Location">
-                    <input {...register(`hotels.${i}.location`)} placeholder="e.g. Ubud, Bali" className={inputCls} />
+                    <input
+                      {...register(`hotels.${i}.location`)}
+                      placeholder="e.g. Ubud, Bali"
+                      className={inputCls}
+                    />
                   </Field>
                   <Field label="Image URL">
-                    <input {...register(`hotels.${i}.imageUrl`)} placeholder="https://..." className={inputCls} />
+                    <input
+                      {...register(`hotels.${i}.imageUrl`)}
+                      placeholder="https://..."
+                      className={inputCls}
+                    />
                   </Field>
                 </div>
                 <label className="flex items-center gap-2 text-sm font-['DM_Sans'] text-(--color-white-muted) cursor-pointer">
@@ -569,7 +603,13 @@ export default function NewPackagePage() {
           <button
             type="button"
             onClick={() =>
-              hotels.append({ name: "", stars: 5, location: "", imageUrl: "", included: true })
+              hotels.append({
+                name: "",
+                stars: 5,
+                location: "",
+                imageUrl: "",
+                included: true,
+              })
             }
             className="mt-3 inline-flex items-center gap-2 text-sm font-['DM_Sans'] text-(--color-gold) hover:text-(--color-gold)/80 transition-colors"
           >
@@ -587,16 +627,26 @@ export default function NewPackagePage() {
                 className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] gap-3 items-end border border-(--color-navy-border) rounded-lg p-3"
               >
                 <Field label="Activity Name">
-                  <input {...register(`activities.${i}.name`)} placeholder="e.g. Snorkelling" className={inputCls} />
+                  <input
+                    {...register(`activities.${i}.name`)}
+                    placeholder="e.g. Snorkelling"
+                    className={inputCls}
+                  />
                 </Field>
                 <Field label="Duration">
-                  <input {...register(`activities.${i}.duration`)} placeholder="2 hrs" className={inputCls} />
+                  <input
+                    {...register(`activities.${i}.duration`)}
+                    placeholder="2 hrs"
+                    className={inputCls}
+                  />
                 </Field>
                 <Field label="Price (₹) if not incl.">
                   <input
                     type="number"
                     min={0}
-                    {...register(`activities.${i}.price`, { valueAsNumber: true })}
+                    {...register(`activities.${i}.price`, {
+                      valueAsNumber: true,
+                    })}
                     className={inputCls}
                   />
                 </Field>
@@ -625,7 +675,14 @@ export default function NewPackagePage() {
           </div>
           <button
             type="button"
-            onClick={() => activities.append({ name: "", duration: "", included: true, price: 0 })}
+            onClick={() =>
+              activities.append({
+                name: "",
+                duration: "",
+                included: true,
+                price: 0,
+              })
+            }
             className="mt-3 inline-flex items-center gap-2 text-sm font-['DM_Sans'] text-(--color-gold) hover:text-(--color-gold)/80 transition-colors"
           >
             <Plus size={14} />
@@ -735,12 +792,18 @@ export default function NewPackagePage() {
         <SectionCard title="Cancellation Policy">
           <div className="space-y-3">
             {cancellation.fields.map((field, i) => (
-              <div key={field.id} className="grid grid-cols-[1fr_1fr_auto] gap-3 items-end">
+              <div
+                key={field.id}
+                className="grid grid-cols-[1fr_1fr_auto] gap-3 items-end"
+              >
                 <Field label="Days Before Departure">
                   <input
                     type="number"
                     min={0}
-                    {...register(`cancellationPolicy.${i}.daysBeforeDeparture`, { valueAsNumber: true })}
+                    {...register(
+                      `cancellationPolicy.${i}.daysBeforeDeparture`,
+                      { valueAsNumber: true },
+                    )}
                     className={inputCls}
                   />
                 </Field>
@@ -749,7 +812,9 @@ export default function NewPackagePage() {
                     type="number"
                     min={0}
                     max={100}
-                    {...register(`cancellationPolicy.${i}.refundPercent`, { valueAsNumber: true })}
+                    {...register(`cancellationPolicy.${i}.refundPercent`, {
+                      valueAsNumber: true,
+                    })}
                     className={inputCls}
                   />
                 </Field>
@@ -830,10 +895,7 @@ export default function NewPackagePage() {
                   control={control}
                   name={`attributes.${i}.quality`}
                   render={({ field }) => (
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger className="w-36 bg-(--color-navy) border-(--color-navy-border) text-sm font-['DM_Sans'] text-white focus:ring-(--color-gold)/40">
                         <SelectValue placeholder="Select..." />
                       </SelectTrigger>
@@ -951,7 +1013,6 @@ export default function NewPackagePage() {
             Publish
           </button>
         </div>
-
       </form>
     </div>
   );

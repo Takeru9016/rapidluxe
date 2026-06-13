@@ -3,10 +3,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useForm, useFieldArray, Controller, type SubmitHandler } from "react-hook-form";
+import {
+  useForm,
+  useFieldArray,
+  Controller,
+  type SubmitHandler,
+} from "react-hook-form";
 import { ArrowLeft, Plus, X } from "lucide-react";
 
 import { generateSlug } from "@/lib/utils";
+import { CloudinaryUpload } from "@/components/admin/CloudinaryUpload";
 import {
   Select,
   SelectContent,
@@ -14,7 +20,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Continent, VisaType, CrowdLevel, AvailabilityStatus } from "@/types/destination";
+import type {
+  Continent,
+  VisaType,
+  CrowdLevel,
+  AvailabilityStatus,
+} from "@/types/destination";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -73,8 +84,18 @@ const VISA_TYPES: { value: VisaType; label: string }[] = [
 ];
 
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -223,12 +244,8 @@ export default function NewDestinationPage() {
       </h1>
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-
         {/* ── Postgres: Core Fields ── */}
-        <SectionCard
-          title="Core Details"
-          subtitle="Saved to Postgres"
-        >
+        <SectionCard title="Core Details" subtitle="Saved to Postgres">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Name" className="sm:col-span-2">
               <input
@@ -298,27 +315,29 @@ export default function NewDestinationPage() {
               />
             </Field>
 
-            <Field label="Cover Image URL" className="sm:col-span-2">
-              <input
-                {...register("imageUrl")}
-                placeholder="https://..."
-                className={inputCls}
+            <div className="sm:col-span-2">
+              <label className="block font-['DM_Sans'] text-xs text-(--color-text-secondary) mb-1.5">
+                Cover Image
+              </label>
+              <CloudinaryUpload
+                folder="rapidluxe/destinations"
+                currentUrl={watch("imageUrl")}
+                onUpload={(url) => setValue("imageUrl", url)}
               />
-            </Field>
+            </div>
           </div>
         </SectionCard>
 
         {/* ── Postgres: Best Time ── */}
-        <SectionCard
-          title="Best Time to Visit"
-          subtitle="Saved to Postgres"
-        >
+        <SectionCard title="Best Time to Visit" subtitle="Saved to Postgres">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="From Month">
               <select {...register("bestTimeFrom")} className={selectCls}>
                 <option value="">Select month</option>
                 {MONTHS.map((m) => (
-                  <option key={m} value={m}>{m}</option>
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
                 ))}
               </select>
             </Field>
@@ -326,7 +345,9 @@ export default function NewDestinationPage() {
               <select {...register("bestTimeTo")} className={selectCls}>
                 <option value="">Select month</option>
                 {MONTHS.map((m) => (
-                  <option key={m} value={m}>{m}</option>
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
                 ))}
               </select>
             </Field>
@@ -362,10 +383,7 @@ export default function NewDestinationPage() {
         </SectionCard>
 
         {/* ── Sanity: SEO ── */}
-        <SectionCard
-          title="SEO"
-          subtitle="Saved to Sanity CMS"
-        >
+        <SectionCard title="SEO" subtitle="Saved to Sanity CMS">
           <div className="space-y-4">
             <Field label="Meta Title">
               <input
@@ -392,17 +410,28 @@ export default function NewDestinationPage() {
               When to Visit (Monthly Data)
             </h2>
             <p className="font-['DM_Sans'] text-xs text-(--color-text-secondary) mt-1">
-              Phase 3A: auto-populated from OpenWeatherMap. Fill manually for now.
+              Phase 3A: auto-populated from OpenWeatherMap. Fill manually for
+              now.
             </p>
           </div>
           <div className="space-y-3">
             {/* Header row */}
             <div className="hidden md:grid md:grid-cols-[100px_1fr_2fr_1fr_80px] gap-3 items-center">
-              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">Month</span>
-              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">Crowd</span>
-              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">Weather Note</span>
-              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">Availability</span>
-              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">Rec.</span>
+              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">
+                Month
+              </span>
+              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">
+                Crowd
+              </span>
+              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">
+                Weather Note
+              </span>
+              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">
+                Availability
+              </span>
+              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">
+                Rec.
+              </span>
             </div>
             {MONTHS.map((month, i) => (
               <div
@@ -450,7 +479,9 @@ export default function NewDestinationPage() {
                   )}
                 />
                 <div className="flex items-center gap-2 md:justify-center">
-                  <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) md:hidden">Recommended</span>
+                  <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) md:hidden">
+                    Recommended
+                  </span>
                   <Controller
                     control={control}
                     name={`whenToVisit.${i}.recommended`}
@@ -518,7 +549,11 @@ export default function NewDestinationPage() {
           <button
             type="button"
             onClick={() =>
-              transport.append({ name: "", description: "", recommended: false })
+              transport.append({
+                name: "",
+                description: "",
+                recommended: false,
+              })
             }
             className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-(--color-coral)/60 text-(--color-coral) text-sm font-['DM_Sans'] font-medium hover:bg-(--color-coral)/10 transition-colors"
           >
@@ -543,7 +578,6 @@ export default function NewDestinationPage() {
             Publish
           </button>
         </div>
-
       </form>
     </div>
   );

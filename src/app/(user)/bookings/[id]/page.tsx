@@ -4,7 +4,15 @@ import { use } from "react";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Calendar, Users, Package, CreditCard, Download, HelpCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  Users,
+  Package,
+  CreditCard,
+  Download,
+  HelpCircle,
+} from "lucide-react";
 
 import { Badge } from "@/components/shared/Badge";
 import { formatPrice, formatDate, calculateGST } from "@/lib/utils";
@@ -145,7 +153,6 @@ export default function BookingDetailPage({
   return (
     <main className="min-h-screen bg-(--color-navy) pt-24">
       <div className="max-w-3xl mx-auto px-4 md:px-8 py-12 space-y-8">
-
         {/* Back */}
         <Link
           href="/bookings"
@@ -171,7 +178,8 @@ export default function BookingDetailPage({
                 Travel Dates
               </p>
               <p className="font-['DM_Sans'] text-sm text-(--color-white-muted)">
-                {formatDate(booking.departureDate)} → {formatDate(booking.returnDate)}
+                {formatDate(booking.departureDate)} →{" "}
+                {formatDate(booking.returnDate)}
               </p>
             </div>
           </div>
@@ -237,9 +245,7 @@ export default function BookingDetailPage({
                 <p className="text-xs font-['DM_Sans'] text-(--color-text-secondary) mt-1">
                   {label}
                 </p>
-                <p className="text-sm font-['DM_Sans'] text-white">
-                  {value}
-                </p>
+                <p className="text-sm font-['DM_Sans'] text-white">{value}</p>
               </div>
             ))}
           </div>
@@ -288,21 +294,15 @@ export default function BookingDetailPage({
           <div className="space-y-3">
             <div className="flex justify-between text-sm font-['DM_Sans']">
               <span className="text-(--color-white-muted)">Base Amount</span>
-              <span className="text-white">
-                {formatPrice(base)}
-              </span>
+              <span className="text-white">{formatPrice(base)}</span>
             </div>
             <div className="flex justify-between text-sm font-['DM_Sans']">
               <span className="text-(--color-white-muted)">GST (5%)</span>
-              <span className="text-white">
-                {formatPrice(gst)}
-              </span>
+              <span className="text-white">{formatPrice(gst)}</span>
             </div>
             <div className="h-px bg-(--color-navy-border)" />
             <div className="flex justify-between font-['DM_Sans']">
-              <span className="text-white font-medium">
-                Total Paid
-              </span>
+              <span className="text-white font-medium">Total Paid</span>
               <span className="font-['JetBrains_Mono'] text-(--color-gold) font-bold text-lg">
                 {formatPrice(total)}
               </span>
@@ -339,14 +339,27 @@ export default function BookingDetailPage({
             Download Voucher
           </button>
 
-          <button
-            disabled
-            title="Available after payment"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-(--color-navy-border) text-(--color-text-secondary) text-sm font-['DM_Sans'] cursor-not-allowed opacity-50"
-          >
-            <Download size={14} />
-            Download Invoice
-          </button>
+          {/* Show invoice button for PAID/CONFIRMED — "upcoming" & "completed" map to those once real data is wired */}
+          {booking.status === "upcoming" || booking.status === "completed" ? (
+            <a
+              href={`/api/invoices/${booking.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-(--color-gold)/60 text-(--color-gold) text-sm font-['DM_Sans'] hover:bg-(--color-gold)/10 transition-colors"
+            >
+              <Download size={14} />
+              Download Invoice
+            </a>
+          ) : (
+            <button
+              disabled
+              title="Available after payment is confirmed"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-(--color-navy-border) text-(--color-text-secondary) text-sm font-['DM_Sans'] cursor-not-allowed opacity-50"
+            >
+              <Download size={14} />
+              Download Invoice
+            </button>
+          )}
 
           <Link
             href="/contact"
@@ -362,7 +375,6 @@ export default function BookingDetailPage({
             </button>
           )}
         </div>
-
       </div>
     </main>
   );
