@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { sendEnquiryReceivedEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import {
   checkRateLimit,
@@ -101,8 +102,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // await sendEnquiryReceivedEmail(booking)   — wired in 2E-2
-    // await sendAdminNewEnquiryEmail(booking)   — wired in 2E-2
+    await sendEnquiryReceivedEmail(booking);
 
     return NextResponse.json(
       { data: { bookingRef, bookingId: booking.id } },

@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { sendBookingConfirmedEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(
@@ -25,13 +26,13 @@ export async function POST(
     );
   }
 
-  await prisma.booking.update({
+  const booking = await prisma.booking.update({
     where: { id },
     data: { status: "CONFIRMED" },
     include: { user: true, package: true },
   });
 
-  // await sendBookingConfirmedEmail(booking)   — wired in 2E-2
+  await sendBookingConfirmedEmail(booking);
 
   return NextResponse.json({ data: { status: "CONFIRMED" } });
 }

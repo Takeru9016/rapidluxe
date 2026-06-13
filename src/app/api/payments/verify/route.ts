@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { sendPaymentConfirmationEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 
 const verifySchema = z.object({
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
       include: { package: true, user: true },
     });
 
-    // await sendPaymentConfirmationEmail(booking)   — wired in 2E-2
+    await sendPaymentConfirmationEmail(booking);
 
     return NextResponse.json({
       data: { bookingRef: booking.bookingRef, bookingId: booking.id },

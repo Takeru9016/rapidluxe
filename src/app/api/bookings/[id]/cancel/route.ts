@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { sendCancellationEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(
@@ -29,16 +30,17 @@ export async function POST(
       );
     }
 
-    await prisma.booking.update({
+    const cancelled = await prisma.booking.update({
       where: { id },
       data: {
         status: "CANCELLED",
         paymentToken: null,
         paymentTokenExpiry: null,
       },
+      include: { user: true, package: true },
     });
 
-    // await sendCancellationEmail(booking)   — wired in 2E-2
+    await sendCancellationEmail(cancelled);
 
     return NextResponse.json({ data: { status: "CANCELLED" } });
   } catch (error) {

@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { sendQuoteEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import { sendQuoteSchema } from "@/lib/validations/booking";
 
@@ -42,7 +43,7 @@ export async function POST(
     include: { user: true, package: true },
   });
 
-  // await sendQuoteEmail(booking)   — wired in 2E-2
+  await sendQuoteEmail(booking);
 
   return NextResponse.json({
     data: { bookingId: booking.id, status: "QUOTE_SENT" },

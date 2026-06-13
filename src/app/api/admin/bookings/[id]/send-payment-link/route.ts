@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import crypto from "crypto";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { sendPaymentLinkEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(
@@ -26,7 +27,7 @@ export async function POST(
   const paymentToken = crypto.randomUUID();
   const paymentTokenExpiry = new Date(Date.now() + 48 * 60 * 60 * 1000);
 
-  await prisma.booking.update({
+  const updated = await prisma.booking.update({
     where: { id },
     data: { paymentToken, paymentTokenExpiry, status: "AWAITING_PAYMENT" },
     include: { user: true, package: true },
@@ -34,7 +35,7 @@ export async function POST(
 
   const paymentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/pay/${paymentToken}`;
 
-  // await sendPaymentLinkEmail(updated, paymentUrl)   — wired in 2E-2
+  await sendPaymentLinkEmail(updated, paymentUrl);
 
   return NextResponse.json({
     data: { paymentUrl, expiresAt: paymentTokenExpiry },
