@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { DataTable } from "@/components/admin/DataTable";
@@ -12,41 +14,49 @@ interface Enquiry {
   id: string;
   name: string;
   email: string;
+  phone: string | null;
   subject: string;
   message: string;
-  date: string;
+  createdAt: string;
   isRead: boolean;
 }
-
-// ── Dummy Data ─────────────────────────────────────────────────────────────────
-
-const dummyEnquiries: Enquiry[] = [
-  { id: "enq-001", name: "Rohit Bansal", email: "rohit.bansal@gmail.com", subject: "Custom Maldives honeymoon package", message: "Hi, my wife and I are celebrating our first anniversary in December. We are looking for a 7-night Maldives package with overwater villa, candlelight dinners, and a spa day. Budget is around ₹4 lakhs for 2 people. Can you customise something for us?", date: "2025-05-18", isRead: true },
-  { id: "enq-002", name: "Deepika Rao", email: "deepika.rao@outlook.com", subject: "Group trip to Rajasthan for 12 people", message: "We are a group of 12 colleagues planning a 5-day Rajasthan trip in October. We need heritage hotel stays, private transport, and a folk evening with dinner. Please share group pricing.", date: "2025-05-19", isRead: false },
-  { id: "enq-003", name: "Aditya Kumar", email: "aditya.k@email.com", subject: "Is Switzerland package available in August?", message: "I checked the Switzerland Alpine Dream package and it looks perfect. We are 2 adults planning for August 15-22. Is availability confirmed for those dates? Also, do you handle visa assistance?", date: "2025-05-20", isRead: false },
-  { id: "enq-004", name: "Lakshmi Iyer", email: "lakshmi.iyer@gmail.com", subject: "Corporate retreat for 30 people — Bali", message: "Our company is planning an annual offsite in Bali for 30 employees this November. We need resort accommodation, team activities, and conference facilities for half-days. Looking for a full turnkey solution.", date: "2025-05-21", isRead: true },
-  { id: "enq-005", name: "Farhan Sheikh", email: "farhan.sheikh@gmail.com", subject: "Budget-friendly Kerala package", message: "I saw the Kerala Backwaters Bliss package. Is there a more budget-friendly version without the houseboat? We are 2 adults + 1 child for 5 nights in September. Please advise.", date: "2025-05-22", isRead: false },
-];
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AdminEnquiriesPage() {
-  const [enquiries, setEnquiries] = useState<Enquiry[]>(dummyEnquiries);
+  const queryClient = useQueryClient();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  function handleToggleRead(id: string) {
-    setEnquiries((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, isRead: !e.isRead } : e)),
-    );
-  }
+  const { data, isLoading } = useQuery<{ data: Enquiry[] }>({
+    queryKey: ["admin-enquiries"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/enquiries");
+      if (!res.ok) throw new Error("Failed to fetch enquiries");
+      return res.json() as Promise<{ data: Enquiry[] }>;
+    },
+  });
+
+  const markReadMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/admin/enquiries/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isRead: true }),
+      });
+      if (!res.ok) throw new Error("Failed");
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin-enquiries"] });
+    },
+    onError: () => toast.error("Failed to mark as read."),
+  });
 
   function handleView(id: string) {
-    setEnquiries((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, isRead: true } : e)),
-    );
+    markReadMutation.mutate(id);
     setExpandedId((prev) => (prev === id ? null : id));
   }
 
+  const enquiries = data?.data ?? [];
   const expandedEnquiry = enquiries.find((e) => e.id === expandedId);
 
   const columns: ColumnDef<Enquiry>[] = [
@@ -61,7 +71,9 @@ export default function AdminEnquiriesPage() {
       accessorKey: "email",
       header: "Email",
       cell: ({ getValue }) => (
-        <span className="text-(--color-text-secondary) text-sm">{getValue<string>()}</span>
+        <span className="text-(--color-text-secondary) text-sm">
+          {getValue<string>()}
+        </span>
       ),
     },
     {
@@ -83,7 +95,7 @@ export default function AdminEnquiriesPage() {
       ),
     },
     {
-      accessorKey: "date",
+      accessorKey: "createdAt",
       header: "Date",
       cell: ({ getValue }) => (
         <span className="text-(--color-text-secondary) text-sm whitespace-nowrap">
@@ -95,17 +107,19 @@ export default function AdminEnquiriesPage() {
       id: "readStatus",
       header: "Status",
       cell: ({ row }) => {
-        const enq = enquiries.find((e) => e.id === row.original.id) ?? row.original;
+        const isRead = row.original.isRead;
         return (
           <button
-            onClick={() => handleToggleRead(row.original.id)}
+            onClick={() => {
+              if (!isRead) markReadMutation.mutate(row.original.id);
+            }}
             className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
-              enq.isRead
-                ? "text-(--color-text-secondary) border-(--color-navy-border)"
+              isRead
+                ? "text-(--color-text-secondary) border-(--color-navy-border) cursor-default"
                 : "text-(--color-gold) border-(--color-gold)/40 hover:bg-(--color-gold)/10"
             }`}
           >
-            {enq.isRead ? "Read ✓" : "Mark Read"}
+            {isRead ? "Read ✓" : "Mark Read"}
           </button>
         );
       },
@@ -135,7 +149,13 @@ export default function AdminEnquiriesPage() {
 
       {/* Table */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) overflow-x-auto">
-        <DataTable columns={columns} data={enquiries} />
+        {isLoading ? (
+          <div className="py-12 text-center font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+            Loading…
+          </div>
+        ) : (
+          <DataTable columns={columns} data={enquiries} />
+        )}
       </div>
 
       {/* Expanded Message */}
@@ -147,8 +167,12 @@ export default function AdminEnquiriesPage() {
                 {expandedEnquiry.subject}
               </h2>
               <p className="text-xs font-['DM_Sans'] text-(--color-text-secondary)">
-                From <span className="text-(--color-white-muted)">{expandedEnquiry.name}</span>{" "}
-                &lt;{expandedEnquiry.email}&gt; · {formatDate(expandedEnquiry.date)}
+                From{" "}
+                <span className="text-(--color-white-muted)">
+                  {expandedEnquiry.name}
+                </span>{" "}
+                &lt;{expandedEnquiry.email}&gt; ·{" "}
+                {formatDate(expandedEnquiry.createdAt)}
               </p>
             </div>
             <button

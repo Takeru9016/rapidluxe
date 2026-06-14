@@ -1,14 +1,21 @@
-// On submit: Phase 2F writes to Postgres + Sanity (see docs/SANITY_CMS.md)
 "use client";
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
-import { useForm, useFieldArray, Controller, type SubmitHandler } from "react-hook-form";
+import {
+  useForm,
+  useFieldArray,
+  Controller,
+  type SubmitHandler,
+} from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { ArrowLeft, Plus, X } from "lucide-react";
 
 import { generateSlug } from "@/lib/utils";
-import { dummyDestinations } from "@/lib/dummy/destinations";
+import { CloudinaryUpload } from "@/components/admin/CloudinaryUpload";
 import {
   Select,
   SelectContent,
@@ -16,7 +23,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Continent, VisaType, CrowdLevel, AvailabilityStatus } from "@/types/destination";
+import type {
+  Continent,
+  VisaType,
+  CrowdLevel,
+  AvailabilityStatus,
+} from "@/types/destination";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -34,7 +46,6 @@ interface TransportRow {
 }
 
 interface DestinationFormValues {
-  // ── Postgres fields ──────────────────────────────────────────────────────
   name: string;
   slug: string;
   country: string;
@@ -45,16 +56,28 @@ interface DestinationFormValues {
   visaType: VisaType | "";
   currency: string;
   language: string;
-
-  // ── Sanity editorial fields ──────────────────────────────────────────────
   about: string;
   travelTips: string;
   metaTitle: string;
   metaDescription: string;
-
-  // ── New JSON fields ───────────────────────────────────────────────────────
   whenToVisit: WhenToVisitRow[];
   howToGetThere: TransportRow[];
+}
+
+interface DestinationData {
+  id: string;
+  name: string;
+  slug: string;
+  country: string;
+  continent: Continent;
+  imageUrl: string | null;
+  bestTimeFrom: string | null;
+  bestTimeTo: string | null;
+  visaType: string | null;
+  currency: string | null;
+  language: string | null;
+  whenToVisit: WhenToVisitRow[] | null;
+  howToGetThere: TransportRow[] | null;
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -76,9 +99,26 @@ const VISA_TYPES: { value: VisaType; label: string }[] = [
 ];
 
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
+
+const EMPTY_WHEN_TO_VISIT: WhenToVisitRow[] = MONTHS.map(() => ({
+  crowdLevel: "" as CrowdLevel | "",
+  weather: "",
+  availability: "" as AvailabilityStatus | "",
+  recommended: false,
+}));
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -166,10 +206,20 @@ export default function EditDestinationPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const dest = dummyDestinations.find((d) => d.id === id);
-  if (!dest) notFound();
-
+  const router = useRouter();
   const [slugManual, setSlugManual] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { data, isLoading, isError } = useQuery<{ data: DestinationData }>({
+    queryKey: ["admin-destination", id],
+    queryFn: async () => {
+      const res = await fetch(`/api/admin/destinations/${id}`);
+      if (!res.ok) throw new Error("Failed to fetch destination");
+      return res.json() as Promise<{ data: DestinationData }>;
+    },
+  });
+
+  const dest = data?.data;
 
   const {
     register,
@@ -177,9 +227,32 @@ export default function EditDestinationPage({
     watch,
     setValue,
     control,
+    reset,
     formState: { errors },
   } = useForm<DestinationFormValues>({
     defaultValues: {
+      name: "",
+      slug: "",
+      country: "",
+      continent: "ASIA",
+      imageUrl: "",
+      bestTimeFrom: "",
+      bestTimeTo: "",
+      visaType: "",
+      currency: "",
+      language: "",
+      about: "",
+      travelTips: "",
+      metaTitle: "",
+      metaDescription: "",
+      whenToVisit: EMPTY_WHEN_TO_VISIT,
+      howToGetThere: [],
+    },
+  });
+
+  useEffect(() => {
+    if (!dest) return;
+    reset({
       name: dest.name,
       slug: dest.slug,
       country: dest.country,
@@ -187,33 +260,20 @@ export default function EditDestinationPage({
       imageUrl: dest.imageUrl ?? "",
       bestTimeFrom: dest.bestTimeFrom ?? "",
       bestTimeTo: dest.bestTimeTo ?? "",
-      visaType: dest.visaType ?? "",
+      visaType: (dest.visaType as VisaType | "") ?? "",
       currency: dest.currency ?? "",
       language: dest.language ?? "",
-      about: dest.description ?? "",
+      about: "",
       travelTips: "",
       metaTitle: "",
       metaDescription: "",
-      whenToVisit: MONTHS.map((month) => {
-        const row = dest.whenToVisit?.find((w) => w.month === month);
-        return {
-          crowdLevel: (row?.crowdLevel ?? "") as CrowdLevel | "",
-          weather: row?.weather ?? "",
-          availability: (row?.availability ?? "") as AvailabilityStatus | "",
-          recommended: row?.recommendation === "Recommended",
-        };
-      }),
-      howToGetThere: dest.howToGetThere?.map((t) => ({
-        name: t.name,
-        description: t.description,
-        recommended: t.isRecommended ?? false,
-      })) ?? [],
-    },
-  });
+      whenToVisit: dest.whenToVisit ?? EMPTY_WHEN_TO_VISIT,
+      howToGetThere: dest.howToGetThere ?? [],
+    });
+  }, [dest, reset]);
 
   const transport = useFieldArray({ control, name: "howToGetThere" });
 
-  // Auto-slug from name
   const name = watch("name");
   useEffect(() => {
     if (!slugManual && name) {
@@ -221,9 +281,57 @@ export default function EditDestinationPage({
     }
   }, [name, slugManual, setValue]);
 
-  const onSubmit: SubmitHandler<DestinationFormValues> = (data) => {
-    console.log(data);
+  const onSubmit: SubmitHandler<DestinationFormValues> = async (formData) => {
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`/api/admin/destinations/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          slug: formData.slug,
+          country: formData.country,
+          continent: formData.continent,
+          imageUrl: formData.imageUrl || undefined,
+          bestTimeFrom: formData.bestTimeFrom || undefined,
+          bestTimeTo: formData.bestTimeTo || undefined,
+          visaType: formData.visaType || undefined,
+          currency: formData.currency || undefined,
+          language: formData.language || undefined,
+          whenToVisit: formData.whenToVisit,
+          howToGetThere: formData.howToGetThere,
+          about: formData.about || undefined,
+          travelTips: formData.travelTips || undefined,
+          metaTitle: formData.metaTitle || undefined,
+          metaDescription: formData.metaDescription || undefined,
+        }),
+      });
+      if (!res.ok) {
+        const err = (await res.json()) as { error?: string };
+        throw new Error(err.error ?? "Failed to update destination");
+      }
+      toast.success("Destination updated.");
+      router.push("/admin/destinations");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="px-4 md:px-8 py-6">
+        <div className="py-12 text-center font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+          Loading…
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !dest) {
+    notFound();
+  }
 
   return (
     <div className="px-4 md:px-8 py-6 max-w-3xl mx-auto">
@@ -240,8 +348,7 @@ export default function EditDestinationPage({
       </h1>
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-
-        {/* ── Postgres: Core Fields ── */}
+        {/* ── Core Fields ── */}
         <SectionCard title="Core Details" subtitle="Saved to Postgres">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Name" className="sm:col-span-2">
@@ -312,24 +419,29 @@ export default function EditDestinationPage({
               />
             </Field>
 
-            <Field label="Cover Image URL" className="sm:col-span-2">
-              <input
-                {...register("imageUrl")}
-                placeholder="https://..."
-                className={inputCls}
+            <div className="sm:col-span-2">
+              <label className="block font-['DM_Sans'] text-xs text-(--color-text-secondary) mb-1.5">
+                Cover Image
+              </label>
+              <CloudinaryUpload
+                folder="rapidluxe/destinations"
+                currentUrl={watch("imageUrl")}
+                onUpload={(url) => setValue("imageUrl", url)}
               />
-            </Field>
+            </div>
           </div>
         </SectionCard>
 
-        {/* ── Postgres: Best Time ── */}
+        {/* ── Best Time ── */}
         <SectionCard title="Best Time to Visit" subtitle="Saved to Postgres">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="From Month">
               <select {...register("bestTimeFrom")} className={selectCls}>
                 <option value="">Select month</option>
                 {MONTHS.map((m) => (
-                  <option key={m} value={m}>{m}</option>
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
                 ))}
               </select>
             </Field>
@@ -337,20 +449,19 @@ export default function EditDestinationPage({
               <select {...register("bestTimeTo")} className={selectCls}>
                 <option value="">Select month</option>
                 {MONTHS.map((m) => (
-                  <option key={m} value={m}>{m}</option>
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
                 ))}
               </select>
             </Field>
           </div>
         </SectionCard>
 
-        {/* ── Sanity: Editorial ── */}
-        <SectionCard
-          title="Editorial Content"
-          subtitle="Saved to Sanity CMS — see docs/SANITY_CMS.md"
-        >
+        {/* ── Editorial ── */}
+        <SectionCard title="Editorial Content" subtitle="Saved to Sanity CMS">
           <div className="space-y-4">
-            <Field label="About (Phase 2E: replace with Tiptap / PortableText)">
+            <Field label="About">
               <textarea
                 {...register("about")}
                 rows={6}
@@ -358,7 +469,7 @@ export default function EditDestinationPage({
                 className={inputCls + " resize-y"}
               />
             </Field>
-            <Field label="Travel Tips (Phase 2E: replace with Tiptap / PortableText)">
+            <Field label="Travel Tips">
               <textarea
                 {...register("travelTips")}
                 rows={4}
@@ -369,7 +480,7 @@ export default function EditDestinationPage({
           </div>
         </SectionCard>
 
-        {/* ── Sanity: SEO ── */}
+        {/* ── SEO ── */}
         <SectionCard title="SEO" subtitle="Saved to Sanity CMS">
           <div className="space-y-4">
             <Field label="Meta Title">
@@ -396,17 +507,24 @@ export default function EditDestinationPage({
             <h2 className="font-['DM_Sans'] text-xs font-semibold uppercase tracking-widest text-(--color-gold)">
               When to Visit (Monthly Data)
             </h2>
-            <p className="font-['DM_Sans'] text-xs text-(--color-text-secondary) mt-1">
-              Phase 3A: auto-populated from OpenWeatherMap. Fill manually for now.
-            </p>
           </div>
           <div className="space-y-3">
             <div className="hidden md:grid md:grid-cols-[100px_1fr_2fr_1fr_80px] gap-3 items-center">
-              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">Month</span>
-              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">Crowd</span>
-              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">Weather Note</span>
-              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">Availability</span>
-              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">Rec.</span>
+              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">
+                Month
+              </span>
+              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">
+                Crowd
+              </span>
+              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">
+                Weather Note
+              </span>
+              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">
+                Availability
+              </span>
+              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">
+                Rec.
+              </span>
             </div>
             {MONTHS.map((month, i) => (
               <div
@@ -454,7 +572,9 @@ export default function EditDestinationPage({
                   )}
                 />
                 <div className="flex items-center gap-2 md:justify-center">
-                  <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) md:hidden">Recommended</span>
+                  <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) md:hidden">
+                    Recommended
+                  </span>
                   <Controller
                     control={control}
                     name={`whenToVisit.${i}.recommended`}
@@ -522,7 +642,11 @@ export default function EditDestinationPage({
           <button
             type="button"
             onClick={() =>
-              transport.append({ name: "", description: "", recommended: false })
+              transport.append({
+                name: "",
+                description: "",
+                recommended: false,
+              })
             }
             className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-(--color-coral)/60 text-(--color-coral) text-sm font-['DM_Sans'] font-medium hover:bg-(--color-coral)/10 transition-colors"
           >
@@ -533,21 +657,20 @@ export default function EditDestinationPage({
 
         {/* ── Actions ── */}
         <div className="flex flex-wrap gap-3 pb-8">
-          <button
-            type="button"
-            onClick={() => handleSubmit(onSubmit)()}
+          <Link
+            href="/admin/destinations"
             className="px-6 py-2.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm font-medium hover:border-(--color-gold)/40 hover:text-white transition-colors"
           >
-            Save as Draft
-          </button>
+            Cancel
+          </Link>
           <button
             type="submit"
-            className="px-6 py-2.5 rounded-lg bg-(--color-gold) text-(--color-navy) font-['DM_Sans'] text-sm font-bold hover:bg-(--color-gold)/90 transition-colors"
+            disabled={isSubmitting}
+            className="px-6 py-2.5 rounded-lg bg-(--color-gold) text-(--color-navy) font-['DM_Sans'] text-sm font-bold hover:bg-(--color-gold)/90 transition-colors disabled:opacity-50"
           >
-            Publish
+            {isSubmitting ? "Saving…" : "Save Changes"}
           </button>
         </div>
-
       </form>
     </div>
   );

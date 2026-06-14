@@ -1,13 +1,13 @@
-export type CouponType = "PERCENTAGE" | "FIXED";
+export type CouponDiscountType = "PERCENT" | "FIXED";
 
 export interface Coupon {
   id: string;
   code: string;
-  type: CouponType;
-  value: number;
-  minAmount: number;
-  maxUses: number;
+  discountType: CouponDiscountType;
+  discountValue: number;
+  minAmount: number | null;
+  maxUses: number | null;
   usedCount: number;
-  expiresAt: Date;
+  expiresAt: string | null;
   isActive: boolean;
 }

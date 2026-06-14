@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function PATCH(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { userId, sessionClaims } = await auth();
@@ -18,6 +18,14 @@ export async function PATCH(
   }
 
   const { id } = await params;
+  const body = (await req.json()) as { isApproved?: boolean };
+  if (typeof body.isApproved !== "boolean") {
+    return NextResponse.json(
+      { error: "isApproved is required" },
+      { status: 400 },
+    );
+  }
+
   const review = await prisma.review.findUnique({ where: { id } });
   if (!review) {
     return NextResponse.json({ error: "Review not found" }, { status: 404 });
@@ -25,7 +33,7 @@ export async function PATCH(
 
   const updated = await prisma.review.update({
     where: { id },
-    data: { isApproved: !review.isApproved },
+    data: { isApproved: body.isApproved },
   });
 
   return NextResponse.json({ data: updated });

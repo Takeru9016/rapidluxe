@@ -10,7 +10,6 @@ async function requireAdmin() {
   return role === "admin";
 }
 
-// Upload an image from a URL into Sanity and return an image-field reference.
 async function uploadImageFromUrl(url: string) {
   const res = await fetch(url);
   if (!res.ok) return undefined;
@@ -22,8 +21,6 @@ async function uploadImageFromUrl(url: string) {
   };
 }
 
-// Inline image blocks arrive from the editor as { _type: "image", url }.
-// Upload each url to Sanity and replace it with a proper asset reference.
 async function uploadBodyImages(body: AdminPostPayload["body"]) {
   if (!body) return body;
   return Promise.all(
@@ -42,7 +39,6 @@ async function uploadBodyImages(body: AdminPostPayload["body"]) {
   );
 }
 
-// Build the Sanity document fields shared by create + update.
 async function buildDoc(data: AdminPostPayload) {
   const doc: Record<string, unknown> = {};
 
@@ -71,80 +67,65 @@ async function buildDoc(data: AdminPostPayload) {
   return doc;
 }
 
-export async function GET(_req: NextRequest) {
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   if (!(await requireAdmin()))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const posts = await sanityWriteClient.fetch<
-    Array<{
-      _id: string;
-      title: string;
-      slug: string | null;
-      author: string | null;
-      category: string | null;
-      publishedAt: string | null;
-      excerpt: string | null;
-    }>
-  >(
-    `*[_type == "post"] | order(_createdAt desc) {
+  const { id } = await params;
+
+  const post = await sanityWriteClient.fetch<{
+    _id: string;
+    title: string;
+    slug: string | null;
+    authorId: string | null;
+    categoryId: string | null;
+    excerpt: string | null;
+    readTime: number | null;
+    publishedAt: string | null;
+    tags: string[] | null;
+    body: unknown[] | null;
+    mainImageUrl: string | null;
+    metaTitle: string | null;
+    metaDescription: string | null;
+  } | null>(
+    `*[_type == "post" && _id == $id][0] {
       _id,
       title,
       "slug": slug.current,
-      "author": author->name,
-      "category": category->title,
+      "authorId": author._ref,
+      "categoryId": category._ref,
+      excerpt,
+      readTime,
       publishedAt,
-      excerpt
+      tags,
+      body,
+      "mainImageUrl": mainImage.asset->url,
+      "metaTitle": seo.metaTitle,
+      "metaDescription": seo.metaDescription
     }`,
+    { id },
   );
 
-  return NextResponse.json({ data: posts });
+  if (!post) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  return NextResponse.json({ data: post });
 }
 
-export async function POST(req: NextRequest) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   if (!(await requireAdmin()))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
+  const { id } = await params;
   const data = (await req.json()) as AdminPostPayload;
-  if (!data.title || !data.slug) {
-    return NextResponse.json(
-      { error: "Title and slug are required" },
-      { status: 400 },
-    );
-  }
-
-  const doc = await buildDoc(data);
-  const created = await sanityWriteClient.create({ _type: "post", ...doc });
-
-  return NextResponse.json({ data: created }, { status: 201 });
-}
-
-export async function PATCH(req: NextRequest) {
-  if (!(await requireAdmin()))
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-
-  const { id, ...data } = (await req.json()) as AdminPostPayload & {
-    id?: string;
-  };
-  if (!id) {
-    return NextResponse.json({ error: "id is required" }, { status: 400 });
-  }
 
   const doc = await buildDoc(data);
   const updated = await sanityWriteClient.patch(id).set(doc).commit();
 
   return NextResponse.json({ data: updated });
-}
-
-export async function DELETE(req: NextRequest) {
-  if (!(await requireAdmin()))
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-
-  const { id } = (await req.json()) as { id?: string };
-  if (!id) {
-    return NextResponse.json({ error: "id is required" }, { status: 400 });
-  }
-
-  await sanityWriteClient.delete(id);
-
-  return NextResponse.json({ data: { id } });
 }

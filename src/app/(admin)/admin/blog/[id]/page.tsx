@@ -1,17 +1,43 @@
-// Phase 2E: submits to Sanity API via /api/admin/sanity/posts
 "use client";
 
 import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
 import { useForm, type SubmitHandler } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { ArrowLeft, X } from "lucide-react";
+import type { PortableTextBlock } from "@portabletext/react";
 
 import { generateSlug } from "@/lib/utils";
-import { dummyTeam } from "@/lib/dummy/team";
-import { dummyBlogPosts } from "@/lib/dummy/blog";
+import { CloudinaryUpload } from "@/components/admin/CloudinaryUpload";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
+import type { AdminPostPayload } from "@/types/blog";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
+
+interface SanityAuthor {
+  _id: string;
+  name: string;
+  role: string | null;
+}
+
+interface SanityPost {
+  _id: string;
+  title: string;
+  slug: string | null;
+  authorId: string | null;
+  categoryId: string | null;
+  excerpt: string | null;
+  readTime: number | null;
+  publishedAt: string | null;
+  tags: string[] | null;
+  body: PortableTextBlock[] | null;
+  mainImageUrl: string | null;
+  metaTitle: string | null;
+  metaDescription: string | null;
+}
 
 interface BlogFormValues {
   title: string;
@@ -22,7 +48,7 @@ interface BlogFormValues {
   readTime: number;
   publishedAt: string;
   tags: string[];
-  body: string;
+  body: PortableTextBlock[];
   imageUrl: string;
   metaTitle: string;
   metaDescription: string;
@@ -130,7 +156,10 @@ function TagsInput({
           {tag}
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); removeTag(tag); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              removeTag(tag);
+            }}
             className="hover:opacity-70 transition-opacity"
           >
             <X size={10} />
@@ -142,10 +171,16 @@ function TagsInput({
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter") { e.preventDefault(); addTag(input); }
-          if (e.key === "Backspace" && !input && tags.length) removeTag(tags[tags.length - 1]);
+          if (e.key === "Enter") {
+            e.preventDefault();
+            addTag(input);
+          }
+          if (e.key === "Backspace" && !input && tags.length)
+            removeTag(tags[tags.length - 1]);
         }}
-        onBlur={() => { if (input) addTag(input); }}
+        onBlur={() => {
+          if (input) addTag(input);
+        }}
         placeholder={tags.length === 0 ? "Type and press Enter…" : ""}
         className="flex-1 min-w-[120px] bg-transparent outline-none text-sm font-['DM_Sans'] text-white placeholder:text-(--color-text-secondary)"
       />
@@ -161,39 +196,84 @@ export default function EditBlogPostPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const post = dummyBlogPosts.find((p) => p.id === id);
-
-  if (!post) notFound();
-
+  const router = useRouter();
   const [slugManual, setSlugManual] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [editorKey, setEditorKey] = useState(0);
 
-  // Match author by name (BlogPost stores author name, not id)
-  const matchedAuthor =
-    dummyTeam.find((m) => m.name === post.author) ?? dummyTeam[0];
+  const {
+    data: postData,
+    isLoading: postLoading,
+    isError,
+  } = useQuery<{ data: SanityPost }>({
+    queryKey: ["admin-blog-post", id],
+    queryFn: async () => {
+      const res = await fetch(`/api/admin/sanity/posts/${id}`);
+      if (!res.ok) throw new Error("Not found");
+      return res.json() as Promise<{ data: SanityPost }>;
+    },
+  });
+
+  const { data: authorsData } = useQuery<{ data: SanityAuthor[] }>({
+    queryKey: ["sanity-authors"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/sanity/authors");
+      if (!res.ok) throw new Error("Failed");
+      return res.json() as Promise<{ data: SanityAuthor[] }>;
+    },
+  });
+
+  const post = postData?.data;
+  const authors = authorsData?.data ?? [];
+
+  if (isError) notFound();
 
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<BlogFormValues>({
     defaultValues: {
-      title: post.title,
-      slug: post.slug,
-      authorId: matchedAuthor?.id ?? dummyTeam[0]?.id ?? "",
-      category: post.category,
-      excerpt: post.excerpt,
-      readTime: post.readTime,
-      publishedAt: post.publishedAt.toISOString().split("T")[0],
-      tags: post.tags,
-      body: post.body,
-      imageUrl: post.imageUrl,
+      title: "",
+      slug: "",
+      authorId: "",
+      category: CATEGORIES[0],
+      excerpt: "",
+      readTime: 5,
+      publishedAt: new Date().toISOString().split("T")[0],
+      tags: [],
+      body: [],
+      imageUrl: "",
       metaTitle: "",
       metaDescription: "",
-      status: "PUBLISHED",
+      status: "DRAFT",
     },
   });
+
+  useEffect(() => {
+    if (!post) return;
+    reset({
+      title: post.title,
+      slug: post.slug ?? "",
+      authorId: post.authorId ?? "",
+      category: post.categoryId ?? CATEGORIES[0],
+      excerpt: post.excerpt ?? "",
+      readTime: post.readTime ?? 5,
+      publishedAt: post.publishedAt
+        ? post.publishedAt.split("T")[0]
+        : new Date().toISOString().split("T")[0],
+      tags: post.tags ?? [],
+      body: post.body ?? [],
+      imageUrl: post.mainImageUrl ?? "",
+      metaTitle: post.metaTitle ?? "",
+      metaDescription: post.metaDescription ?? "",
+      status: post.publishedAt ? "PUBLISHED" : "DRAFT",
+    });
+    setEditorKey((k) => k + 1);
+  }, [post, reset]);
 
   const title = watch("title");
   useEffect(() => {
@@ -204,9 +284,47 @@ export default function EditBlogPostPage({
 
   const tags = watch("tags");
   const excerpt = watch("excerpt");
+  const body = watch("body");
+  const imageUrl = watch("imageUrl");
 
-  const onSubmit: SubmitHandler<BlogFormValues> = (data) => {
-    console.log(data);
+  const onSubmit: SubmitHandler<BlogFormValues> = async (data) => {
+    setSubmitting(true);
+    try {
+      const payload: AdminPostPayload = {
+        title: data.title,
+        slug: data.slug || generateSlug(data.title),
+        excerpt: data.excerpt || undefined,
+        readTime: data.readTime,
+        publishedAt: data.status === "PUBLISHED" ? data.publishedAt : undefined,
+        tags: data.tags,
+        body: data.body,
+        mainImageUrl: data.imageUrl || undefined,
+        metaTitle: data.metaTitle || undefined,
+        metaDescription: data.metaDescription || undefined,
+      };
+
+      const res = await fetch(`/api/admin/sanity/posts/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const err = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        throw new Error(err?.error ?? "Failed to update post");
+      }
+
+      toast.success(
+        data.status === "PUBLISHED" ? "Post published" : "Draft saved",
+      );
+      router.push("/admin/blog");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const onSaveDraft = () => {
@@ -218,6 +336,16 @@ export default function EditBlogPostPage({
     setValue("status", "PUBLISHED");
     handleSubmit(onSubmit)();
   };
+
+  if (postLoading) {
+    return (
+      <div className="px-4 md:px-8 py-6">
+        <p className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+          Loading…
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 md:px-8 py-6 max-w-3xl mx-auto">
@@ -234,7 +362,6 @@ export default function EditBlogPostPage({
       </h1>
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-
         {/* ── Basic Info ── */}
         <SectionCard title="Basic Info">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -260,14 +387,20 @@ export default function EditBlogPostPage({
             </Field>
 
             <Field label="Published At">
-              <input type="date" {...register("publishedAt")} className={inputCls} />
+              <input
+                type="date"
+                {...register("publishedAt")}
+                className={inputCls}
+              />
             </Field>
 
             <Field label="Author">
               <select {...register("authorId")} className={selectCls}>
-                {dummyTeam.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name} — {m.role}
+                <option value="">Select author…</option>
+                {authors.map((a) => (
+                  <option key={a._id} value={a._id}>
+                    {a.name}
+                    {a.role ? ` — ${a.role}` : ""}
                   </option>
                 ))}
               </select>
@@ -276,7 +409,9 @@ export default function EditBlogPostPage({
             <Field label="Category">
               <select {...register("category")} className={selectCls}>
                 {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </Field>
@@ -310,26 +445,23 @@ export default function EditBlogPostPage({
               />
             </Field>
 
-            {/* Phase 2E: replace with RichTextEditor/Tiptap */}
-            <Field label="Body (Phase 2E: replace with RichTextEditor/Tiptap)">
-              <textarea
-                {...register("body")}
-                rows={12}
-                className={inputCls + " resize-y"}
+            <Field label="Body">
+              <RichTextEditor
+                key={editorKey}
+                value={body ?? []}
+                onChange={(blocks) => setValue("body", blocks)}
               />
             </Field>
           </div>
         </SectionCard>
 
         {/* ── Media ── */}
-        <SectionCard
-          title="Main Image"
-          subtitle="Phase 2F: replace with CloudinaryUpload"
-        >
-          {/* Phase 2F: replace with CloudinaryUpload */}
-          <Field label="Image URL">
-            <input {...register("imageUrl")} className={inputCls} />
-          </Field>
+        <SectionCard title="Main Image">
+          <CloudinaryUpload
+            folder="rapidluxe/blog"
+            currentUrl={imageUrl}
+            onUpload={(url) => setValue("imageUrl", url)}
+          />
         </SectionCard>
 
         {/* ── SEO ── */}
@@ -353,19 +485,20 @@ export default function EditBlogPostPage({
           <button
             type="button"
             onClick={onSaveDraft}
-            className="px-6 py-2.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm font-medium hover:border-(--color-gold)/40 hover:text-white transition-colors"
+            disabled={submitting}
+            className="px-6 py-2.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm font-medium hover:border-(--color-gold)/40 hover:text-white transition-colors disabled:opacity-50"
           >
-            Save Draft
+            {submitting ? "Saving…" : "Save Draft"}
           </button>
           <button
             type="button"
             onClick={onPublish}
-            className="px-6 py-2.5 rounded-lg bg-(--color-gold) text-(--color-navy) font-['DM_Sans'] text-sm font-bold hover:bg-(--color-gold)/90 transition-colors"
+            disabled={submitting}
+            className="px-6 py-2.5 rounded-lg bg-(--color-gold) text-(--color-navy) font-['DM_Sans'] text-sm font-bold hover:bg-(--color-gold)/90 transition-colors disabled:opacity-50"
           >
-            Publish
+            {submitting ? "Publishing…" : "Publish"}
           </button>
         </div>
-
       </form>
     </div>
   );

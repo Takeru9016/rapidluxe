@@ -22,7 +22,6 @@ const plainLinks = [
   { label: "Contact Us", href: "/contact" },
 ];
 
-
 export function Navbar() {
   const { isSignedIn } = useUser();
   const [scrolled, setScrolled] = useState(false);
@@ -123,7 +122,7 @@ export function Navbar() {
                   className="bg-(--color-coral) text-white px-4 h-9 rounded-full text-sm font-medium hover:bg-(--color-coral)/90 transition-colors"
                   asChild
                 >
-                  <Link href="/book">Book Now</Link>
+                  <Link href="/packages">Book Now</Link>
                 </Button>
               </>
             ) : (
@@ -141,7 +140,7 @@ export function Navbar() {
                   className="bg-(--color-coral) text-white px-4 h-9 rounded-full text-sm font-medium hover:bg-(--color-coral)/90 transition-colors"
                   asChild
                 >
-                  <Link href="/book">Book Now</Link>
+                  <Link href="/packages">Book Now</Link>
                 </Button>
               </>
             )}

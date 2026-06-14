@@ -1,12 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Calendar,
-  IndianRupee,
-  Package,
-  UserPlus,
-} from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Calendar, IndianRupee, Package, MessageSquare } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -25,121 +21,102 @@ import { DataTable } from "@/components/admin/DataTable";
 import { Badge } from "@/components/shared/Badge";
 import { formatPrice, formatDate } from "@/lib/utils";
 
-// ── Dummy Data ────────────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
 
-const revenueData = [
-  { month: "Jun", revenue: 1850000 },
-  { month: "Jul", revenue: 2200000 },
-  { month: "Aug", revenue: 1950000 },
-  { month: "Sep", revenue: 2600000 },
-  { month: "Oct", revenue: 2100000 },
-  { month: "Nov", revenue: 1800000 },
-  { month: "Dec", revenue: 3100000 },
-  { month: "Jan", revenue: 2750000 },
-  { month: "Feb", revenue: 2400000 },
-  { month: "Mar", revenue: 2900000 },
-  { month: "Apr", revenue: 3200000 },
-  { month: "May", revenue: 2840000 },
-];
-
-const packagePerformance = [
-  { name: "Maldives Overwater", bookings: 42, color: "#C9A84C" },
-  { name: "Bali Serenity", bookings: 38, color: "#4ECDC4" },
-  { name: "Santorini Romance", bookings: 31, color: "#A78BFA" },
-  { name: "Dubai Luxury", bookings: 24, color: "#F87171" },
-  { name: "Paris Getaway", bookings: 19, color: "#60A5FA" },
-];
-
-type BookingStatus = "upcoming" | "completed" | "cancelled";
+type BookingStatus =
+  | "ENQUIRY"
+  | "QUOTE_SENT"
+  | "AWAITING_PAYMENT"
+  | "PAID"
+  | "CONFIRMED"
+  | "CANCELLED";
 
 interface RecentBooking {
   id: string;
-  package: string;
-  traveller: string;
-  date: string;
-  amount: number;
+  bookingRef: string | null;
+  packageTitle: string;
+  userName: string;
+  departureDate: string;
+  totalAmount: number;
   status: BookingStatus;
+  createdAt: string;
 }
 
-const recentBookings: RecentBooking[] = [
-  {
-    id: "BK-009821",
-    package: "Maldives Overwater Luxury",
-    traveller: "Arjun Sharma",
-    date: "2025-09-14",
-    amount: 290000,
-    status: "upcoming",
-  },
-  {
-    id: "BK-009820",
-    package: "Bali Serenity Escape",
-    traveller: "Priya Mehta",
-    date: "2025-09-10",
-    amount: 170000,
-    status: "upcoming",
-  },
-  {
-    id: "BK-009819",
-    package: "Santorini Sunset Romance",
-    traveller: "Rahul Verma",
-    date: "2025-08-22",
-    amount: 310000,
-    status: "completed",
-  },
-  {
-    id: "BK-009818",
-    package: "Dubai Desert Luxury",
-    traveller: "Sneha Patel",
-    date: "2025-08-15",
-    amount: 215000,
-    status: "completed",
-  },
-  {
-    id: "BK-009817",
-    package: "Paris Romantic Getaway",
-    traveller: "Vikram Nair",
-    date: "2025-08-01",
-    amount: 195000,
-    status: "cancelled",
-  },
-];
+interface AnalyticsData {
+  revenue: { month: string; revenue: number }[];
+  packages: { name: string; bookings: number }[];
+  summary: {
+    totalBookings: number;
+    revenueMTD: number;
+    activePackages: number;
+    activeEnquiries: number;
+  };
+  recentBookings: RecentBooking[];
+}
 
-const statusVariant: Record<
-  BookingStatus,
-  "teal" | "ghost" | "coral"
-> = {
-  upcoming: "teal",
-  completed: "ghost",
-  cancelled: "coral",
+// ── Status → badge variant ────────────────────────────────────────────────────
+
+const statusVariant: Record<BookingStatus, "teal" | "ghost" | "coral"> = {
+  ENQUIRY: "ghost",
+  QUOTE_SENT: "ghost",
+  AWAITING_PAYMENT: "ghost",
+  PAID: "teal",
+  CONFIRMED: "teal",
+  CANCELLED: "coral",
 };
+
+const statusLabel: Record<BookingStatus, string> = {
+  ENQUIRY: "Enquiry",
+  QUOTE_SENT: "Quote Sent",
+  AWAITING_PAYMENT: "Awaiting Payment",
+  PAID: "Paid",
+  CONFIRMED: "Confirmed",
+  CANCELLED: "Cancelled",
+};
+
+// ── Pie colours for top packages ─────────────────────────────────────────────
+
+const PIE_COLORS = ["#C9A84C", "#4ECDC4", "#A78BFA", "#F87171", "#60A5FA"];
 
 // ── Table Columns ─────────────────────────────────────────────────────────────
 
 const columns: ColumnDef<RecentBooking>[] = [
   {
-    accessorKey: "id",
-    header: "Booking ID",
+    accessorKey: "bookingRef",
+    header: "Ref",
     cell: ({ getValue }) => (
       <span className="font-['JetBrains_Mono'] text-xs text-(--color-text-secondary)">
-        #{getValue<string>()}
+        {getValue<string | null>() ?? "—"}
       </span>
     ),
   },
   {
-    accessorKey: "package",
+    accessorKey: "packageTitle",
     header: "Package",
+    cell: ({ getValue }) => (
+      <span className="text-white text-sm">{getValue<string>()}</span>
+    ),
   },
   {
-    accessorKey: "traveller",
+    accessorKey: "userName",
     header: "Traveller",
+    cell: ({ getValue }) => (
+      <span className="text-(--color-white-muted) text-sm">
+        {getValue<string>()}
+      </span>
+    ),
   },
   {
-    accessorKey: "date",
-    header: "Date",
-    cell: ({ getValue }) => formatDate(getValue<string>()),
+    accessorKey: "departureDate",
+    header: "Departure",
+    cell: ({ getValue }) => (
+      <span className="text-(--color-text-secondary) text-sm whitespace-nowrap">
+        {formatDate(getValue<string>())}
+      </span>
+    ),
   },
   {
-    accessorKey: "amount",
+    accessorKey: "totalAmount",
     header: "Amount",
     cell: ({ getValue }) => (
       <span className="font-['JetBrains_Mono'] text-(--color-gold)">
@@ -151,10 +128,10 @@ const columns: ColumnDef<RecentBooking>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ getValue }) => {
-      const status = getValue<BookingStatus>();
+      const s = getValue<BookingStatus>();
       return (
-        <Badge variant={statusVariant[status]} size="sm">
-          {status.charAt(0).toUpperCase() + status.slice(1)}
+        <Badge variant={statusVariant[s]} size="sm">
+          {statusLabel[s]}
         </Badge>
       );
     },
@@ -195,9 +172,23 @@ export default function AdminDashboardPage() {
     day: "numeric",
   });
 
+  const { data, isLoading } = useQuery<{ data: AnalyticsData }>({
+    queryKey: ["admin-analytics-dashboard"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/analytics?range=12M");
+      if (!res.ok) throw new Error("Failed to load analytics");
+      return res.json() as Promise<{ data: AnalyticsData }>;
+    },
+  });
+
+  const analytics = data?.data;
+  const summary = analytics?.summary;
+  const revenueData = analytics?.revenue ?? [];
+  const packageData = analytics?.packages ?? [];
+  const recentBookings = analytics?.recentBookings ?? [];
+
   return (
     <div className="px-8 py-8">
-
       {/* Page Title */}
       <div>
         <h1 className="font-['Cormorant_Garamond'] text-4xl text-white">
@@ -212,120 +203,151 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-8">
         <StatsCard
           label="Total Bookings"
-          value={248}
+          value={summary?.totalBookings ?? 0}
           icon={Calendar}
-          change={{ value: 12, direction: "up" }}
         />
         <StatsCard
           label="Revenue (MTD)"
-          value={2840000}
+          value={summary?.revenueMTD ?? 0}
           icon={IndianRupee}
           format="currency"
-          change={{ value: 8, direction: "up" }}
         />
         <StatsCard
           label="Active Packages"
-          value={32}
+          value={summary?.activePackages ?? 0}
           icon={Package}
         />
         <StatsCard
-          label="New Users"
-          value={47}
-          icon={UserPlus}
-          change={{ value: 3, direction: "down" }}
+          label="Active Enquiries"
+          value={summary?.activeEnquiries ?? 0}
+          icon={MessageSquare}
         />
       </div>
 
       {/* Charts Row */}
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-
         {/* Revenue Bar Chart */}
         <div className="lg:col-span-2 bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
           <p className="font-['Cormorant_Garamond'] text-xl text-white mb-6">
             Revenue Overview
           </p>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart
-              data={revenueData}
-              barCategoryGap="35%"
-              margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
-            >
-              <XAxis
-                dataKey="month"
-                tick={{
-                  fill: "var(--color-text-secondary)",
-                  fontSize: 11,
-                  fontFamily: "DM Sans",
-                }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{
-                  fill: "var(--color-text-secondary)",
-                  fontSize: 11,
-                  fontFamily: "DM Sans",
-                }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(v: number) =>
-                  v >= 1000000 ? `₹${v / 1000000}M` : `₹${v / 1000}K`
-                }
-                width={52}
-              />
-              <Tooltip content={<RevenueTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-              <Bar
-                dataKey="revenue"
-                fill="var(--color-gold)"
-                radius={[4, 4, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          {isLoading ? (
+            <div className="h-[220px] flex items-center justify-center">
+              <span className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+                Loading…
+              </span>
+            </div>
+          ) : revenueData.length === 0 ? (
+            <div className="h-[220px] flex items-center justify-center">
+              <span className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+                No revenue data yet
+              </span>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart
+                data={revenueData}
+                barCategoryGap="35%"
+                margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+              >
+                <XAxis
+                  dataKey="month"
+                  tick={{
+                    fill: "var(--color-text-secondary)",
+                    fontSize: 11,
+                    fontFamily: "DM Sans",
+                  }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{
+                    fill: "var(--color-text-secondary)",
+                    fontSize: 11,
+                    fontFamily: "DM Sans",
+                  }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v: number) =>
+                    v >= 1000000 ? `₹${v / 1000000}M` : `₹${v / 1000}K`
+                  }
+                  width={52}
+                />
+                <Tooltip
+                  content={<RevenueTooltip />}
+                  cursor={{ fill: "rgba(255,255,255,0.04)" }}
+                />
+                <Bar
+                  dataKey="revenue"
+                  fill="var(--color-gold)"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
-        {/* Package Performance */}
+        {/* Top Packages */}
         <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
           <p className="font-['Cormorant_Garamond'] text-xl text-white mb-6">
             Top Packages
           </p>
-          <div className="flex justify-center mb-4">
-            <PieChart width={140} height={140}>
-              <Pie
-                data={packagePerformance}
-                cx={65}
-                cy={65}
-                innerRadius={40}
-                outerRadius={65}
-                dataKey="bookings"
-                strokeWidth={0}
-              >
-                {packagePerformance.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
+          {isLoading ? (
+            <div className="h-[180px] flex items-center justify-center">
+              <span className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+                Loading…
+              </span>
+            </div>
+          ) : packageData.length === 0 ? (
+            <div className="h-[180px] flex items-center justify-center">
+              <span className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+                No bookings yet
+              </span>
+            </div>
+          ) : (
+            <>
+              <div className="flex justify-center mb-4">
+                <PieChart width={140} height={140}>
+                  <Pie
+                    data={packageData}
+                    cx={65}
+                    cy={65}
+                    innerRadius={40}
+                    outerRadius={65}
+                    dataKey="bookings"
+                    strokeWidth={0}
+                  >
+                    {packageData.map((_, i) => (
+                      <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </div>
+              <ul className="space-y-2.5">
+                {packageData.map((pkg, i) => (
+                  <li
+                    key={pkg.name}
+                    className="flex items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{
+                          backgroundColor: PIE_COLORS[i % PIE_COLORS.length],
+                        }}
+                      />
+                      <span className="font-['DM_Sans'] text-xs text-(--color-white-muted) truncate">
+                        {pkg.name}
+                      </span>
+                    </div>
+                    <span className="font-['JetBrains_Mono'] text-xs text-(--color-text-secondary) shrink-0">
+                      {pkg.bookings}
+                    </span>
+                  </li>
                 ))}
-              </Pie>
-            </PieChart>
-          </div>
-          <ul className="space-y-2.5">
-            {packagePerformance.map((pkg) => (
-              <li
-                key={pkg.name}
-                className="flex items-center justify-between gap-3"
-              >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: pkg.color }}
-                  />
-                  <span className="font-['DM_Sans'] text-xs text-(--color-white-muted) truncate">
-                    {pkg.name}
-                  </span>
-                </div>
-                <span className="font-['JetBrains_Mono'] text-xs text-(--color-text-secondary) shrink-0">
-                  {pkg.bookings}
-                </span>
-              </li>
-            ))}
-          </ul>
+              </ul>
+            </>
+          )}
         </div>
       </div>
 
@@ -342,7 +364,17 @@ export default function AdminDashboardPage() {
             View All →
           </Link>
         </div>
-        <DataTable columns={columns} data={recentBookings} />
+        {isLoading ? (
+          <p className="font-['DM_Sans'] text-sm text-(--color-text-secondary) py-8 text-center">
+            Loading…
+          </p>
+        ) : recentBookings.length === 0 ? (
+          <p className="font-['DM_Sans'] text-sm text-(--color-text-secondary) py-8 text-center">
+            No bookings yet
+          </p>
+        ) : (
+          <DataTable columns={columns} data={recentBookings} />
+        )}
       </div>
 
       {/* Quick Actions */}
@@ -361,7 +393,6 @@ export default function AdminDashboardPage() {
           </Link>
         ))}
       </div>
-
     </div>
   );
 }

@@ -3,12 +3,22 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Plus, Pencil, Trash2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { DataTable } from "@/components/admin/DataTable";
-import { dummyDestinations } from "@/lib/dummy/destinations";
-import { dummyPackages } from "@/lib/dummy/packages";
-import type { Destination } from "@/types/destination";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface AdminDestination {
+  id: string;
+  name: string;
+  slug: string;
+  country: string;
+  continent: string;
+  imageUrl: string | null;
+  _count: { packages: number };
+}
 
 // ── Continent label ───────────────────────────────────────────────────────────
 
@@ -21,16 +31,9 @@ const CONTINENT_LABEL: Record<string, string> = {
   OCEANIA: "Oceania",
 };
 
-// ── Package counts ────────────────────────────────────────────────────────────
-
-const pkgCountByDest = dummyPackages.reduce<Record<string, number>>(
-  (acc, p) => ({ ...acc, [p.destinationId]: (acc[p.destinationId] ?? 0) + 1 }),
-  {},
-);
-
 // ── Columns ───────────────────────────────────────────────────────────────────
 
-const columns: ColumnDef<Destination>[] = [
+const columns: ColumnDef<AdminDestination>[] = [
   {
     id: "image",
     header: "Image",
@@ -64,7 +67,9 @@ const columns: ColumnDef<Destination>[] = [
     accessorKey: "country",
     header: "Country",
     cell: ({ getValue }) => (
-      <span className="text-(--color-text-secondary)">{getValue<string>()}</span>
+      <span className="text-(--color-text-secondary)">
+        {getValue<string>()}
+      </span>
     ),
   },
   {
@@ -81,7 +86,7 @@ const columns: ColumnDef<Destination>[] = [
     header: "Packages",
     cell: ({ row }) => (
       <span className="font-['JetBrains_Mono'] text-sm text-(--color-gold)">
-        {pkgCountByDest[row.original.id] ?? 0}
+        {row.original._count.packages}
       </span>
     ),
   },
@@ -91,7 +96,7 @@ const columns: ColumnDef<Destination>[] = [
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <Link
-          href={`/admin/destinations/${row.original.id}/edit`}
+          href={`/admin/destinations/${row.original.id}`}
           className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-['DM_Sans'] border border-(--color-navy-border) text-(--color-white-muted) hover:text-white hover:border-(--color-gold)/40 transition-colors"
         >
           <Pencil size={12} />
@@ -109,6 +114,23 @@ const columns: ColumnDef<Destination>[] = [
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AdminDestinationsPage() {
+  const { data, isLoading, isError } = useQuery<{ data: AdminDestination[] }>({
+    queryKey: ["admin-destinations"],
+    queryFn: async () => {
+      const res = await fetch("/api/destinations");
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        console.log("[admin/destinations] API error", res.status, err);
+        throw new Error("Failed to fetch destinations");
+      }
+      const json = (await res.json()) as { data: AdminDestination[] };
+      console.log("[admin/destinations] API response", json);
+      return json;
+    },
+  });
+
+  const destinations = data?.data ?? [];
+
   return (
     <div className="px-4 md:px-8 py-6">
       {/* Header */}
@@ -127,7 +149,17 @@ export default function AdminDestinationsPage() {
 
       {/* Table */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) overflow-x-auto">
-        <DataTable columns={columns} data={dummyDestinations} />
+        {isLoading ? (
+          <div className="py-12 text-center font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+            Loading…
+          </div>
+        ) : isError ? (
+          <div className="py-12 text-center font-['DM_Sans'] text-sm text-(--color-coral)">
+            Failed to load destinations — check console for details.
+          </div>
+        ) : (
+          <DataTable columns={columns} data={destinations} />
+        )}
       </div>
     </div>
   );

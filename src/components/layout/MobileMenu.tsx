@@ -10,7 +10,6 @@ import { useUIStore } from "@/store/uiStore";
 
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
-
 const navItems = [
   { label: "Packages", href: "/packages" },
   { label: "Destinations", href: "/destinations" },
@@ -129,7 +128,7 @@ export function MobileMenu() {
       {/* Bottom CTA */}
       <div className="mobile-nav-link mt-8 flex flex-col gap-3 shrink-0">
         <Link
-          href="/book"
+          href="/packages"
           onClick={close}
           className="w-full flex items-center justify-center py-4 rounded-full bg-(--color-coral) text-white font-sans font-medium text-base hover:bg-(--color-coral)/90 transition-colors"
         >

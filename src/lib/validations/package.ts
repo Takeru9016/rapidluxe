@@ -45,7 +45,10 @@ export const createPackageSchema = z.object({
       name: z.string(),
       stars: z.number().int().min(1).max(7),
       location: z.string(),
-      imageUrl: z.string().url().optional(),
+      imageUrl: z.preprocess(
+        (v) => (v === "" ? undefined : v),
+        z.string().url().optional(),
+      ),
       included: z.boolean(),
     }),
   ),

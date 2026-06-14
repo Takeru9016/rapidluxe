@@ -3,16 +3,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   useForm,
   useFieldArray,
   Controller,
   type SubmitHandler,
 } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 
 import { generateSlug } from "@/lib/utils";
-import { dummyDestinations } from "@/lib/dummy/destinations";
 import { CloudinaryUpload } from "@/components/admin/CloudinaryUpload";
 import {
   Select,
@@ -162,8 +164,26 @@ const selectCls = inputCls + " cursor-pointer";
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
+interface DestOption {
+  id: string;
+  name: string;
+  country: string;
+}
+
 export default function NewPackagePage() {
+  const router = useRouter();
   const [slugManual, setSlugManual] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { data: destData } = useQuery<{ data: DestOption[] }>({
+    queryKey: ["destinations-for-select"],
+    queryFn: async () => {
+      const res = await fetch("/api/destinations");
+      if (!res.ok) throw new Error("Failed");
+      return res.json() as Promise<{ data: DestOption[] }>;
+    },
+  });
+  const destinations = destData?.data ?? [];
 
   const {
     register,
@@ -248,8 +268,59 @@ export default function NewPackagePage() {
 
   // ── Submit ────────────────────────────────────────────────────────────────
 
-  const onSubmit: SubmitHandler<PackageFormValues> = (data) => {
-    console.log(data);
+  const onSubmit: SubmitHandler<PackageFormValues> = async (data) => {
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        title: data.title,
+        slug: data.slug,
+        description: data.description,
+        destinationId: data.destinationId,
+        durationNights: data.durationNights,
+        pricePerPerson: data.pricePerPerson,
+        originalPrice: data.originalPrice || undefined,
+        minGroupSize: data.minGroupSize,
+        maxGroupSize: data.maxGroupSize,
+        inclusions: data.inclusions.map((i) => i.value).filter(Boolean),
+        exclusions: data.exclusions.map((e) => e.value).filter(Boolean),
+        itinerary: data.itinerary.map((d) => ({
+          day: d.day,
+          title: d.title,
+          description: d.description,
+          meals: [
+            d.meals.breakfast ? "Breakfast" : null,
+            d.meals.lunch ? "Lunch" : null,
+            d.meals.dinner ? "Dinner" : null,
+          ].filter(Boolean),
+        })),
+        hotels: data.hotels,
+        activities: data.activities,
+        images: data.images.map((i) => i.url).filter(Boolean),
+        tags: data.tags,
+        cancellationPolicy: data.cancellationPolicy,
+        isFeatured: data.isFeatured,
+        status: data.status,
+        metaTitle: data.metaTitle || undefined,
+        metaDescription: data.metaDescription || undefined,
+      };
+      const res = await fetch("/api/packages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const err = (await res.json()) as { error?: string };
+        throw new Error(err.error ?? "Failed to create package");
+      }
+      toast.success("Package created.");
+      router.push("/admin/packages");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to create package.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const onSaveDraft = () => {
@@ -266,9 +337,9 @@ export default function NewPackagePage() {
 
   const destId = watch("destinationId");
   useEffect(() => {
-    const dest = dummyDestinations.find((d) => d.id === destId);
+    const dest = destinations.find((d) => d.id === destId);
     if (dest) setValue("country", dest.country);
-  }, [destId, setValue]);
+  }, [destId, destinations, setValue]);
 
   return (
     <div className="px-4 md:px-8 py-6 max-w-4xl mx-auto">
@@ -328,7 +399,7 @@ export default function NewPackagePage() {
             <Field label="Destination">
               <select {...register("destinationId")} className={selectCls}>
                 <option value="">Select destination</option>
-                {dummyDestinations.map((d) => (
+                {destinations.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.name}
                   </option>
@@ -1001,16 +1072,18 @@ export default function NewPackagePage() {
           <button
             type="button"
             onClick={onSaveDraft}
-            className="px-6 py-2.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm font-medium hover:border-(--color-gold)/40 hover:text-white transition-colors"
+            disabled={isSubmitting}
+            className="px-6 py-2.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm font-medium hover:border-(--color-gold)/40 hover:text-white transition-colors disabled:opacity-50"
           >
-            Save as Draft
+            {isSubmitting ? "Saving…" : "Save as Draft"}
           </button>
           <button
             type="button"
             onClick={onPublish}
-            className="px-6 py-2.5 rounded-lg bg-(--color-gold) text-(--color-navy) font-['DM_Sans'] text-sm font-bold hover:bg-(--color-gold)/90 transition-colors"
+            disabled={isSubmitting}
+            className="px-6 py-2.5 rounded-lg bg-(--color-gold) text-(--color-navy) font-['DM_Sans'] text-sm font-bold hover:bg-(--color-gold)/90 transition-colors disabled:opacity-50"
           >
-            Publish
+            {isSubmitting ? "Publishing…" : "Publish"}
           </button>
         </div>
       </form>

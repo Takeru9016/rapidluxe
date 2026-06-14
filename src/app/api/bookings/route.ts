@@ -10,6 +10,71 @@ import {
 } from "@/lib/rate-limit";
 import { calculateGST } from "@/lib/utils";
 import { createBookingSchema } from "@/lib/validations/booking";
+import type { DisplayStatus, DbBookingStatus } from "@/types/booking";
+
+function computeDisplayStatus(
+  status: DbBookingStatus,
+  departureDate: Date,
+  now: Date,
+): DisplayStatus {
+  if (status === "CANCELLED") return "cancelled";
+  if ((status === "PAID" || status === "CONFIRMED") && departureDate < now)
+    return "completed";
+  return "upcoming";
+}
+
+export async function GET(_req: NextRequest) {
+  const { userId } = await auth();
+  if (!userId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const dbUser = await prisma.user.findUnique({ where: { clerkId: userId } });
+    if (!dbUser) return NextResponse.json({ data: [] });
+
+    const bookings = await prisma.booking.findMany({
+      where: { userId: dbUser.id },
+      select: {
+        id: true,
+        bookingRef: true,
+        status: true,
+        departureDate: true,
+        returnDate: true,
+        adults: true,
+        children: true,
+        totalAmount: true,
+        package: {
+          select: {
+            title: true,
+            images: true,
+            destination: { select: { name: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const now = new Date();
+    const data = bookings.map((b) => ({
+      ...b,
+      departureDate: b.departureDate.toISOString(),
+      returnDate: b.returnDate?.toISOString() ?? null,
+      displayStatus: computeDisplayStatus(
+        b.status as DbBookingStatus,
+        b.departureDate,
+        now,
+      ),
+    }));
+
+    return NextResponse.json({ data });
+  } catch (error) {
+    console.error("bookings list error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch bookings" },
+      { status: 500 },
+    );
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {

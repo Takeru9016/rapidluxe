@@ -1,24 +1,36 @@
-// Phase 2E: wired to Sanity API
 "use client";
 
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { DataTable } from "@/components/admin/DataTable";
 import { Badge } from "@/components/shared/Badge";
 import { formatDate } from "@/lib/utils";
-import { dummyBlogPosts, type BlogPost } from "@/lib/dummy/blog";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface AdminPost {
+  _id: string;
+  title: string;
+  slug: string | null;
+  author: string | null;
+  category: string | null;
+  publishedAt: string | null;
+  excerpt: string | null;
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function deriveStatus(publishedAt: Date): "Published" | "Draft" {
+function deriveStatus(publishedAt: string | null): "Published" | "Draft" {
+  if (!publishedAt) return "Draft";
   return new Date(publishedAt) <= new Date() ? "Published" : "Draft";
 }
 
 // ── Columns ───────────────────────────────────────────────────────────────────
 
-const columns: ColumnDef<BlogPost>[] = [
+const columns: ColumnDef<AdminPost>[] = [
   {
     accessorKey: "title",
     header: "Title",
@@ -32,26 +44,36 @@ const columns: ColumnDef<BlogPost>[] = [
     accessorKey: "author",
     header: "Author",
     cell: ({ getValue }) => (
-      <span className="text-(--color-text-secondary)">{getValue<string>()}</span>
+      <span className="text-(--color-text-secondary)">
+        {getValue<string | null>() ?? "—"}
+      </span>
     ),
   },
   {
     accessorKey: "category",
     header: "Category",
-    cell: ({ getValue }) => (
-      <Badge variant="ghost" size="sm">
-        {getValue<string>()}
-      </Badge>
-    ),
+    cell: ({ getValue }) => {
+      const v = getValue<string | null>();
+      return v ? (
+        <Badge variant="ghost" size="sm">
+          {v}
+        </Badge>
+      ) : (
+        <span className="text-(--color-text-secondary)">—</span>
+      );
+    },
   },
   {
     accessorKey: "publishedAt",
     header: "Date",
-    cell: ({ getValue }) => (
-      <span className="text-(--color-text-secondary) text-sm whitespace-nowrap">
-        {formatDate(getValue<Date>())}
-      </span>
-    ),
+    cell: ({ getValue }) => {
+      const v = getValue<string | null>();
+      return (
+        <span className="text-(--color-text-secondary) text-sm whitespace-nowrap">
+          {v ? formatDate(v) : "—"}
+        </span>
+      );
+    },
   },
   {
     id: "status",
@@ -71,7 +93,7 @@ const columns: ColumnDef<BlogPost>[] = [
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <Link
-          href={`/admin/blog/${row.original.id}/edit`}
+          href={`/admin/blog/${row.original._id}`}
           className="px-2.5 py-1.5 rounded-md text-xs font-['DM_Sans'] border border-(--color-navy-border) text-(--color-white-muted) hover:text-white hover:border-(--color-gold)/40 transition-colors"
         >
           Edit
@@ -87,6 +109,17 @@ const columns: ColumnDef<BlogPost>[] = [
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AdminBlogPage() {
+  const { data, isLoading } = useQuery<{ data: AdminPost[] }>({
+    queryKey: ["admin-blog-posts"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/sanity/posts");
+      if (!res.ok) throw new Error("Failed to fetch posts");
+      return res.json() as Promise<{ data: AdminPost[] }>;
+    },
+  });
+
+  const posts = data?.data ?? [];
+
   return (
     <div className="px-4 md:px-8 py-6">
       {/* Header */}
@@ -105,7 +138,13 @@ export default function AdminBlogPage() {
 
       {/* Table */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) overflow-x-auto">
-        <DataTable columns={columns} data={dummyBlogPosts} />
+        {isLoading ? (
+          <div className="py-12 text-center font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+            Loading…
+          </div>
+        ) : (
+          <DataTable columns={columns} data={posts} />
+        )}
       </div>
     </div>
   );

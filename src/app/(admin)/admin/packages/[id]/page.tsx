@@ -3,13 +3,19 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
-import { useForm, useFieldArray, Controller, type SubmitHandler } from "react-hook-form";
+import {
+  useForm,
+  useFieldArray,
+  Controller,
+  type SubmitHandler,
+} from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 
 import { generateSlug } from "@/lib/utils";
-import { dummyDestinations } from "@/lib/dummy/destinations";
-import { dummyPackages } from "@/lib/dummy/packages";
 import {
   Select,
   SelectContent,
@@ -158,26 +164,153 @@ const selectCls = inputCls + " cursor-pointer";
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
+interface DestOption {
+  id: string;
+  name: string;
+  country: string;
+}
+
+interface DbPackage {
+  id: string;
+  title: string;
+  slug: string;
+  status: PackageStatus;
+  destinationId: string;
+  description: string;
+  durationNights: number;
+  minGroupSize: number;
+  maxGroupSize: number;
+  pricePerPerson: number;
+  originalPrice: number | null;
+  images: string[];
+  itinerary: Array<{
+    day: number;
+    title: string;
+    description: string;
+    meals: string[];
+  }>;
+  hotels: Array<{
+    name: string;
+    stars: number;
+    location: string;
+    imageUrl: string;
+    included: boolean;
+  }>;
+  activities: Array<{
+    name: string;
+    duration: string;
+    included: boolean;
+    price?: number;
+  }>;
+  inclusions: string[];
+  exclusions: string[];
+  tags: string[];
+  cancellationPolicy: Array<{
+    daysBeforeDeparture: number;
+    refundPercent: number;
+  }> | null;
+  metaTitle: string | null;
+  metaDescription: string | null;
+  isFeatured: boolean;
+  attributes: Array<{ label: string; quality: AttributeQuality }> | null;
+  platformRatings: Array<{
+    platform: string;
+    score: number;
+    reviewCount?: number;
+  }> | null;
+  reviewSummary: { loves: string[]; dislikes: string[] } | null;
+}
+
 export default function EditPackagePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const pkg = dummyPackages.find((p) => p.id === id);
-  if (!pkg) notFound();
-
+  const router = useRouter();
   const [slugManual, setSlugManual] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const {
+    data: pkgData,
+    isLoading: pkgLoading,
+    isError,
+  } = useQuery<{ data: DbPackage }>({
+    queryKey: ["admin-package", id],
+    queryFn: async () => {
+      const res = await fetch(`/api/admin/packages/${id}`);
+      if (!res.ok) throw new Error("Not found");
+      return res.json() as Promise<{ data: DbPackage }>;
+    },
+  });
+
+  const { data: destData } = useQuery<{ data: DestOption[] }>({
+    queryKey: ["destinations-for-select"],
+    queryFn: async () => {
+      const res = await fetch("/api/destinations");
+      if (!res.ok) throw new Error("Failed");
+      return res.json() as Promise<{ data: DestOption[] }>;
+    },
+  });
+  const destinations = destData?.data ?? [];
+
+  const pkg = pkgData?.data;
+
+  if (isError) notFound();
 
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    reset,
     control,
     formState: { errors },
   } = useForm<PackageFormValues>({
     defaultValues: {
+      title: "",
+      slug: "",
+      status: "DRAFT",
+      destinationId: "",
+      country: "",
+      durationNights: 7,
+      minGroupSize: 1,
+      maxGroupSize: 12,
+      pricePerPerson: 0,
+      originalPrice: 0,
+      description: "",
+      images: [{ url: "" }],
+      itinerary: [
+        {
+          day: 1,
+          title: "",
+          description: "",
+          meals: { breakfast: false, lunch: false, dinner: false },
+        },
+      ],
+      hotels: [
+        { name: "", stars: 5, location: "", imageUrl: "", included: true },
+      ],
+      activities: [{ name: "", duration: "", included: true, price: 0 }],
+      inclusions: [{ value: "" }],
+      exclusions: [{ value: "" }],
+      tags: [],
+      cancellationPolicy: DEFAULT_CANCELLATION,
+      metaTitle: "",
+      metaDescription: "",
+      isFeatured: false,
+      attributes: ATTRIBUTE_LABELS.map(() => ({ quality: "" as const })),
+      platformRatings: PLATFORM_LABELS.map(() => ({
+        score: 0,
+        reviewCount: 0,
+      })),
+      reviewSummary: { loves: ["", "", ""], dislikes: ["", "", ""] },
+    },
+  });
+
+  useEffect(() => {
+    if (!pkg) return;
+    reset({
       title: pkg.title,
       slug: pkg.slug,
       status: pkg.status,
@@ -189,7 +322,10 @@ export default function EditPackagePage({
       pricePerPerson: pkg.pricePerPerson,
       originalPrice: pkg.originalPrice ?? 0,
       description: pkg.description,
-      images: pkg.images.length > 0 ? pkg.images.map((url) => ({ url })) : [{ url: "" }],
+      images:
+        pkg.images.length > 0
+          ? pkg.images.map((url) => ({ url }))
+          : [{ url: "" }],
       itinerary:
         pkg.itinerary.length > 0
           ? pkg.itinerary.map((d) => ({
@@ -202,7 +338,14 @@ export default function EditPackagePage({
                 dinner: d.meals.includes("Dinner"),
               },
             }))
-          : [{ day: 1, title: "", description: "", meals: { breakfast: false, lunch: false, dinner: false } }],
+          : [
+              {
+                day: 1,
+                title: "",
+                description: "",
+                meals: { breakfast: false, lunch: false, dinner: false },
+              },
+            ],
       hotels:
         pkg.hotels.length > 0
           ? pkg.hotels.map((h) => ({
@@ -212,7 +355,15 @@ export default function EditPackagePage({
               imageUrl: h.imageUrl,
               included: h.included,
             }))
-          : [{ name: "", stars: 5, location: "", imageUrl: "", included: true }],
+          : [
+              {
+                name: "",
+                stars: 5,
+                location: "",
+                imageUrl: "",
+                included: true,
+              },
+            ],
       activities:
         pkg.activities.length > 0
           ? pkg.activities.map((a) => ({
@@ -231,10 +382,9 @@ export default function EditPackagePage({
           ? pkg.exclusions.map((v) => ({ value: v }))
           : [{ value: "" }],
       tags: pkg.tags,
-      cancellationPolicy:
-        pkg.cancellationPolicy && pkg.cancellationPolicy.length > 0
-          ? pkg.cancellationPolicy
-          : DEFAULT_CANCELLATION,
+      cancellationPolicy: pkg.cancellationPolicy?.length
+        ? pkg.cancellationPolicy
+        : DEFAULT_CANCELLATION,
       metaTitle: pkg.metaTitle ?? "",
       metaDescription: pkg.metaDescription ?? "",
       isFeatured: pkg.isFeatured,
@@ -244,7 +394,10 @@ export default function EditPackagePage({
       }),
       platformRatings: PLATFORM_LABELS.map((platform) => {
         const found = pkg.platformRatings?.find((r) => r.platform === platform);
-        return { score: found?.score ?? 0, reviewCount: found?.reviewCount ?? 0 };
+        return {
+          score: found?.score ?? 0,
+          reviewCount: found?.reviewCount ?? 0,
+        };
       }),
       reviewSummary: {
         loves: [
@@ -258,8 +411,9 @@ export default function EditPackagePage({
           pkg.reviewSummary?.dislikes[2] ?? "",
         ],
       },
-    },
-  });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pkg]);
 
   // ── Field arrays ──────────────────────────────────────────────────────────
 
@@ -295,8 +449,60 @@ export default function EditPackagePage({
 
   // ── Submit ────────────────────────────────────────────────────────────────
 
-  const onSubmit: SubmitHandler<PackageFormValues> = (data) => {
-    console.log(data);
+  const onSubmit: SubmitHandler<PackageFormValues> = async (data) => {
+    if (!pkg) return;
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        title: data.title,
+        slug: data.slug,
+        description: data.description,
+        destinationId: data.destinationId,
+        durationNights: data.durationNights,
+        pricePerPerson: data.pricePerPerson,
+        originalPrice: data.originalPrice || undefined,
+        minGroupSize: data.minGroupSize,
+        maxGroupSize: data.maxGroupSize,
+        inclusions: data.inclusions.map((i) => i.value).filter(Boolean),
+        exclusions: data.exclusions.map((e) => e.value).filter(Boolean),
+        itinerary: data.itinerary.map((d) => ({
+          day: d.day,
+          title: d.title,
+          description: d.description,
+          meals: [
+            d.meals.breakfast ? "Breakfast" : null,
+            d.meals.lunch ? "Lunch" : null,
+            d.meals.dinner ? "Dinner" : null,
+          ].filter(Boolean),
+        })),
+        hotels: data.hotels,
+        activities: data.activities,
+        images: data.images.map((i) => i.url).filter(Boolean),
+        tags: data.tags,
+        cancellationPolicy: data.cancellationPolicy,
+        isFeatured: data.isFeatured,
+        status: data.status,
+        metaTitle: data.metaTitle || undefined,
+        metaDescription: data.metaDescription || undefined,
+      };
+      const res = await fetch(`/api/packages/${pkg.slug}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const err = (await res.json()) as { error?: string };
+        throw new Error(err.error ?? "Failed to update package");
+      }
+      toast.success("Package saved.");
+      router.push("/admin/packages");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to save package.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const onSaveDraft = () => {
@@ -313,9 +519,19 @@ export default function EditPackagePage({
 
   const destId = watch("destinationId");
   useEffect(() => {
-    const dest = dummyDestinations.find((d) => d.id === destId);
+    const dest = destinations.find((d) => d.id === destId);
     if (dest) setValue("country", dest.country);
-  }, [destId, setValue]);
+  }, [destId, destinations, setValue]);
+
+  if (pkgLoading) {
+    return (
+      <div className="px-4 md:px-8 py-6">
+        <p className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+          Loading…
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 md:px-8 py-6 max-w-4xl mx-auto">
@@ -332,7 +548,6 @@ export default function EditPackagePage({
       </h1>
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-
         {/* ── Basic Info ── */}
         <SectionCard title="Basic Info">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -375,7 +590,7 @@ export default function EditPackagePage({
             <Field label="Destination">
               <select {...register("destinationId")} className={selectCls}>
                 <option value="">Select destination</option>
-                {dummyDestinations.map((d) => (
+                {destinations.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.name}
                   </option>
@@ -511,7 +726,11 @@ export default function EditPackagePage({
                     </button>
                   )}
                 </div>
-                <input type="hidden" {...register(`itinerary.${i}.day`)} value={i + 1} />
+                <input
+                  type="hidden"
+                  {...register(`itinerary.${i}.day`)}
+                  value={i + 1}
+                />
                 <Field label="Title">
                   <input
                     {...register(`itinerary.${i}.title`)}
@@ -591,20 +810,39 @@ export default function EditPackagePage({
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Field label="Hotel Name">
-                    <input {...register(`hotels.${i}.name`)} placeholder="e.g. Four Seasons" className={inputCls} />
+                    <input
+                      {...register(`hotels.${i}.name`)}
+                      placeholder="e.g. Four Seasons"
+                      className={inputCls}
+                    />
                   </Field>
                   <Field label="Stars">
-                    <select {...register(`hotels.${i}.stars`, { valueAsNumber: true })} className={selectCls}>
+                    <select
+                      {...register(`hotels.${i}.stars`, {
+                        valueAsNumber: true,
+                      })}
+                      className={selectCls}
+                    >
                       {[1, 2, 3, 4, 5].map((s) => (
-                        <option key={s} value={s}>{s} ★</option>
+                        <option key={s} value={s}>
+                          {s} ★
+                        </option>
                       ))}
                     </select>
                   </Field>
                   <Field label="Location">
-                    <input {...register(`hotels.${i}.location`)} placeholder="e.g. Ubud, Bali" className={inputCls} />
+                    <input
+                      {...register(`hotels.${i}.location`)}
+                      placeholder="e.g. Ubud, Bali"
+                      className={inputCls}
+                    />
                   </Field>
                   <Field label="Image URL">
-                    <input {...register(`hotels.${i}.imageUrl`)} placeholder="https://..." className={inputCls} />
+                    <input
+                      {...register(`hotels.${i}.imageUrl`)}
+                      placeholder="https://..."
+                      className={inputCls}
+                    />
                   </Field>
                 </div>
                 <label className="flex items-center gap-2 text-sm font-['DM_Sans'] text-(--color-white-muted) cursor-pointer">
@@ -622,7 +860,13 @@ export default function EditPackagePage({
           <button
             type="button"
             onClick={() =>
-              hotels.append({ name: "", stars: 5, location: "", imageUrl: "", included: true })
+              hotels.append({
+                name: "",
+                stars: 5,
+                location: "",
+                imageUrl: "",
+                included: true,
+              })
             }
             className="mt-3 inline-flex items-center gap-2 text-sm font-['DM_Sans'] text-(--color-gold) hover:text-(--color-gold)/80 transition-colors"
           >
@@ -640,16 +884,26 @@ export default function EditPackagePage({
                 className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] gap-3 items-end border border-(--color-navy-border) rounded-lg p-3"
               >
                 <Field label="Activity Name">
-                  <input {...register(`activities.${i}.name`)} placeholder="e.g. Snorkelling" className={inputCls} />
+                  <input
+                    {...register(`activities.${i}.name`)}
+                    placeholder="e.g. Snorkelling"
+                    className={inputCls}
+                  />
                 </Field>
                 <Field label="Duration">
-                  <input {...register(`activities.${i}.duration`)} placeholder="2 hrs" className={inputCls} />
+                  <input
+                    {...register(`activities.${i}.duration`)}
+                    placeholder="2 hrs"
+                    className={inputCls}
+                  />
                 </Field>
                 <Field label="Price (₹) if not incl.">
                   <input
                     type="number"
                     min={0}
-                    {...register(`activities.${i}.price`, { valueAsNumber: true })}
+                    {...register(`activities.${i}.price`, {
+                      valueAsNumber: true,
+                    })}
                     className={inputCls}
                   />
                 </Field>
@@ -678,7 +932,14 @@ export default function EditPackagePage({
           </div>
           <button
             type="button"
-            onClick={() => activities.append({ name: "", duration: "", included: true, price: 0 })}
+            onClick={() =>
+              activities.append({
+                name: "",
+                duration: "",
+                included: true,
+                price: 0,
+              })
+            }
             className="mt-3 inline-flex items-center gap-2 text-sm font-['DM_Sans'] text-(--color-gold) hover:text-(--color-gold)/80 transition-colors"
           >
             <Plus size={14} />
@@ -786,12 +1047,18 @@ export default function EditPackagePage({
         <SectionCard title="Cancellation Policy">
           <div className="space-y-3">
             {cancellation.fields.map((field, i) => (
-              <div key={field.id} className="grid grid-cols-[1fr_1fr_auto] gap-3 items-end">
+              <div
+                key={field.id}
+                className="grid grid-cols-[1fr_1fr_auto] gap-3 items-end"
+              >
                 <Field label="Days Before Departure">
                   <input
                     type="number"
                     min={0}
-                    {...register(`cancellationPolicy.${i}.daysBeforeDeparture`, { valueAsNumber: true })}
+                    {...register(
+                      `cancellationPolicy.${i}.daysBeforeDeparture`,
+                      { valueAsNumber: true },
+                    )}
                     className={inputCls}
                   />
                 </Field>
@@ -800,7 +1067,9 @@ export default function EditPackagePage({
                     type="number"
                     min={0}
                     max={100}
-                    {...register(`cancellationPolicy.${i}.refundPercent`, { valueAsNumber: true })}
+                    {...register(`cancellationPolicy.${i}.refundPercent`, {
+                      valueAsNumber: true,
+                    })}
                     className={inputCls}
                   />
                 </Field>
@@ -881,10 +1150,7 @@ export default function EditPackagePage({
                   control={control}
                   name={`attributes.${i}.quality`}
                   render={({ field }) => (
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger className="w-36 bg-(--color-navy) border-(--color-navy-border) text-sm font-['DM_Sans'] text-white focus:ring-(--color-gold)/40">
                         <SelectValue placeholder="Select..." />
                       </SelectTrigger>
@@ -990,19 +1256,20 @@ export default function EditPackagePage({
           <button
             type="button"
             onClick={onSaveDraft}
-            className="px-6 py-2.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm font-medium hover:border-(--color-gold)/40 hover:text-white transition-colors"
+            disabled={isSubmitting}
+            className="px-6 py-2.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm font-medium hover:border-(--color-gold)/40 hover:text-white transition-colors disabled:opacity-50"
           >
-            Save as Draft
+            {isSubmitting ? "Saving…" : "Save as Draft"}
           </button>
           <button
             type="button"
             onClick={onPublish}
-            className="px-6 py-2.5 rounded-lg bg-(--color-gold) text-(--color-navy) font-['DM_Sans'] text-sm font-bold hover:bg-(--color-gold)/90 transition-colors"
+            disabled={isSubmitting}
+            className="px-6 py-2.5 rounded-lg bg-(--color-gold) text-(--color-navy) font-['DM_Sans'] text-sm font-bold hover:bg-(--color-gold)/90 transition-colors disabled:opacity-50"
           >
-            Publish
+            {isSubmitting ? "Publishing…" : "Publish"}
           </button>
         </div>
-
       </form>
     </div>
   );

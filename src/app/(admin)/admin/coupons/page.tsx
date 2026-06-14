@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { Trash2, Plus } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { DataTable } from "@/components/admin/DataTable";
 import { Badge } from "@/components/shared/Badge";
 import { formatPrice, formatDate } from "@/lib/utils";
-import { dummyCoupons } from "@/lib/dummy/coupons";
-import type { Coupon, CouponType } from "@/types/coupon";
+import type { Coupon, CouponDiscountType } from "@/types/coupon";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -18,7 +19,6 @@ const INPUT_CLASS =
 // ── Columns factory ───────────────────────────────────────────────────────────
 
 function buildColumns(
-  coupons: Coupon[],
   onToggle: (id: string) => void,
   onDelete: (id: string) => void,
 ): ColumnDef<Coupon>[] {
@@ -33,13 +33,13 @@ function buildColumns(
       ),
     },
     {
-      accessorKey: "type",
+      accessorKey: "discountType",
       header: "Type",
       cell: ({ getValue }) => {
-        const type = getValue<CouponType>();
+        const type = getValue<CouponDiscountType>();
         return (
-          <Badge variant={type === "PERCENTAGE" ? "ghost" : "gold"} size="sm">
-            {type === "PERCENTAGE" ? "%" : "₹"}
+          <Badge variant={type === "PERCENT" ? "ghost" : "gold"} size="sm">
+            {type === "PERCENT" ? "%" : "₹"}
           </Badge>
         );
       },
@@ -49,57 +49,60 @@ function buildColumns(
       header: "Value",
       cell: ({ row }) => (
         <span className="font-['JetBrains_Mono'] text-(--color-gold)">
-          {row.original.type === "PERCENTAGE"
-            ? `${row.original.value}%`
-            : formatPrice(row.original.value)}
+          {row.original.discountType === "PERCENT"
+            ? `${row.original.discountValue}%`
+            : formatPrice(row.original.discountValue)}
         </span>
       ),
     },
     {
       accessorKey: "minAmount",
       header: "Min Amount",
-      cell: ({ getValue }) => (
-        <span className="text-(--color-text-secondary) text-sm">
-          {formatPrice(getValue<number>())}
-        </span>
-      ),
+      cell: ({ getValue }) => {
+        const v = getValue<number | null>();
+        return (
+          <span className="text-(--color-text-secondary) text-sm">
+            {v != null ? formatPrice(v) : "—"}
+          </span>
+        );
+      },
     },
     {
       id: "usage",
       header: "Used / Max",
       cell: ({ row }) => (
         <span className="font-['JetBrains_Mono'] text-sm text-(--color-white-muted)">
-          {row.original.usedCount}/{row.original.maxUses}
+          {row.original.usedCount}/{row.original.maxUses ?? "∞"}
         </span>
       ),
     },
     {
       accessorKey: "expiresAt",
       header: "Expiry",
-      cell: ({ getValue }) => (
-        <span className="text-(--color-text-secondary) text-sm whitespace-nowrap">
-          {formatDate(getValue<Date>())}
-        </span>
-      ),
+      cell: ({ getValue }) => {
+        const v = getValue<string | null>();
+        return (
+          <span className="text-(--color-text-secondary) text-sm whitespace-nowrap">
+            {v ? formatDate(v) : "—"}
+          </span>
+        );
+      },
     },
     {
       id: "active",
       header: "Status",
-      cell: ({ row }) => {
-        const coupon = coupons.find((c) => c.id === row.original.id) ?? row.original;
-        return (
-          <button
-            onClick={() => onToggle(row.original.id)}
-            className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
-              coupon.isActive
-                ? "bg-(--color-teal)/20 text-(--color-teal) border-(--color-teal)/30"
-                : "bg-white/5 text-(--color-text-secondary) border-(--color-navy-border)"
-            }`}
-          >
-            {coupon.isActive ? "Active" : "Inactive"}
-          </button>
-        );
-      },
+      cell: ({ row }) => (
+        <button
+          onClick={() => onToggle(row.original.id)}
+          className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
+            row.original.isActive
+              ? "bg-(--color-teal)/20 text-(--color-teal) border-(--color-teal)/30"
+              : "bg-white/5 text-(--color-text-secondary) border-(--color-navy-border)"
+          }`}
+        >
+          {row.original.isActive ? "Active" : "Inactive"}
+        </button>
+      ),
     },
     {
       id: "delete",
@@ -121,8 +124,8 @@ function buildColumns(
 
 interface NewCouponForm {
   code: string;
-  type: CouponType;
-  value: string;
+  discountType: CouponDiscountType;
+  discountValue: string;
   minAmount: string;
   maxUses: string;
   expiresAt: string;
@@ -130,48 +133,95 @@ interface NewCouponForm {
 
 const INITIAL_FORM: NewCouponForm = {
   code: "",
-  type: "PERCENTAGE",
-  value: "",
+  discountType: "PERCENT",
+  discountValue: "",
   minAmount: "",
   maxUses: "",
   expiresAt: "",
 };
 
 export default function AdminCouponsPage() {
-  const [coupons, setCoupons] = useState<Coupon[]>(dummyCoupons);
+  const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<NewCouponForm>(INITIAL_FORM);
 
-  function handleToggle(id: string) {
-    setCoupons((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, isActive: !c.isActive } : c)),
-    );
-  }
+  const { data, isLoading } = useQuery<{ data: Coupon[] }>({
+    queryKey: ["admin-coupons"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/coupons");
+      if (!res.ok) throw new Error("Failed to fetch coupons");
+      return res.json() as Promise<{ data: Coupon[] }>;
+    },
+  });
 
-  function handleDelete(id: string) {
-    setCoupons((prev) => prev.filter((c) => c.id !== id));
-  }
+  const createMutation = useMutation({
+    mutationFn: async (payload: {
+      code: string;
+      discountType: CouponDiscountType;
+      discountValue: number;
+      minAmount?: number;
+      maxUses?: number;
+      expiresAt?: string;
+    }) => {
+      const res = await fetch("/api/admin/coupons", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const err = (await res.json()) as { error?: string };
+        throw new Error(err.error ?? "Failed to create coupon");
+      }
+    },
+    onSuccess: () => {
+      toast.success("Coupon created.");
+      void queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
+      setForm(INITIAL_FORM);
+      setShowForm(false);
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
 
-  function handleSubmit(e: React.FormEvent) {
+  const toggleMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/admin/coupons/${id}`, { method: "PATCH" });
+      if (!res.ok) throw new Error("Failed");
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
+    },
+    onError: () => toast.error("Failed to update coupon."),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/admin/coupons/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed");
+    },
+    onSuccess: () => {
+      toast.success("Coupon deleted.");
+      void queryClient.invalidateQueries({ queryKey: ["admin-coupons"] });
+    },
+    onError: () => toast.error("Failed to delete coupon."),
+  });
+
+  function handleSubmit(e: { preventDefault(): void }) {
     e.preventDefault();
-    const newCoupon: Coupon = {
-      id: `coupon-${Date.now()}`,
+    createMutation.mutate({
       code: form.code.toUpperCase(),
-      type: form.type,
-      value: Number(form.value),
-      minAmount: Number(form.minAmount),
-      maxUses: Number(form.maxUses),
-      usedCount: 0,
-      expiresAt: new Date(form.expiresAt),
-      isActive: true,
-    };
-    console.log("Create coupon:", newCoupon);
-    setCoupons((prev) => [...prev, newCoupon]);
-    setForm(INITIAL_FORM);
-    setShowForm(false);
+      discountType: form.discountType,
+      discountValue: Number(form.discountValue),
+      minAmount: form.minAmount ? Number(form.minAmount) : undefined,
+      maxUses: form.maxUses ? Number(form.maxUses) : undefined,
+      expiresAt: form.expiresAt || undefined,
+    });
   }
 
-  const columns = buildColumns(coupons, handleToggle, handleDelete);
+  const coupons = data?.data ?? [];
+  const columns = buildColumns(
+    (id) => toggleMutation.mutate(id),
+    (id) => deleteMutation.mutate(id),
+  );
 
   return (
     <div className="px-4 md:px-8 py-6">
@@ -191,7 +241,13 @@ export default function AdminCouponsPage() {
 
       {/* Table */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) overflow-x-auto">
-        <DataTable columns={columns} data={coupons} />
+        {isLoading ? (
+          <div className="py-12 text-center font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+            Loading…
+          </div>
+        ) : (
+          <DataTable columns={columns} data={coupons} />
+        )}
       </div>
 
       {/* Add Coupon Form */}
@@ -200,7 +256,10 @@ export default function AdminCouponsPage() {
           <h2 className="font-['Cormorant_Garamond'] text-xl text-(--color-gold) mb-4">
             Add Coupon
           </h2>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form
+            onSubmit={handleSubmit}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          >
             {/* Code */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-['DM_Sans'] text-(--color-text-secondary)">
@@ -210,7 +269,9 @@ export default function AdminCouponsPage() {
                 type="text"
                 placeholder="e.g. SUMMER20"
                 value={form.code}
-                onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))
+                }
                 className={INPUT_CLASS}
                 required
               />
@@ -222,11 +283,16 @@ export default function AdminCouponsPage() {
                 Type
               </label>
               <select
-                value={form.type}
-                onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as CouponType }))}
+                value={form.discountType}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    discountType: e.target.value as CouponDiscountType,
+                  }))
+                }
                 className={INPUT_CLASS}
               >
-                <option value="PERCENTAGE">Percentage (%)</option>
+                <option value="PERCENT">Percentage (%)</option>
                 <option value="FIXED">Fixed (₹)</option>
               </select>
             </div>
@@ -239,9 +305,13 @@ export default function AdminCouponsPage() {
               <input
                 type="number"
                 min={1}
-                placeholder={form.type === "PERCENTAGE" ? "e.g. 20" : "e.g. 5000"}
-                value={form.value}
-                onChange={(e) => setForm((f) => ({ ...f, value: e.target.value }))}
+                placeholder={
+                  form.discountType === "PERCENT" ? "e.g. 20" : "e.g. 5000"
+                }
+                value={form.discountValue}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, discountValue: e.target.value }))
+                }
                 className={INPUT_CLASS}
                 required
               />
@@ -257,9 +327,10 @@ export default function AdminCouponsPage() {
                 min={0}
                 placeholder="e.g. 50000"
                 value={form.minAmount}
-                onChange={(e) => setForm((f) => ({ ...f, minAmount: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, minAmount: e.target.value }))
+                }
                 className={INPUT_CLASS}
-                required
               />
             </div>
 
@@ -273,9 +344,10 @@ export default function AdminCouponsPage() {
                 min={1}
                 placeholder="e.g. 100"
                 value={form.maxUses}
-                onChange={(e) => setForm((f) => ({ ...f, maxUses: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, maxUses: e.target.value }))
+                }
                 className={INPUT_CLASS}
-                required
               />
             </div>
 
@@ -287,9 +359,10 @@ export default function AdminCouponsPage() {
               <input
                 type="date"
                 value={form.expiresAt}
-                onChange={(e) => setForm((f) => ({ ...f, expiresAt: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, expiresAt: e.target.value }))
+                }
                 className={INPUT_CLASS}
-                required
               />
             </div>
 
@@ -297,9 +370,10 @@ export default function AdminCouponsPage() {
             <div className="md:col-span-2">
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-lg bg-(--color-gold)/20 border border-(--color-gold)/40 text-(--color-gold) text-sm font-['DM_Sans'] font-medium hover:bg-(--color-gold)/30 transition-colors"
+                disabled={createMutation.isPending}
+                className="px-6 py-2.5 rounded-lg bg-(--color-gold)/20 border border-(--color-gold)/40 text-(--color-gold) text-sm font-['DM_Sans'] font-medium hover:bg-(--color-gold)/30 transition-colors disabled:opacity-50"
               >
-                Create Coupon
+                {createMutation.isPending ? "Creating…" : "Create Coupon"}
               </button>
             </div>
           </form>

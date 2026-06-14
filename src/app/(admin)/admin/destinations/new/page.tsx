@@ -1,14 +1,15 @@
-// On submit: Phase 2F writes to Postgres + Sanity (see docs/SANITY_CMS.md)
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   useForm,
   useFieldArray,
   Controller,
   type SubmitHandler,
 } from "react-hook-form";
+import { toast } from "sonner";
 import { ArrowLeft, Plus, X } from "lucide-react";
 
 import { generateSlug } from "@/lib/utils";
@@ -179,7 +180,9 @@ function ToggleSwitch({
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function NewDestinationPage() {
+  const router = useRouter();
   const [slugManual, setSlugManual] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
@@ -224,8 +227,42 @@ export default function NewDestinationPage() {
     }
   }, [name, slugManual, setValue]);
 
-  const onSubmit: SubmitHandler<DestinationFormValues> = (data) => {
-    console.log(data);
+  const onSubmit: SubmitHandler<DestinationFormValues> = async (data) => {
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/admin/destinations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.name,
+          slug: data.slug,
+          country: data.country,
+          continent: data.continent,
+          imageUrl: data.imageUrl || undefined,
+          bestTimeFrom: data.bestTimeFrom || undefined,
+          bestTimeTo: data.bestTimeTo || undefined,
+          visaType: data.visaType || undefined,
+          currency: data.currency || undefined,
+          language: data.language || undefined,
+          whenToVisit: data.whenToVisit,
+          howToGetThere: data.howToGetThere,
+          about: data.about || undefined,
+          travelTips: data.travelTips || undefined,
+          metaTitle: data.metaTitle || undefined,
+          metaDescription: data.metaDescription || undefined,
+        }),
+      });
+      if (!res.ok) {
+        const err = (await res.json()) as { error?: string };
+        throw new Error(err.error ?? "Failed to create destination");
+      }
+      toast.success("Destination created.");
+      router.push("/admin/destinations");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -566,16 +603,18 @@ export default function NewDestinationPage() {
         <div className="flex flex-wrap gap-3 pb-8">
           <button
             type="button"
+            disabled={isSubmitting}
             onClick={() => handleSubmit(onSubmit)()}
-            className="px-6 py-2.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm font-medium hover:border-(--color-gold)/40 hover:text-white transition-colors"
+            className="px-6 py-2.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm font-medium hover:border-(--color-gold)/40 hover:text-white transition-colors disabled:opacity-50"
           >
             Save as Draft
           </button>
           <button
             type="submit"
-            className="px-6 py-2.5 rounded-lg bg-(--color-gold) text-(--color-navy) font-['DM_Sans'] text-sm font-bold hover:bg-(--color-gold)/90 transition-colors"
+            disabled={isSubmitting}
+            className="px-6 py-2.5 rounded-lg bg-(--color-gold) text-(--color-navy) font-['DM_Sans'] text-sm font-bold hover:bg-(--color-gold)/90 transition-colors disabled:opacity-50"
           >
-            Publish
+            {isSubmitting ? "Saving…" : "Publish"}
           </button>
         </div>
       </form>

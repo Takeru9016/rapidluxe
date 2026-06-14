@@ -5,15 +5,21 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm, type SubmitHandler } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ArrowLeft, X } from "lucide-react";
 import type { PortableTextBlock } from "@portabletext/react";
 
 import { generateSlug } from "@/lib/utils";
-import { dummyTeam } from "@/lib/dummy/team";
 import { CloudinaryUpload } from "@/components/admin/CloudinaryUpload";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import type { AdminPostPayload } from "@/types/blog";
+
+interface SanityAuthor {
+  _id: string;
+  name: string;
+  role: string | null;
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -174,6 +180,16 @@ export default function NewBlogPostPage() {
   const [slugManual, setSlugManual] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  const { data: authorsData } = useQuery<{ data: SanityAuthor[] }>({
+    queryKey: ["sanity-authors"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/sanity/authors");
+      if (!res.ok) throw new Error("Failed");
+      return res.json() as Promise<{ data: SanityAuthor[] }>;
+    },
+  });
+  const authors = authorsData?.data ?? [];
+
   const {
     register,
     handleSubmit,
@@ -184,7 +200,7 @@ export default function NewBlogPostPage() {
     defaultValues: {
       title: "",
       slug: "",
-      authorId: dummyTeam[0]?.id ?? "",
+      authorId: "",
       category: CATEGORIES[0],
       excerpt: "",
       readTime: 5,
@@ -315,9 +331,11 @@ export default function NewBlogPostPage() {
 
             <Field label="Author">
               <select {...register("authorId")} className={selectCls}>
-                {dummyTeam.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name} — {m.role}
+                <option value="">Select author…</option>
+                {authors.map((a) => (
+                  <option key={a._id} value={a._id}>
+                    {a.name}
+                    {a.role ? ` — ${a.role}` : ""}
                   </option>
                 ))}
               </select>

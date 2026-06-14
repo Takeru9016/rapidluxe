@@ -1,27 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { DataTable } from "@/components/admin/DataTable";
 import { Badge } from "@/components/shared/Badge";
 import { formatDate } from "@/lib/utils";
-import { dummyReviews } from "@/lib/dummy/reviews";
 import type { Review } from "@/types/review";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type TabValue = "pending" | "approved" | "hidden";
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function derivePackageName(packageId: string): string {
-  return packageId
-    .replace("pkg-", "")
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+interface ReviewWithUser extends Review {
+  user?: { name: string | null };
 }
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -37,23 +34,14 @@ function StarRating({ rating }: { rating: number }) {
 function buildColumns(
   onApprove: (id: string) => void,
   onHide: (id: string) => void,
-): ColumnDef<Review>[] {
+): ColumnDef<ReviewWithUser>[] {
   return [
     {
       id: "reviewer",
       header: "Reviewer",
       cell: ({ row }) => (
         <span className="text-white font-medium whitespace-nowrap">
-          user-{row.original.userId.slice(-3)}
-        </span>
-      ),
-    },
-    {
-      id: "package",
-      header: "Package",
-      cell: ({ row }) => (
-        <span className="text-(--color-white-muted) text-sm">
-          {derivePackageName(row.original.packageId)}
+          {row.original.user?.name ?? `user-${row.original.userId.slice(-4)}`}
         </span>
       ),
     },
@@ -76,7 +64,7 @@ function buildColumns(
       header: "Date",
       cell: ({ getValue }) => (
         <span className="text-(--color-text-secondary) text-sm whitespace-nowrap">
-          {formatDate(getValue<Date>())}
+          {formatDate(getValue<string>())}
         </span>
       ),
     },
@@ -85,9 +73,13 @@ function buildColumns(
       header: "Status",
       cell: ({ row }) =>
         row.original.isApproved ? (
-          <Badge variant="teal" size="sm">Approved</Badge>
+          <Badge variant="teal" size="sm">
+            Approved
+          </Badge>
         ) : (
-          <Badge variant="gold" size="sm">Pending</Badge>
+          <Badge variant="gold" size="sm">
+            Pending
+          </Badge>
         ),
     },
     {
@@ -123,23 +115,59 @@ const TABS: { value: TabValue; label: string }[] = [
 
 export default function AdminReviewsPage() {
   const [tab, setTab] = useState<TabValue>("pending");
+  const queryClient = useQueryClient();
 
-  function handleApprove(id: string) {
-    console.log("Approve review:", id);
-  }
+  const { data, isLoading, isError } = useQuery<{ data: ReviewWithUser[] }>({
+    queryKey: ["admin-reviews"],
+    queryFn: async () => {
+      const res = await fetch("/api/reviews?all=true");
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        console.log("[admin/reviews] API error", res.status, err);
+        throw new Error("Failed to fetch reviews");
+      }
+      const json = (await res.json()) as { data: ReviewWithUser[] };
+      console.log("[admin/reviews] API response", json);
+      return json;
+    },
+  });
 
-  function handleHide(id: string) {
-    console.log("Hide review:", id);
-  }
+  const patchMutation = useMutation({
+    mutationFn: async ({
+      id,
+      isApproved,
+    }: {
+      id: string;
+      isApproved: boolean;
+    }) => {
+      const res = await fetch(`/api/reviews/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isApproved }),
+      });
+      if (!res.ok) throw new Error("Failed");
+    },
+    onSuccess: (_, vars) => {
+      toast.success(vars.isApproved ? "Review approved." : "Review hidden.");
+      void queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
+    },
+    onError: (_, vars) =>
+      toast.error(vars.isApproved ? "Failed to approve." : "Failed to hide."),
+  });
+
+  const reviews = data?.data ?? [];
 
   const filtered =
     tab === "pending"
-      ? dummyReviews.filter((r) => !r.isApproved)
+      ? reviews.filter((r) => !r.isApproved)
       : tab === "approved"
-        ? dummyReviews.filter((r) => r.isApproved)
+        ? reviews.filter((r) => r.isApproved)
         : [];
 
-  const columns = buildColumns(handleApprove, handleHide);
+  const columns = buildColumns(
+    (id) => patchMutation.mutate({ id, isApproved: true }),
+    (id) => patchMutation.mutate({ id, isApproved: false }),
+  );
 
   return (
     <div className="px-4 md:px-8 py-6">
@@ -169,7 +197,17 @@ export default function AdminReviewsPage() {
 
       {/* Table */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) overflow-x-auto">
-        <DataTable columns={columns} data={filtered} />
+        {isLoading ? (
+          <div className="py-12 text-center font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+            Loading…
+          </div>
+        ) : isError ? (
+          <div className="py-12 text-center font-['DM_Sans'] text-sm text-(--color-coral)">
+            Failed to load reviews — check console for details.
+          </div>
+        ) : (
+          <DataTable columns={columns} data={filtered} />
+        )}
       </div>
     </div>
   );

@@ -11,6 +11,24 @@ import { createReviewSchema } from "@/lib/validations/review";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
+  const all = searchParams.get("all") === "true";
+
+  if (all) {
+    const { sessionClaims } = await auth();
+    const role = (sessionClaims?.metadata as { role?: string } | null)?.role;
+    if (role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const reviews = await prisma.review.findMany({
+      include: { user: { select: { name: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 200,
+    });
+
+    return NextResponse.json({ data: reviews });
+  }
+
   const packageId = searchParams.get("packageId");
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
   const limit = Math.min(

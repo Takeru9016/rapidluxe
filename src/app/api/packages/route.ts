@@ -18,6 +18,16 @@ export async function GET(req: NextRequest) {
   if (!rl.success) return rateLimitResponse(rl.reset);
 
   const { searchParams } = req.nextUrl;
+  const all = searchParams.get("all") === "true";
+
+  if (all) {
+    const { sessionClaims } = await auth();
+    const role = (sessionClaims?.metadata as { role?: string } | null)?.role;
+    if (role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
   const raw = {
     destination: searchParams.get("destination") ?? undefined,
     priceMin: searchParams.get("priceMin") ?? undefined,
@@ -27,7 +37,8 @@ export async function GET(req: NextRequest) {
     type: searchParams.get("type") ?? undefined,
     sort: searchParams.get("sort") ?? undefined,
     page: searchParams.get("page") ?? undefined,
-    limit: searchParams.get("limit") ?? undefined,
+    // When all=true (admin), skip schema limit so max(50) doesn't reject admin requests
+    limit: all ? undefined : (searchParams.get("limit") ?? undefined),
   };
 
   const parsed = packageFiltersSchema.safeParse(raw);
@@ -38,8 +49,20 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const { destination, priceMin, priceMax, duration, tags, sort, page, limit } =
-    parsed.data;
+  const {
+    destination,
+    priceMin,
+    priceMax,
+    duration,
+    tags,
+    sort,
+    page,
+    limit: parsedLimit,
+  } = parsed.data;
+  // Admin can request up to 500; public is capped by schema at 50
+  const limit = all
+    ? Math.min(500, Math.max(1, Number(searchParams.get("limit") ?? "100")))
+    : parsedLimit;
 
   const orderBy = (() => {
     switch (sort) {
@@ -59,7 +82,7 @@ export async function GET(req: NextRequest) {
   })();
 
   const where = {
-    status: "PUBLISHED" as const,
+    ...(!all && { status: "PUBLISHED" as const }),
     ...(destination && { destination: { slug: destination } }),
     ...(priceMin !== undefined && { pricePerPerson: { gte: priceMin } }),
     ...(priceMax !== undefined && {
@@ -105,7 +128,7 @@ export async function POST(req: NextRequest) {
   const parsed = createPackageSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Invalid input", details: parsed.error.issues },
+      { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
       { status: 400 },
     );
   }
