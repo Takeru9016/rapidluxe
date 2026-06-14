@@ -49,6 +49,7 @@ function TravelerRow({
         <button
           onClick={onDecrement}
           disabled={value <= min}
+          aria-label={`Decrease ${label}`}
           className="w-7 h-7 rounded-full border border-(--color-navy-border) flex items-center justify-center text-white disabled:opacity-30 hover:border-(--color-gold) transition-colors"
         >
           <Minus size={12} />
@@ -59,6 +60,7 @@ function TravelerRow({
         <button
           onClick={onIncrement}
           disabled={value >= max}
+          aria-label={`Increase ${label}`}
           className="w-7 h-7 rounded-full border border-(--color-navy-border) flex items-center justify-center text-white disabled:opacity-30 hover:border-(--color-gold) transition-colors"
         >
           <Plus size={12} />

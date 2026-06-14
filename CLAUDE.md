@@ -3,9 +3,9 @@
 ## Current Build State
 
 ```
-Phase:          3B — Analytics + SEO
-Active Task:    3B complete
-Last Completed: 3B "PostHog, Vercel Analytics, Sentry, generateMetadata on all public pages, JSON-LD, sitemap, robots"
+Phase:          3C — Performance + Final QA
+Active Task:    3C in progress — BLOCKED: `pnpm build` fails (Next 16 static-export useContext regression, vercel/next.js#86178). Investigated: version bump, webpack, Sentry bypass, force-dynamic, next-themes removal all fail. Upstream bug, no app-level fix. User must choose: wait for Next patch OR downgrade to 15.x. Blocks Vercel deploy; `pnpm dev` works.
+Last Completed: 3C partial "Native analyzer script, image/priority audit, prisma log + pooling, Sentry deprecation fix, security audit (clean), theme-color, aria-labels, .env.example"
 ```
 
 > Update after every completed task.

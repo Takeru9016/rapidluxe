@@ -116,12 +116,14 @@ export function DetailPhotoGrid({ images, alt, priority = false }: DetailPhotoGr
             />
             <button
               onClick={prev}
+              aria-label="Previous photo"
               className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full bg-(--color-navy-surface)/80 backdrop-blur-sm border border-(--color-navy-border) text-white hover:bg-(--color-navy-surface) transition-colors"
             >
               <ChevronLeft size={18} />
             </button>
             <button
               onClick={next}
+              aria-label="Next photo"
               className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full bg-(--color-navy-surface)/80 backdrop-blur-sm border border-(--color-navy-border) text-white hover:bg-(--color-navy-surface) transition-colors"
             >
               <ChevronRight size={18} />
