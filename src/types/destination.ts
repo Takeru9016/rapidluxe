@@ -41,6 +41,14 @@ export interface TransportOption {
   isRecommended?: boolean;
 }
 
+export interface MonthlyWeather {
+  month: string;
+  temp: number;
+  rainfall: number;
+  humidity: number;
+  rating: number;
+}
+
 export interface Destination {
   id: string;
   name: string;
@@ -50,6 +58,8 @@ export interface Destination {
   description?: string;
   imageUrl?: string;
   images?: string[];
+  lat?: number | null;
+  lng?: number | null;
   bestTimeFrom?: string;
   bestTimeTo?: string;
   visaType?: VisaType;

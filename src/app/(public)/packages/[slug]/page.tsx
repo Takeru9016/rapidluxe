@@ -21,8 +21,13 @@ import { dummyDeals } from "@/lib/dummy/deals";
 import { formatPrice, calculateGST, formatDate } from "@/lib/utils";
 
 import { useWishlistStore } from "@/store/wishlistStore";
-import { usePackage, usePackages } from "@/hooks/api/usePackages";
+import {
+  usePackage,
+  usePackages,
+  usePackageHotels,
+} from "@/hooks/api/usePackages";
 import { useReviews, useCheckEligibility } from "@/hooks/api/useReviews";
+import { useCurrencyRates } from "@/hooks/api/useCurrency";
 
 import type { Package } from "@/types/package";
 
@@ -32,7 +37,7 @@ import { MultiPlatformRatings } from "@/components/shared/MultiPlatformRatings";
 import { ReviewSummaryCards } from "@/components/shared/ReviewSummaryCards";
 import { Rating } from "@/components/shared/Rating";
 import { PriceDisplay } from "@/components/shared/PriceDisplay";
-import { MapEmbed } from "@/components/shared/MapEmbed";
+import { MapboxMap } from "@/components/shared/MapboxMap";
 import { ReviewForm } from "@/components/shared/ReviewForm";
 import { HotelCard } from "@/components/cards/HotelCard";
 import { ActivityCard } from "@/components/cards/ActivityCard";
@@ -174,9 +179,13 @@ export default function PackageDetailPage({
 
   const { data: pkgData, isLoading } = usePackage(slug);
   const { data: similarData } = usePackages({ limit: 6, sort: "featured" });
+  const { data: liveHotelsData } = usePackageHotels(slug);
+  const { data: currencyData } = useCurrencyRates();
 
   const pkg = pkgData?.data;
   const destination = pkg?.destination ?? null;
+  const liveHotels = liveHotelsData?.data ?? [];
+  const rates = currencyData?.data;
 
   const { data: reviewsData, isLoading: reviewsLoading } = useReviews(
     pkg?.id ?? "",
@@ -514,10 +523,11 @@ export default function PackageDetailPage({
                     </div>
                   )}
 
-                {/* Phase 3A: replace with Mapbox interactive map */}
-                <MapEmbed
-                  label={destination?.name ?? pkg.title}
-                  height="h-64"
+                <MapboxMap
+                  lat={destination?.lat}
+                  lng={destination?.lng}
+                  zoom={9}
+                  className="h-64"
                 />
               </TabsContent>
 
@@ -567,7 +577,46 @@ export default function PackageDetailPage({
 
               {/* ── Hotels ── */}
               <TabsContent value="hotels" className="mt-6">
-                {pkg.hotels && pkg.hotels.length > 0 ? (
+                {liveHotels.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {liveHotels.map((hotel) => (
+                      <div
+                        key={hotel.name}
+                        className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) overflow-hidden hover:border-(--color-gold)/30 transition-colors"
+                      >
+                        {hotel.imageUrl && (
+                          <div className="h-40 bg-(--color-navy-border)/40 overflow-hidden">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={hotel.imageUrl}
+                              alt={hotel.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="p-4">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <p className="font-sans font-medium text-white leading-snug">
+                              {hotel.name}
+                            </p>
+                            <span className="font-mono text-xs text-(--color-gold) shrink-0">
+                              ★ {hotel.rating.toFixed(1)}
+                            </span>
+                          </div>
+                          <p className="font-sans text-xs text-(--color-text-secondary) mb-2">
+                            {hotel.location} ·{" "}
+                            {"★".repeat(Math.min(hotel.stars, 5))}
+                          </p>
+                          {hotel.price > 0 && (
+                            <p className="font-sans text-sm text-(--color-white-muted)">
+                              ₹{hotel.price.toLocaleString("en-IN")} / night
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : pkg.hotels && pkg.hotels.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {pkg.hotels.map((hotel) => (
                       <HotelCard key={hotel.name} hotel={hotel} />
@@ -716,6 +765,16 @@ export default function PackageDetailPage({
                 <p className="font-sans text-xs text-(--color-text-secondary) mt-1">
                   per person
                 </p>
+                {rates && (
+                  <p className="font-mono text-xs text-(--color-text-secondary) mt-2">
+                    ≈ ${(effectivePrice * rates.USD).toFixed(0)} / £
+                    {(effectivePrice * rates.GBP).toFixed(0)} / AED{" "}
+                    {Math.round(effectivePrice * rates.AED).toLocaleString(
+                      "en-IN",
+                    )}{" "}
+                    per person
+                  </p>
+                )}
               </div>
 
               <Separator className="bg-(--color-navy-border)" />

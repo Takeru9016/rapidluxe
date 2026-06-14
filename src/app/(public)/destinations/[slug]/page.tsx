@@ -29,7 +29,11 @@ import type {
 } from "@/types/destination";
 import type { Package } from "@/types/package";
 
-import { useDestination } from "@/hooks/api/useDestinations";
+import {
+  useDestination,
+  useDestinationWeather,
+  useDestinationActivities,
+} from "@/hooks/api/useDestinations";
 import { usePackages } from "@/hooks/api/usePackages";
 import { useDestinationEditorial } from "@/hooks/api/useDestinationEditorial";
 import { PortableTextBody } from "@/components/shared/PortableTextBody";
@@ -38,9 +42,10 @@ import {
   ActivityCard,
   Badge,
   DetailPhotoGrid,
-  MapEmbed,
   PackageCard,
+  UsefulLinks,
 } from "@/components";
+import { MapboxMap } from "@/components/shared/MapboxMap";
 import { PackageCardSkeleton } from "@/components/shared/Skeletons";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -89,29 +94,6 @@ const TRAVEL_TIPS = [
   "Respect local customs and dress codes, especially at religious or heritage sites.",
 ];
 
-const USEFUL_LINKS = [
-  {
-    name: "Niyo Global Card",
-    desc: "Zero forex markup card for international travel",
-    url: "https://niyo.co",
-  },
-  {
-    name: "Scapia Credit Card",
-    desc: "Travel credit card with zero forex fees",
-    url: "https://scapia.in",
-  },
-  {
-    name: "Visa2Fly",
-    desc: "Visa assistance and application service",
-    url: "https://visa2fly.com",
-  },
-  {
-    name: "Airalo eSIM",
-    desc: "International eSIM for seamless connectivity",
-    url: "https://airalo.com",
-  },
-];
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function AvailabilityIcon({ status }: { status: AvailabilityStatus }) {
@@ -144,13 +126,17 @@ export default function DestinationDetailPage({
     limit: 50,
   });
   const { data: editorialData } = useDestinationEditorial(slug);
+  const { data: weatherData } = useDestinationWeather(slug);
+  const { data: activitiesData } = useDestinationActivities(slug);
 
   const editorial = editorialData?.data;
   const dest = destData?.data;
   const packages = pkgsData?.data ?? [];
-  const activities: Activity[] = packages
+  const liveActivities = activitiesData?.data ?? [];
+  const fallbackActivities: Activity[] = packages
     .flatMap((p) => (p.activities as Activity[]) ?? [])
     .slice(0, 6);
+  const monthlyWeather = weatherData?.data ?? [];
 
   const images = dest?.images ?? (dest?.imageUrl ? [dest.imageUrl] : []);
   const allMonths = dest?.whenToVisit ?? [];
@@ -296,17 +282,53 @@ export default function DestinationDetailPage({
         </section>
 
         {/* ── 5. THINGS TO DO ───────────────────────────────────────────────── */}
-        {activities.length > 0 && (
+        {(liveActivities.length > 0 || fallbackActivities.length > 0) && (
           <section className="py-12 border-t border-(--color-navy-border)">
             <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white mb-8">
               Things To Do in {dest.name}
             </h2>
-            {/* Phase 3A: replace with Viator API data */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {activities.map((activity, i) => (
-                <ActivityCard key={i} activity={activity} />
-              ))}
-            </div>
+            {liveActivities.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {liveActivities.map((act, i) => (
+                  <div
+                    key={i}
+                    className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) overflow-hidden hover:border-(--color-gold)/30 transition-colors"
+                  >
+                    {act.imageUrl && (
+                      <div className="h-40 bg-(--color-navy-border)/40 relative overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={act.imageUrl}
+                          alt={act.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="p-4">
+                      <p className="font-sans font-medium text-white mb-1 line-clamp-2">
+                        {act.name}
+                      </p>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="font-mono text-xs text-(--color-gold)">
+                          ★ {act.rating.toFixed(1)}
+                        </span>
+                        {act.price > 0 && (
+                          <span className="font-sans text-xs text-(--color-white-muted)">
+                            From {act.currency} {act.price.toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {fallbackActivities.map((activity, i) => (
+                  <ActivityCard key={i} activity={activity} />
+                ))}
+              </div>
+            )}
           </section>
         )}
 
@@ -333,6 +355,11 @@ export default function DestinationDetailPage({
                     <th className="font-sans text-xs text-(--color-text-secondary) uppercase tracking-wide px-4 py-3 text-left hidden md:table-cell">
                       Weather
                     </th>
+                    {monthlyWeather.length > 0 && (
+                      <th className="font-sans text-xs text-(--color-text-secondary) uppercase tracking-wide px-4 py-3 text-left hidden lg:table-cell">
+                        Temp
+                      </th>
+                    )}
                     <th className="font-sans text-xs text-(--color-text-secondary) uppercase tracking-wide px-4 py-3 text-left">
                       Availability
                     </th>
@@ -370,6 +397,17 @@ export default function DestinationDetailPage({
                       <td className="font-sans text-sm text-(--color-white-muted) px-4 py-4 hidden md:table-cell max-w-xs">
                         {row.weather}
                       </td>
+                      {monthlyWeather.length > 0 &&
+                        (() => {
+                          const w = monthlyWeather.find(
+                            (m) => m.month === row.month,
+                          );
+                          return (
+                            <td className="font-mono text-xs text-(--color-gold) px-4 py-4 hidden lg:table-cell whitespace-nowrap">
+                              {w ? `${w.temp}°C` : "—"}
+                            </td>
+                          );
+                        })()}
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-1.5">
                           <AvailabilityIcon status={row.availability} />
@@ -476,41 +514,11 @@ export default function DestinationDetailPage({
 
         {/* ── 9. MAP ────────────────────────────────────────────────────────── */}
         <section className="py-8 border-t border-(--color-navy-border)">
-          {/* Phase 3A: Mapbox dark-theme + surroundings panel */}
-          <MapEmbed label={dest.name} height="h-96" />
+          <MapboxMap lat={dest.lat} lng={dest.lng} zoom={10} className="h-96" />
         </section>
 
         {/* ── 10. TRAVEL ESSENTIALS ─────────────────────────────────────────── */}
-        <section className="py-12 border-t border-(--color-navy-border)">
-          <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white mb-8">
-            Travel Essentials for Indian Travelers
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {USEFUL_LINKS.map((link) => (
-              <div
-                key={link.name}
-                className="bg-(--color-navy-surface) rounded-xl p-4 border border-(--color-navy-border) hover:border-(--color-gold)/30 transition-colors flex flex-col gap-3"
-              >
-                <div>
-                  <p className="font-sans font-medium text-white mb-1">
-                    {link.name}
-                  </p>
-                  <p className="font-sans text-xs text-(--color-white-muted)">
-                    {link.desc}
-                  </p>
-                </div>
-                <a
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-sans text-sm text-(--color-gold) hover:text-(--color-gold-light) transition-colors border border-(--color-gold)/30 hover:border-(--color-gold)/60 rounded-lg px-3 py-2 text-center mt-auto"
-                >
-                  Visit →
-                </a>
-              </div>
-            ))}
-          </div>
-        </section>
+        <UsefulLinks />
       </div>
     </main>
   );

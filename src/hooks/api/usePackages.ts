@@ -19,6 +19,8 @@ export interface ApiPackageDetail extends ApiPackage {
     slug: string;
     country: string;
     continent: string;
+    lat?: number | null;
+    lng?: number | null;
   } | null;
   _count: { reviews: number };
 }
@@ -84,6 +86,27 @@ export function usePackage(slug: string) {
       const res = await fetch(`/api/packages/${slug}`);
       if (!res.ok) throw new Error("Package not found");
       return res.json() as Promise<{ data: ApiPackageDetail }>;
+    },
+    enabled: !!slug,
+  });
+}
+
+export interface LiveHotel {
+  name: string;
+  stars: number;
+  rating: number;
+  price: number;
+  imageUrl: string;
+  location: string;
+}
+
+export function usePackageHotels(slug: string) {
+  return useQuery<{ data: LiveHotel[] }>({
+    queryKey: ["package-hotels", slug],
+    queryFn: async () => {
+      const res = await fetch(`/api/packages/${slug}/hotels`);
+      if (!res.ok) return { data: [] };
+      return res.json() as Promise<{ data: LiveHotel[] }>;
     },
     enabled: !!slug,
   });

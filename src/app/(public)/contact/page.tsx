@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { Phone, Mail, MessageCircle, Clock, MapPin, Send } from "lucide-react";
 
-import { MapEmbed } from "@/components/shared/MapEmbed";
+import { MapboxMap } from "@/components/shared/MapboxMap";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -83,7 +83,6 @@ export default function ContactPage() {
       {/* Main grid */}
       <section className="max-w-7xl mx-auto px-4 md:px-8 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
-
           {/* ── Form ─────────────────────────────────────────── */}
           <div className="lg:col-span-3">
             <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white mb-8">
@@ -92,11 +91,16 @@ export default function ContactPage() {
 
             {isSubmitSuccessful && (
               <div className="mb-6 rounded-lg border border-(--color-teal)/40 bg-(--color-teal)/10 px-5 py-4 font-sans text-sm text-(--color-teal)">
-                Your message has been sent. We&apos;ll get back to you within 24 hours.
+                Your message has been sent. We&apos;ll get back to you within 24
+                hours.
               </div>
             )}
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="space-y-5"
+              noValidate
+            >
               {/* Name + Email */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-1.5">
@@ -104,12 +108,17 @@ export default function ContactPage() {
                     Full Name <span className="text-(--color-coral)">*</span>
                   </label>
                   <Input
-                    {...register("name", { required: "Name is required", minLength: { value: 2, message: "Name is required" } })}
+                    {...register("name", {
+                      required: "Name is required",
+                      minLength: { value: 2, message: "Name is required" },
+                    })}
                     placeholder="Priya Sharma"
                     className="bg-(--color-navy-surface) border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
                   />
                   {errors.name && (
-                    <p className="font-sans text-xs text-(--color-coral)">{errors.name.message}</p>
+                    <p className="font-sans text-xs text-(--color-coral)">
+                      {errors.name.message}
+                    </p>
                   )}
                 </div>
                 <div className="space-y-1.5">
@@ -119,14 +128,19 @@ export default function ContactPage() {
                   <Input
                     {...register("email", {
                       required: "Enter a valid email",
-                      pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Enter a valid email" },
+                      pattern: {
+                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                        message: "Enter a valid email",
+                      },
                     })}
                     type="email"
                     placeholder="priya@example.com"
                     className="bg-(--color-navy-surface) border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
                   />
                   {errors.email && (
-                    <p className="font-sans text-xs text-(--color-coral)">{errors.email.message}</p>
+                    <p className="font-sans text-xs text-(--color-coral)">
+                      {errors.email.message}
+                    </p>
                   )}
                 </div>
               </div>
@@ -135,7 +149,10 @@ export default function ContactPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-1.5">
                   <label className="font-sans text-xs font-medium uppercase tracking-widest text-(--color-white-muted)">
-                    Phone <span className="text-(--color-text-secondary)">(optional)</span>
+                    Phone{" "}
+                    <span className="text-(--color-text-secondary)">
+                      (optional)
+                    </span>
                   </label>
                   <Input
                     {...register("phone")}
@@ -148,13 +165,28 @@ export default function ContactPage() {
                   <label className="font-sans text-xs font-medium uppercase tracking-widest text-(--color-white-muted)">
                     Subject <span className="text-(--color-coral)">*</span>
                   </label>
-                  <input type="hidden" {...register("subject", { required: "Please select a subject" })} />
-                  <Select onValueChange={(val) => setValue("subject", val, { shouldValidate: true })}>
+                  <input
+                    type="hidden"
+                    {...register("subject", {
+                      required: "Please select a subject",
+                    })}
+                  />
+                  <Select
+                    onValueChange={(val) =>
+                      setValue("subject", val, { shouldValidate: true })
+                    }
+                  >
                     <SelectTrigger className="bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-text-secondary) focus:ring-(--color-gold)/40 data-placeholder:text-(--color-text-secondary)">
                       <SelectValue placeholder="Select a subject" />
                     </SelectTrigger>
                     <SelectContent className="bg-(--color-navy-surface) border-(--color-navy-border)">
-                      {["General", "Booking", "Custom Itinerary", "Cancellation", "Partnership"].map((s) => (
+                      {[
+                        "General",
+                        "Booking",
+                        "Custom Itinerary",
+                        "Cancellation",
+                        "Partnership",
+                      ].map((s) => (
                         <SelectItem
                           key={s}
                           value={s}
@@ -166,7 +198,9 @@ export default function ContactPage() {
                     </SelectContent>
                   </Select>
                   {errors.subject && (
-                    <p className="font-sans text-xs text-(--color-coral)">{errors.subject.message}</p>
+                    <p className="font-sans text-xs text-(--color-coral)">
+                      {errors.subject.message}
+                    </p>
                   )}
                 </div>
               </div>
@@ -177,13 +211,21 @@ export default function ContactPage() {
                   Message <span className="text-(--color-coral)">*</span>
                 </label>
                 <Textarea
-                  {...register("message", { required: "Message is required", minLength: { value: 10, message: "Message must be at least 10 characters" } })}
+                  {...register("message", {
+                    required: "Message is required",
+                    minLength: {
+                      value: 10,
+                      message: "Message must be at least 10 characters",
+                    },
+                  })}
                   rows={5}
                   placeholder="Tell us about your dream trip or any questions you have..."
                   className="bg-(--color-navy-surface) border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60 resize-none"
                 />
                 {errors.message && (
-                  <p className="font-sans text-xs text-(--color-coral)">{errors.message.message}</p>
+                  <p className="font-sans text-xs text-(--color-coral)">
+                    {errors.message.message}
+                  </p>
                 )}
               </div>
 
@@ -222,7 +264,9 @@ export default function ContactPage() {
                         {detail}
                       </a>
                     ) : (
-                      <p className="font-sans text-sm text-(--color-white-muted)">{detail}</p>
+                      <p className="font-sans text-sm text-(--color-white-muted)">
+                        {detail}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -252,7 +296,12 @@ export default function ContactPage() {
 
             {/* Map */}
             <div className="mt-10">
-              <MapEmbed label="RapidLuxe Office" height="h-48" />
+              <MapboxMap
+                lat={18.9388}
+                lng={72.8354}
+                zoom={13}
+                className="h-48"
+              />
             </div>
           </div>
         </div>

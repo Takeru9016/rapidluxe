@@ -11,6 +11,8 @@ export { CountdownTimer } from "./shared/CountdownTimer";
 export { DetailPhotoGrid } from "./shared/DetailPhotoGrid";
 export { ImageGallery } from "./shared/ImageGallery";
 export { MapEmbed } from "./shared/MapEmbed";
+export { MapboxMap } from "./shared/MapboxMap";
+export { UsefulLinks } from "./shared/UsefulLinks";
 export { MultiPlatformRatings } from "./shared/MultiPlatformRatings";
 export { PriceDisplay } from "./shared/PriceDisplay";
 export { Rating } from "./shared/Rating";

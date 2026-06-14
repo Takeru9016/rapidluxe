@@ -3,9 +3,9 @@
 ## Current Build State
 
 ```
-Phase:          2E — CMS + Communications
-Active Task:    2F-1 "Cloudinary Upload + Invoice PDF"
-Last Completed: 2E-2 "Email notifications (Resend) — 8 templates, 6 send functions, all booking stage routes wired, enquiries API"
+Phase:          3A — Third-Party API Integrations
+Active Task:    3A complete
+Last Completed: 3A "Mapbox maps, OWM weather, Booking.com hotels + activities, currency rates, UsefulLinks"
 ```
 
 > Update after every completed task.

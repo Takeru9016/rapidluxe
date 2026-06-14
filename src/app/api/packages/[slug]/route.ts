@@ -14,7 +14,14 @@ export async function GET(
     where: { slug, status: "PUBLISHED" },
     include: {
       destination: {
-        select: { name: true, slug: true, country: true, continent: true },
+        select: {
+          name: true,
+          slug: true,
+          country: true,
+          continent: true,
+          lat: true,
+          lng: true,
+        },
       },
       _count: { select: { reviews: true } },
     },
