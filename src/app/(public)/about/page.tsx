@@ -1,8 +1,28 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, MapPin, Star, Award, Briefcase } from "lucide-react";
 
 import { dummyTeam } from "@/lib/dummy/team";
+
+export const metadata: Metadata = {
+  title: "About Us",
+  description:
+    "RapidLuxe — India's premier luxury travel company. Founded in 2017, we curate extraordinary journeys for discerning travellers across 50+ destinations.",
+  openGraph: {
+    title: "About Us | RapidLuxe",
+    description:
+      "RapidLuxe — India's premier luxury travel company. Founded in 2017, we curate extraordinary journeys for discerning travellers across 50+ destinations.",
+    images: [
+      {
+        url: "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?w=1200&auto=format&fit=crop&q=80",
+        width: 1200,
+        height: 800,
+        alt: "RapidLuxe team",
+      },
+    ],
+  },
+};
 
 const STATS = [
   { value: "10,000+", label: "Trips Curated", icon: MapPin },
@@ -54,14 +74,14 @@ export default function AboutPage() {
             </h2>
             <p className="font-sans text-(--color-white-muted) leading-relaxed">
               RapidLuxe was born in 2017 from a simple frustration: India&apos;s
-              wealthiest travellers were booking world-class trips through agencies
-              that didn&apos;t understand them. Generic itineraries, opaque pricing,
-              and zero personalisation were the norm.
+              wealthiest travellers were booking world-class trips through
+              agencies that didn&apos;t understand them. Generic itineraries,
+              opaque pricing, and zero personalisation were the norm.
             </p>
             <p className="font-sans text-(--color-white-muted) leading-relaxed">
-              We set out to build something different — a travel company with the
-              editorial sensibility of a luxury magazine, the technology of a
-              modern startup, and the warmth of a family-run enterprise. Every
+              We set out to build something different — a travel company with
+              the editorial sensibility of a luxury magazine, the technology of
+              a modern startup, and the warmth of a family-run enterprise. Every
               package in our portfolio has been personally vetted. Every hotel
               partner has met our standards. Every itinerary has been walked,
               slept in, and eaten through by our team.
@@ -69,9 +89,9 @@ export default function AboutPage() {
             <p className="font-sans text-(--color-white-muted) leading-relaxed">
               Today, RapidLuxe serves 10,000+ travellers a year across 50+
               destinations — from private villas in Bali to glacier treks in
-              Patagonia. We remain proudly independent, obsessively detail-oriented,
-              and deeply committed to one thing: making your trip the best you&apos;ve
-              ever taken.
+              Patagonia. We remain proudly independent, obsessively
+              detail-oriented, and deeply committed to one thing: making your
+              trip the best you&apos;ve ever taken.
             </p>
           </div>
           <div className="relative aspect-4/5 rounded-2xl overflow-hidden">
@@ -84,7 +104,8 @@ export default function AboutPage() {
             />
             <div className="absolute bottom-6 left-6 right-6 bg-(--color-navy)/80 backdrop-blur-sm rounded-xl p-4 border border-(--color-gold)/20">
               <p className="font-['Cormorant_Garamond'] text-lg text-white leading-snug">
-                &ldquo;We don&apos;t sell holidays. We architect memories.&rdquo;
+                &ldquo;We don&apos;t sell holidays. We architect
+                memories.&rdquo;
               </p>
               <p className="font-sans text-xs text-(--color-gold) mt-2 tracking-wide">
                 — Rohit Kapoor, Founder & CEO

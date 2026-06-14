@@ -1,14 +1,19 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { AlertTriangle } from "lucide-react";
+import { useEffect } from "react";
 
 export default function GlobalError({
   error,
   reset,
 }: {
-  error: Error;
+  error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    Sentry.captureException(error);
+  }, [error]);
   return (
     <html lang="en">
       <body
@@ -29,7 +34,11 @@ export default function GlobalError({
             textAlign: "center",
           }}
         >
-          <AlertTriangle size={48} color="#E07A5F" style={{ marginBottom: 24 }} />
+          <AlertTriangle
+            size={48}
+            color="#E07A5F"
+            style={{ marginBottom: 24 }}
+          />
           <h1
             style={{
               fontSize: "2rem",

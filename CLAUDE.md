@@ -3,9 +3,9 @@
 ## Current Build State
 
 ```
-Phase:          3A — Third-Party API Integrations
-Active Task:    3A complete
-Last Completed: 3A "Mapbox maps, OWM weather, Booking.com hotels + activities, currency rates, UsefulLinks"
+Phase:          3B — Analytics + SEO
+Active Task:    3B complete
+Last Completed: 3B "PostHog, Vercel Analytics, Sentry, generateMetadata on all public pages, JSON-LD, sitemap, robots"
 ```
 
 > Update after every completed task.

@@ -10,10 +10,14 @@ import { Toaster } from "sonner";
 
 import "./globals.css";
 
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
 import { cn } from "@/lib/utils";
 
 import { ThemeProvider, SiteChrome } from "@/components";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import { PostHogProvider } from "@/components/providers/PostHogProvider";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -86,10 +90,14 @@ export default function RootLayout({
         <ThemeProvider>
           <ClerkProvider>
             <QueryProvider>
-              <SiteChrome>{children}</SiteChrome>
+              <PostHogProvider>
+                <SiteChrome>{children}</SiteChrome>
+              </PostHogProvider>
             </QueryProvider>
           </ClerkProvider>
           <Toaster position="top-center" richColors />
+          <Analytics />
+          <SpeedInsights />
         </ThemeProvider>
       </body>
     </html>

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -17,6 +18,32 @@ import { Badge } from "@/components/shared/Badge";
 import { PortableTextBody } from "@/components/shared/PortableTextBody";
 
 export const revalidate = 60;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await sanityReadClient.fetch<PostDetail | null>(
+    POST_BY_SLUG_QUERY,
+    { slug },
+  );
+
+  if (!post) return { title: "Post Not Found" };
+
+  const image = post.mainImage?.asset?.url;
+
+  return {
+    title: post.title,
+    description: post.excerpt ?? undefined,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt ?? undefined,
+      images: image ? [{ url: image }] : undefined,
+    },
+  };
+}
 
 function RelatedCard({ post }: { post: BlogCardData }) {
   return (
