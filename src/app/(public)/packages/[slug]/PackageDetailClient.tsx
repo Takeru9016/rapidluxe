@@ -75,43 +75,6 @@ const DUMMY_RATINGS: Record<string, number> = {
   "pkg-singapore": 4.6,
 };
 
-const PROVIDERS = ["Headout", "Klook"] as const;
-
-// ─── ProviderBookingCard ───────────────────────────────────────────────────────
-
-function ProviderBookingCard({
-  activityName,
-  index,
-}: {
-  activityName: string;
-  index: number;
-}) {
-  const provider = PROVIDERS[index % PROVIDERS.length];
-  return (
-    // Phase 3A: replace href with real provider URL
-    <div className="bg-(--color-navy-surface) rounded-xl p-4 border border-(--color-navy-border) mt-2 hover:border-(--color-gold)/30 transition-colors flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <span className="font-sans text-xs text-(--color-text-secondary)">
-          {provider}
-        </span>
-        <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-(--color-teal)/15 text-(--color-teal) border border-(--color-teal)/25">
-          RECOMMENDED
-        </span>
-      </div>
-      <a
-        href="#"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={`Book ${activityName} on ${provider}`}
-        onClick={(e) => e.preventDefault()}
-        className="flex items-center gap-1 font-sans text-xs font-medium text-(--color-gold) border border-(--color-gold)/40 px-2.5 py-1 rounded-lg hover:bg-(--color-gold)/10 hover:border-(--color-gold) transition-colors"
-      >
-        BOOK ↗
-      </a>
-    </div>
-  );
-}
-
 // ─── RatingBarBreakdown ───────────────────────────────────────────────────────
 
 function RatingBarBreakdown({
@@ -634,14 +597,8 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                       Included Activities
                     </h3>
                     <div className="flex flex-col gap-3">
-                      {includedActivities.map((activity, i) => (
-                        <div key={activity.name}>
-                          <ActivityCard activity={activity} />
-                          <ProviderBookingCard
-                            activityName={activity.name}
-                            index={i}
-                          />
-                        </div>
+                      {includedActivities.map((activity) => (
+                        <ActivityCard key={activity.name} activity={activity} />
                       ))}
                     </div>
                   </div>
@@ -653,14 +610,8 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                       Optional Add-Ons
                     </h3>
                     <div className="flex flex-col gap-3">
-                      {optionalActivities.map((activity, i) => (
-                        <div key={activity.name}>
-                          <ActivityCard activity={activity} />
-                          <ProviderBookingCard
-                            activityName={activity.name}
-                            index={includedActivities.length + i}
-                          />
-                        </div>
+                      {optionalActivities.map((activity) => (
+                        <ActivityCard key={activity.name} activity={activity} />
                       ))}
                     </div>
                   </div>
@@ -932,7 +883,18 @@ export function PackageDetailClient({ slug }: { slug: string }) {
               </div>
               <button
                 onClick={() => {
-                  // Phase 3A: open custom quote Dialog
+                  const phone =
+                    process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP?.replace(
+                      /\+/g,
+                      "",
+                    );
+                  const message = encodeURIComponent(
+                    `Hi, I'm interested in a custom quote for ${pkg.title}`,
+                  );
+                  window.open(
+                    `https://wa.me/${phone}?text=${message}`,
+                    "_blank",
+                  );
                 }}
                 className="flex items-center justify-center gap-1.5 w-full border border-(--color-gold)/40 text-(--color-gold) hover:bg-(--color-gold)/10 hover:border-(--color-gold) font-sans text-sm font-medium h-9 rounded-lg transition-colors"
               >

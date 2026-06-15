@@ -42,7 +42,7 @@ export function PriceDisplay({
 
   return (
     <div className={cn("flex flex-col gap-0.5", className)}>
-      {originalPrice !== undefined && (
+      {originalPrice !== undefined && originalPrice > price && (
         <span
           className={cn(
             "font-mono line-through text-(--color-text-secondary)",
