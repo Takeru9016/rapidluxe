@@ -282,7 +282,7 @@ export default function ContactPageClient() {
                     WhatsApp
                   </p>
                   <a
-                    href="https://wa.me/919876543210"
+                    href={`https://wa.me/${process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 bg-[#25D366] text-white font-sans text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-[#25D366]/90 transition-colors"

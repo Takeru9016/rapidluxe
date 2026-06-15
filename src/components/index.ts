@@ -28,6 +28,8 @@ export {
   BookingCardSkeleton,
 } from "./shared/Skeletons";
 export { ThemeToggle } from "./shared/ThemeToggle";
+export { LeadCaptureModal } from "./shared/LeadCaptureModal";
+export { WhatsAppButton } from "./shared/WhatsAppButton";
 
 export { ThemeProvider } from "./layout/ThemeProvider";
 export { Navbar } from "./layout/Navbar";

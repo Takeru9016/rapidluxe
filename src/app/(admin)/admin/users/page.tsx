@@ -1,143 +1,265 @@
 "use client";
 
-import Image from "next/image";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { DataTable } from "@/components/admin/DataTable";
 import { Badge } from "@/components/shared/Badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { formatDate } from "@/lib/utils";
+import type { AdminUser, UserRole } from "@/types/user";
+import { useUser } from "@clerk/nextjs";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type UserRole = "ADMIN" | "USER";
+type PendingAction =
+  | { type: "role"; userId: string; newRole: UserRole }
+  | { type: "suspend"; userId: string }
+  | { type: "unsuspend"; userId: string };
 
-interface AdminUser {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  bookingsCount: number;
-  joinedAt: string;
-  role: UserRole;
-  avatarUrl: string;
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function Initials({ name, email }: { name: string | null; email: string }) {
+  const text = name ?? email;
+  const parts = text.trim().split(/\s+/);
+  const initials =
+    parts.length >= 2
+      ? `${parts[0][0]}${parts[parts.length - 1][0]}`
+      : text.slice(0, 2);
+  return (
+    <div className="w-8 h-8 rounded-full bg-(--color-gold)/20 flex items-center justify-center shrink-0">
+      <span className="text-xs font-medium text-(--color-gold) uppercase font-['DM_Sans']">
+        {initials.toUpperCase()}
+      </span>
+    </div>
+  );
 }
-
-// ── Dummy Data ─────────────────────────────────────────────────────────────────
-
-const dummyUsers: AdminUser[] = [
-  { id: "u-001", name: "Arjun Sharma", email: "arjun.sharma@email.com", phone: "+91 98765 43210", bookingsCount: 3, joinedAt: "2024-11-15", role: "USER", avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" },
-  { id: "u-002", name: "Priya Mehta", email: "priya.mehta@email.com", phone: "+91 87654 32109", bookingsCount: 2, joinedAt: "2024-12-01", role: "USER", avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80" },
-  { id: "u-003", name: "Rahul Verma", email: "rahul.verma@email.com", phone: "+91 76543 21098", bookingsCount: 1, joinedAt: "2025-01-10", role: "USER", avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80" },
-  { id: "u-004", name: "Sahil Jadhav", email: "admin@rapidluxe.com", phone: "+91 99999 00001", bookingsCount: 0, joinedAt: "2024-01-01", role: "ADMIN", avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80" },
-  { id: "u-005", name: "Sneha Patel", email: "sneha.patel@email.com", phone: "+91 65432 10987", bookingsCount: 2, joinedAt: "2025-02-14", role: "USER", avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80" },
-];
-
-// ── Columns ───────────────────────────────────────────────────────────────────
-
-const columns: ColumnDef<AdminUser>[] = [
-  {
-    id: "nameAvatar",
-    header: "User",
-    cell: ({ row }) => (
-      <div className="flex items-center gap-3">
-        <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0">
-          <Image
-            src={row.original.avatarUrl}
-            alt={row.original.name}
-            fill
-            sizes="32px"
-            className="object-cover"
-          />
-        </div>
-        <span className="text-white font-medium whitespace-nowrap">
-          {row.original.name}
-        </span>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "email",
-    header: "Email",
-    cell: ({ getValue }) => (
-      <span className="text-(--color-text-secondary) text-sm">
-        {getValue<string>()}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "phone",
-    header: "Phone",
-    cell: ({ getValue }) => (
-      <span className="font-['JetBrains_Mono'] text-xs text-(--color-white-muted) whitespace-nowrap">
-        {getValue<string>()}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "bookingsCount",
-    header: "Bookings",
-    cell: ({ getValue }) => (
-      <span className="block text-center font-['JetBrains_Mono'] text-(--color-gold)">
-        {getValue<number>()}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "joinedAt",
-    header: "Joined",
-    cell: ({ getValue }) => (
-      <span className="text-(--color-text-secondary) text-sm whitespace-nowrap">
-        {formatDate(getValue<string>())}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "role",
-    header: "Role",
-    cell: ({ getValue }) => {
-      const role = getValue<UserRole>();
-      return (
-        <Badge variant={role === "ADMIN" ? "gold" : "ghost"} size="sm">
-          {role}
-        </Badge>
-      );
-    },
-  },
-  {
-    id: "actions",
-    header: "Actions",
-    cell: ({ row }) => (
-      <div className="flex items-center gap-2">
-        <a
-          href={`/admin/users/${row.original.id}/edit`}
-          className="px-2.5 py-1.5 rounded-md text-xs font-['DM_Sans'] border border-(--color-navy-border) text-(--color-white-muted) hover:text-white hover:border-(--color-gold)/40 transition-colors"
-        >
-          Edit
-        </a>
-        <button className="px-2.5 py-1.5 rounded-md text-xs font-['DM_Sans'] border border-(--color-navy-border) text-(--color-white-muted) hover:text-(--color-coral) hover:border-(--color-coral)/40 transition-colors">
-          Suspend
-        </button>
-      </div>
-    ),
-  },
-];
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AdminUsersPage() {
+  const { user: currentUser } = useUser();
+  const queryClient = useQueryClient();
+  const [pending, setPending] = useState<PendingAction | null>(null);
+
+  const { data, isLoading } = useQuery<{ data: AdminUser[] }>({
+    queryKey: ["admin-users"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/users");
+      if (!res.ok) throw new Error("Failed to fetch users");
+      return res.json() as Promise<{ data: AdminUser[] }>;
+    },
+  });
+
+  const users = data?.data ?? [];
+
+  const mutation = useMutation({
+    mutationFn: async (action: PendingAction) => {
+      const res = await fetch(`/api/admin/users/${action.userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          action.type === "role"
+            ? { action: "role", role: action.newRole }
+            : { action: action.type },
+        ),
+      });
+      if (!res.ok) throw new Error("Action failed");
+      return res.json();
+    },
+    onSuccess: (_data, action) => {
+      void queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      if (action.type === "role") {
+        toast.success("Role updated");
+      } else if (action.type === "suspend") {
+        toast.success("User suspended");
+      } else {
+        toast.success("User unsuspended");
+      }
+    },
+    onError: () => {
+      toast.error("Action failed. Please try again.");
+    },
+    onSettled: () => setPending(null),
+  });
+
+  const columns: ColumnDef<AdminUser>[] = [
+    {
+      id: "nameAvatar",
+      header: "User",
+      cell: ({ row }) => {
+        const u = row.original;
+        return (
+          <div className="flex items-center gap-3">
+            <Initials name={u.name} email={u.email} />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-white font-medium whitespace-nowrap">
+                  {u.name ?? "—"}
+                </span>
+                {u.banned && (
+                  <Badge variant="coral" size="sm">
+                    Suspended
+                  </Badge>
+                )}
+              </div>
+              <span className="text-(--color-text-secondary) text-xs font-['DM_Sans']">
+                {u.email}
+              </span>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "phone",
+      header: "Phone",
+      cell: ({ getValue }) => (
+        <span className="font-['JetBrains_Mono'] text-xs text-(--color-white-muted) whitespace-nowrap">
+          {getValue<string | null>() ?? "—"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "role",
+      header: "Role",
+      cell: ({ getValue }) => {
+        const r = getValue<UserRole>();
+        return (
+          <Badge variant={r === "ADMIN" ? "gold" : "ghost"} size="sm">
+            {r}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "bookingsCount",
+      header: "Bookings",
+      cell: ({ getValue }) => (
+        <span className="block text-center font-['JetBrains_Mono'] text-(--color-gold)">
+          {getValue<number>()}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Joined",
+      cell: ({ getValue }) => (
+        <span className="text-(--color-text-secondary) text-sm whitespace-nowrap">
+          {formatDate(getValue<string>())}
+        </span>
+      ),
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => {
+        const u = row.original;
+        const isSelf =
+          u.email === currentUser?.primaryEmailAddress?.emailAddress;
+        return (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() =>
+                setPending({
+                  type: "role",
+                  userId: u.id,
+                  newRole: u.role === "ADMIN" ? "USER" : "ADMIN",
+                })
+              }
+              className="px-2.5 py-1.5 rounded-md text-xs font-['DM_Sans'] border border-(--color-navy-border) text-(--color-white-muted) hover:text-white hover:border-(--color-gold)/40 transition-colors whitespace-nowrap"
+            >
+              {u.role === "ADMIN" ? "Remove Admin" : "Make Admin"}
+            </button>
+            {!isSelf && (
+              <button
+                onClick={() =>
+                  setPending({
+                    type: u.banned ? "unsuspend" : "suspend",
+                    userId: u.id,
+                  })
+                }
+                className={`px-2.5 py-1.5 rounded-md text-xs font-['DM_Sans'] border transition-colors whitespace-nowrap ${
+                  u.banned
+                    ? "border-(--color-teal)/40 text-(--color-teal) hover:bg-(--color-teal)/10"
+                    : "border-(--color-navy-border) text-(--color-white-muted) hover:text-(--color-coral) hover:border-(--color-coral)/40"
+                }`}
+              >
+                {u.banned ? "Unsuspend" : "Suspend"}
+              </button>
+            )}
+          </div>
+        );
+      },
+    },
+  ];
+
+  // ── Confirmation dialog labels ─────────────────────────────────────────────
+  const dialogTitle =
+    pending?.type === "role"
+      ? `${pending.newRole === "ADMIN" ? "Make Admin" : "Remove Admin"}`
+      : pending?.type === "suspend"
+        ? "Suspend User"
+        : "Unsuspend User";
+
+  const dialogBody =
+    pending?.type === "role"
+      ? `Change this user's role to ${pending.newRole === "ADMIN" ? "Admin" : "User"}?`
+      : pending?.type === "suspend"
+        ? "This will ban the user from signing in. Continue?"
+        : "This will restore the user's access. Continue?";
+
   return (
     <div className="px-4 md:px-8 py-6">
-      {/* Header */}
       <div className="mb-6">
         <h1 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white">
           Users
         </h1>
       </div>
 
-      {/* Table */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) overflow-x-auto">
-        <DataTable columns={columns} data={dummyUsers} />
+        <DataTable columns={columns} data={users} isLoading={isLoading} />
       </div>
+
+      {/* ── Confirmation dialog ── */}
+      <Dialog
+        open={!!pending}
+        onOpenChange={(open) => !open && setPending(null)}
+      >
+        <DialogContent className="bg-(--color-navy-surface) border border-(--color-navy-border) text-white max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-['Cormorant_Garamond'] text-xl text-white">
+              {dialogTitle}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-(--color-white-muted) font-['DM_Sans'] py-2">
+            {dialogBody}
+          </p>
+          <DialogFooter className="gap-2">
+            <button
+              onClick={() => setPending(null)}
+              className="px-4 py-2 rounded-full border border-(--color-navy-border) text-(--color-text-secondary) text-sm font-['DM_Sans'] hover:text-white transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => pending && mutation.mutate(pending)}
+              disabled={mutation.isPending}
+              className="px-4 py-2 rounded-full bg-(--color-gold) text-(--color-navy) text-sm font-['DM_Sans'] font-medium hover:bg-(--color-gold-light) transition-colors disabled:opacity-50"
+            >
+              {mutation.isPending ? "Processing…" : "Confirm"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

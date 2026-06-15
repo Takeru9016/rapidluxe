@@ -1,6 +1,5 @@
 import {
   Hero,
-  TrustBar,
   FeaturedPackages,
   DestinationsSection,
   HotDealsSection,
@@ -16,7 +15,6 @@ export default function HomePage() {
   return (
     <main>
       <Hero />
-      <TrustBar />
       <FeaturedPackages />
       <DestinationsSection />
       <HotDealsSection />

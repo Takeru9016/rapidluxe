@@ -4,6 +4,8 @@ import { usePathname } from "next/navigation";
 import { Footer } from "./Footer";
 import { MobileMenu } from "./MobileMenu";
 import { Navbar } from "./Navbar";
+import { LeadCaptureModal } from "@/components/shared/LeadCaptureModal";
+import { WhatsAppButton } from "@/components/shared/WhatsAppButton";
 
 const CHROME_FREE_PREFIXES = ["/pay/"];
 
@@ -21,6 +23,8 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
       <MobileMenu />
       <main className="min-h-screen pt-16">{children}</main>
       <Footer />
+      <LeadCaptureModal />
+      <WhatsAppButton />
     </>
   );
 }

@@ -4,8 +4,8 @@
 
 ```
 Phase:          3C — Performance + Final QA
-Active Task:    3C in progress — BLOCKED: `pnpm build` fails (Next 16 static-export useContext regression, vercel/next.js#86178). Investigated: version bump, webpack, Sentry bypass, force-dynamic, next-themes removal all fail. Upstream bug, no app-level fix. User must choose: wait for Next patch OR downgrade to 15.x. Blocks Vercel deploy; `pnpm dev` works.
-Last Completed: 3C partial "Native analyzer script, image/priority audit, prisma log + pooling, Sentry deprecation fix, security audit (clean), theme-color, aria-labels, .env.example"
+Active Task:    none
+Last Completed: /profile page wired (real bookings + wishlist + personal details via /api/user/me GET+PATCH, Clerk name sync). /admin/users wired (real data, role change, suspend/unsuspend via Clerk banUser/unbanUser). Prisma migration: dateOfBirth, nationality, passportNumber added to User. npx tsc --noEmit: 0 errors.
 ```
 
 > Update after every completed task.

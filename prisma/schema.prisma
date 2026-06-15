@@ -8,18 +8,21 @@ datasource db {
 }
 
 model User {
-  id          String     @id @default(cuid())
-  clerkId     String     @unique
-  email       String     @unique
-  name        String?
-  phone       String?
-  role        Role       @default(USER)
-  preferences Json?
-  bookings    Booking[]
-  reviews     Review[]
-  wishlist    Wishlist[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id             String     @id @default(cuid())
+  clerkId        String     @unique
+  email          String     @unique
+  name           String?
+  phone          String?
+  dateOfBirth    DateTime?
+  nationality    String?
+  passportNumber String?
+  role           Role       @default(USER)
+  preferences    Json?
+  bookings       Booking[]
+  reviews        Review[]
+  wishlist       Wishlist[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
 }
 
 enum Role {
