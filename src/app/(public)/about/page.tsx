@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, MapPin, Star, Award, Briefcase } from "lucide-react";
+import type { PortableTextBlock } from "@portabletext/react";
+import { PortableText } from "@portabletext/react";
 
+import { sanityReadClient } from "@/lib/sanity";
 import { dummyTeam } from "@/lib/dummy/team";
 
 export const metadata: Metadata = {
@@ -24,7 +27,51 @@ export const metadata: Metadata = {
   },
 };
 
-const STATS = [
+// ── Sanity types ──────────────────────────────────────────────────────────────
+
+interface SanityAboutPage {
+  headline: string | null;
+  subheadline: string | null;
+  heroImageUrl: string | null;
+  story: PortableTextBlock[] | null;
+  missionTitle: string | null;
+  missionBody: PortableTextBlock[] | null;
+  team: Array<{
+    name: string;
+    role: string;
+    bio: string;
+    imageUrl: string | null;
+  }> | null;
+  stats: Array<{ number: string; label: string }> | null;
+}
+
+async function getAboutData(): Promise<SanityAboutPage | null> {
+  try {
+    return await sanityReadClient.fetch<SanityAboutPage | null>(
+      `*[_type == "aboutPage"][0] {
+        headline,
+        subheadline,
+        "heroImageUrl": heroImage.asset->url,
+        story,
+        "missionTitle": mission.title,
+        "missionBody": mission.body,
+        "team": team[] {
+          name,
+          role,
+          bio,
+          "imageUrl": image.asset->url
+        },
+        stats[] { number, label }
+      }`,
+    );
+  } catch {
+    return null;
+  }
+}
+
+// ── Fallback data ─────────────────────────────────────────────────────────────
+
+const FALLBACK_STATS = [
   { value: "10,000+", label: "Trips Curated", icon: MapPin },
   { value: "50+", label: "Destinations", icon: MapPin },
   { value: "4.8★", label: "Average Rating", icon: Star },
@@ -40,13 +87,34 @@ const AWARDS = [
   "Times Travel Awards",
 ];
 
-export default function AboutPage() {
+// ── Page ──────────────────────────────────────────────────────────────────────
+
+export default async function AboutPage() {
+  const sanity = await getAboutData();
+
+  const heroImage =
+    sanity?.heroImageUrl ??
+    "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?w=1600&auto=format&fit=crop&q=80";
+
+  const displayStats = sanity?.stats?.length
+    ? sanity.stats.map((s) => ({ value: s.number, label: s.label }))
+    : FALLBACK_STATS.map(({ value, label }) => ({ value, label }));
+
+  const displayTeam = sanity?.team?.length
+    ? sanity.team
+    : dummyTeam.map((m) => ({
+        name: m.name,
+        role: m.role,
+        bio: m.bio,
+        imageUrl: m.imageUrl,
+      }));
+
   return (
     <main className="min-h-screen bg-(--color-navy)">
       {/* Hero */}
       <section className="relative min-h-[50vh] flex items-end pb-16 overflow-hidden">
         <Image
-          src="https://images.unsplash.com/photo-1539635278303-d4002c07eae3?w=1600&auto=format&fit=crop&q=80"
+          src={heroImage}
           alt="RapidLuxe team at a luxury destination"
           fill
           priority
@@ -59,8 +127,13 @@ export default function AboutPage() {
             Who We Are
           </p>
           <h1 className="font-['Cormorant_Garamond'] text-5xl md:text-7xl text-white font-light leading-none">
-            Our Story
+            {sanity?.headline ?? "Our Story"}
           </h1>
+          {sanity?.subheadline && (
+            <p className="font-sans text-(--color-white-muted) mt-4 max-w-xl">
+              {sanity.subheadline}
+            </p>
+          )}
         </div>
       </section>
 
@@ -72,27 +145,32 @@ export default function AboutPage() {
               Luxury travel,{" "}
               <span className="text-(--color-gold)">designed for India.</span>
             </h2>
-            <p className="font-sans text-(--color-white-muted) leading-relaxed">
-              RapidLuxe was born in 2017 from a simple frustration: India&apos;s
-              wealthiest travellers were booking world-class trips through
-              agencies that didn&apos;t understand them. Generic itineraries,
-              opaque pricing, and zero personalisation were the norm.
-            </p>
-            <p className="font-sans text-(--color-white-muted) leading-relaxed">
-              We set out to build something different — a travel company with
-              the editorial sensibility of a luxury magazine, the technology of
-              a modern startup, and the warmth of a family-run enterprise. Every
-              package in our portfolio has been personally vetted. Every hotel
-              partner has met our standards. Every itinerary has been walked,
-              slept in, and eaten through by our team.
-            </p>
-            <p className="font-sans text-(--color-white-muted) leading-relaxed">
-              Today, RapidLuxe serves 10,000+ travellers a year across 50+
-              destinations — from private villas in Bali to glacier treks in
-              Patagonia. We remain proudly independent, obsessively
-              detail-oriented, and deeply committed to one thing: making your
-              trip the best you&apos;ve ever taken.
-            </p>
+            {sanity?.story?.length ? (
+              <div className="font-sans text-(--color-white-muted) leading-relaxed space-y-4 prose prose-invert prose-sm max-w-none">
+                <PortableText value={sanity.story} />
+              </div>
+            ) : (
+              <>
+                <p className="font-sans text-(--color-white-muted) leading-relaxed">
+                  RapidLuxe was born in 2017 from a simple frustration:
+                  India&apos;s wealthiest travellers were booking world-class
+                  trips through agencies that didn&apos;t understand them.
+                  Generic itineraries, opaque pricing, and zero personalisation
+                  were the norm.
+                </p>
+                <p className="font-sans text-(--color-white-muted) leading-relaxed">
+                  We set out to build something different — a travel company
+                  with the editorial sensibility of a luxury magazine, the
+                  technology of a modern startup, and the warmth of a family-run
+                  enterprise.
+                </p>
+                <p className="font-sans text-(--color-white-muted) leading-relaxed">
+                  Today, RapidLuxe serves 10,000+ travellers a year across 50+
+                  destinations — from private villas in Bali to glacier treks in
+                  Patagonia.
+                </p>
+              </>
+            )}
           </div>
           <div className="relative aspect-4/5 rounded-2xl overflow-hidden">
             <Image
@@ -104,11 +182,10 @@ export default function AboutPage() {
             />
             <div className="absolute bottom-6 left-6 right-6 bg-(--color-navy)/80 backdrop-blur-sm rounded-xl p-4 border border-(--color-gold)/20">
               <p className="font-['Cormorant_Garamond'] text-lg text-white leading-snug">
-                &ldquo;We don&apos;t sell holidays. We architect
-                memories.&rdquo;
-              </p>
-              <p className="font-sans text-xs text-(--color-gold) mt-2 tracking-wide">
-                — Rohit Kapoor, Founder & CEO
+                &ldquo;
+                {sanity?.missionTitle ??
+                  "We don't sell holidays. We architect memories."}
+                &rdquo;
               </p>
             </div>
           </div>
@@ -119,7 +196,7 @@ export default function AboutPage() {
       <section className="py-16 bg-(--color-navy-surface)/60 border-y border-(--color-navy-border)">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {STATS.map(({ value, label }) => (
+            {displayStats.map(({ value, label }) => (
               <div key={label} className="flex flex-col items-center gap-2">
                 <span className="font-['JetBrains_Mono'] text-4xl md:text-5xl text-(--color-gold) font-normal leading-none">
                   {value}
@@ -144,19 +221,27 @@ export default function AboutPage() {
           </h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {dummyTeam.map((member) => (
+          {displayTeam.map((member) => (
             <article
-              key={member.id}
+              key={member.name}
               className="group flex flex-col rounded-xl overflow-hidden bg-(--color-navy-surface) border border-(--color-navy-border) hover:border-(--color-gold)/30 transition-colors"
             >
               <div className="relative aspect-3/4 overflow-hidden">
-                <Image
-                  src={member.imageUrl}
-                  alt={member.name}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                />
+                {member.imageUrl ? (
+                  <Image
+                    src={member.imageUrl}
+                    alt={member.name}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-(--color-navy) flex items-center justify-center">
+                    <span className="font-['Cormorant_Garamond'] text-5xl text-(--color-gold)/40">
+                      {member.name.charAt(0)}
+                    </span>
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-linear-to-t from-(--color-navy) via-transparent to-transparent opacity-60" />
               </div>
               <div className="p-5 flex flex-col gap-2 flex-1">

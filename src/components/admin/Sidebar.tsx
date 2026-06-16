@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   Package,
   Globe,
-  FileText,
   Calendar,
   Star,
   Users,
@@ -20,6 +19,15 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Newspaper,
+  UserCog,
+  FolderOpen,
+  Files,
+  Building2,
+  CircleHelp,
+  Ban,
+  ScrollText,
+  Shield,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -28,6 +36,7 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ElementType;
+  exact?: boolean;
 }
 
 interface NavGroup {
@@ -47,14 +56,46 @@ interface SidebarProps {
 const NAV_GROUPS: NavGroup[] = [
   {
     label: "Overview",
-    items: [{ label: "Dashboard", href: "/admin", icon: LayoutDashboard }],
+    items: [
+      {
+        label: "Dashboard",
+        href: "/admin",
+        icon: LayoutDashboard,
+        exact: true,
+      },
+    ],
   },
   {
     label: "Content",
     items: [
       { label: "Packages", href: "/admin/packages", icon: Package },
       { label: "Destinations", href: "/admin/destinations", icon: Globe },
-      { label: "Blog", href: "/admin/blog", icon: FileText },
+    ],
+  },
+  {
+    label: "CMS",
+    items: [
+      { label: "Blog Posts", href: "/admin/blog", icon: Newspaper },
+      { label: "Blog Authors", href: "/admin/blog/authors", icon: UserCog },
+      {
+        label: "Blog Categories",
+        href: "/admin/blog/categories",
+        icon: FolderOpen,
+      },
+      { label: "Static Pages", href: "/admin/pages", icon: Files, exact: true },
+      { label: "About Us", href: "/admin/pages/about", icon: Building2 },
+      { label: "FAQs", href: "/admin/pages/faqs", icon: CircleHelp },
+      {
+        label: "Cancellation Policy",
+        href: "/admin/pages/cancellation-policy",
+        icon: Ban,
+      },
+      {
+        label: "Terms & Conditions",
+        href: "/admin/pages/terms",
+        icon: ScrollText,
+      },
+      { label: "Privacy Policy", href: "/admin/pages/privacy", icon: Shield },
     ],
   },
   {
@@ -93,10 +134,9 @@ function NavLink({
   pathname: string;
   collapsed: boolean;
 }) {
-  const isActive =
-    item.href === "/admin"
-      ? pathname === "/admin"
-      : pathname.startsWith(item.href);
+  const isActive = item.exact
+    ? pathname === item.href
+    : pathname === item.href || pathname.startsWith(item.href + "/");
 
   return (
     <Link
