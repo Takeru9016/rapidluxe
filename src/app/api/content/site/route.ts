@@ -13,6 +13,7 @@ export interface HowItWorksStep {
 export interface WhyPoint {
   title: string;
   description: string;
+  icon: string;
 }
 
 export interface TrustStat {
@@ -30,7 +31,7 @@ export async function GET() {
   const data = await sanityReadClient.fetch<SiteContentResponse | null>(
     `*[_type == "siteContent"][0] {
       howItWorksSteps[] { stepNumber, title, description },
-      whyRapidluxePoints[] { title, description },
+      whyRapidluxePoints[] { title, description, icon },
       trustBarStats[] { number, label }
     }`,
   );

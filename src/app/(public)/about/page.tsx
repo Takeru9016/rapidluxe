@@ -41,82 +41,72 @@ interface SanityAboutPage {
     bio: string;
     imageUrl: string | null;
   }> | null;
-  stats: Array<{ number: string; label: string }> | null;
 }
 
-async function getAboutData(): Promise<SanityAboutPage | null> {
+interface TrustStat {
+  number: string;
+  label: string;
+}
+
+async function getAboutData(): Promise<{
+  about: SanityAboutPage | null;
+  trustBarStats: TrustStat[];
+}> {
   try {
-    return await sanityReadClient.fetch<SanityAboutPage | null>(
-      `*[_type == "aboutPage"][0] {
-        headline,
-        subheadline,
-        "heroImageUrl": heroImage.asset->url,
-        story,
-        "missionTitle": mission.title,
-        "missionBody": mission.body,
-        "team": team[] {
-          name,
-          role,
-          bio,
-          "imageUrl": image.asset->url
-        },
-        stats[] { number, label }
-      }`,
-    );
+    const [about, siteData] = await Promise.all([
+      sanityReadClient.fetch<SanityAboutPage | null>(
+        `*[_type == "aboutPage"][0] {
+          headline,
+          subheadline,
+          "heroImageUrl": heroImage.asset->url,
+          story,
+          "missionTitle": mission.title,
+          "missionBody": mission.body,
+          "team": team[] {
+            name,
+            role,
+            bio,
+            "imageUrl": image.asset->url
+          }
+        }`,
+      ),
+      sanityReadClient.fetch<{ trustBarStats: TrustStat[] | null } | null>(
+        `*[_type == "siteContent"][0] { trustBarStats[] { number, label } }`,
+      ),
+    ]);
+    return { about, trustBarStats: siteData?.trustBarStats ?? [] };
   } catch {
-    return null;
+    return { about: null, trustBarStats: [] };
   }
 }
 
-// ── Fallback data ─────────────────────────────────────────────────────────────
-
-const FALLBACK_STATS = [
-  { value: "27", label: "Countries Explored" },
-  { value: "500+", label: "Happy Travellers" },
-  { value: "100%", label: "Bespoke Journeys" },
-  { value: "2hrs", label: "Response Time" },
-];
-
-const FALLBACK_TEAM = [
-  {
-    name: "Siddhesh",
-    role: "Founder & Lead Travel Designer",
-    bio: "Having explored 27 countries personally, Siddhesh built RapidLuxe to share that knowledge — crafting itineraries that go beyond the guidebook and into the extraordinary.",
-    imageUrl: null,
-  },
-  {
-    name: "Kabita",
-    role: "Client Experience & Partnerships",
-    bio: "Kabita ensures every client feels heard from the first WhatsApp message to the final flight home. She manages all partnerships, ensuring our hotel and activity network reflects true luxury.",
-    imageUrl: null,
-  },
-];
+// ── Process steps ─────────────────────────────────────────────────────────────
 
 const PROCESS_STEPS = [
   {
     number: "01",
     title: "You Enquire",
-    body: "Tell us where you want to go and when.",
+    body: "Tell us where you want to go, when, and who's coming.",
   },
   {
     number: "02",
     title: "We Listen",
-    body: "A call or WhatsApp conversation to understand exactly what you need.",
+    body: "A WhatsApp conversation to understand exactly what you need — not what a brochure suggests.",
   },
   {
     number: "03",
     title: "We Design",
-    body: "We build your bespoke itinerary — every stay, transfer, and experience handpicked.",
+    body: "Your bespoke itinerary — every stay, transfer, and experience handpicked for you specifically.",
   },
   {
     number: "04",
     title: "You Approve",
-    body: "Review your quote. Request changes. We refine until it's perfect.",
+    body: "Review your quote. Request changes. We refine until every detail is right.",
   },
   {
     number: "05",
     title: "You Travel",
-    body: "We stay reachable throughout. You focus on the experience.",
+    body: "We stay reachable throughout. You focus entirely on the experience.",
   },
 ];
 
@@ -134,22 +124,16 @@ function getInitials(name: string): string {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function AboutPage() {
-  const sanity = await getAboutData();
+  const { about: sanity, trustBarStats } = await getAboutData();
 
   const heroImage =
     sanity?.heroImageUrl ??
     "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?w=1600&auto=format&fit=crop&q=80";
 
-  const displayStats = sanity?.stats?.length
-    ? sanity.stats.map((s) => ({ value: s.number, label: s.label }))
-    : FALLBACK_STATS;
-
-  const displayTeam = sanity?.team?.length ? sanity.team : FALLBACK_TEAM;
-
   return (
     <main className="min-h-screen bg-(--color-navy)">
       {/* SECTION 1 — Hero */}
-      <section className="relative min-h-[60vh] flex items-end pb-20 overflow-hidden">
+      <section className="relative min-h-[70vh] flex items-end pb-20 overflow-hidden">
         <Image
           src={heroImage}
           alt="RapidLuxe — luxury travel"
@@ -164,7 +148,7 @@ export default async function AboutPage() {
             Who We Are
           </p>
           <h1 className="font-['Cormorant_Garamond'] text-5xl md:text-7xl text-white font-light leading-none max-w-3xl">
-            {sanity?.headline ?? "Your Next Journey Awaits"}
+            {sanity?.headline ?? "Designed to Restore. Built to Inspire."}
           </h1>
           {(sanity?.subheadline ?? true) && (
             <p className="font-sans text-(--color-white-muted) mt-5 max-w-2xl text-base leading-relaxed">
@@ -175,38 +159,29 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* SECTION 2 — Story */}
+      {/* SECTION 2 — Story (40 / 60) */}
       <section className="py-20 max-w-7xl mx-auto px-4 md:px-8">
-        <div className="grid md:grid-cols-2 gap-16 items-start">
-          {/* Left — pull quote */}
-          <div>
-            <p
-              className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white font-light italic leading-snug"
-              style={{ color: "var(--color-white)" }}
-            >
+        <div className="grid md:grid-cols-5 gap-16 items-start">
+          {/* Left 40% — pull quote */}
+          <div className="md:col-span-2">
+            <div
+              className="w-12 h-px mb-6"
+              style={{ backgroundColor: "var(--color-gold)" }}
+            />
+            <p className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white font-light italic leading-snug">
               &ldquo;We don&apos;t sell holidays. We design experiences that
               heal, inspire, and stay with you forever.&rdquo;
             </p>
-            {/* Stats row */}
-            <div className="mt-12 grid grid-cols-2 gap-6">
-              {displayStats.map(({ value, label }) => (
-                <div key={label}>
-                  <p
-                    className="font-['JetBrains_Mono'] text-3xl font-bold"
-                    style={{ color: "var(--color-gold)" }}
-                  >
-                    {value}
-                  </p>
-                  <p className="font-sans text-sm text-(--color-white-muted) mt-1">
-                    {label}
-                  </p>
-                </div>
-              ))}
-            </div>
+            <p
+              className="font-sans text-sm mt-6"
+              style={{ color: "var(--color-gold)" }}
+            >
+              — Siddhesh Sood, Founder
+            </p>
           </div>
 
-          {/* Right — story body */}
-          <div>
+          {/* Right 60% — story body */}
+          <div className="md:col-span-3">
             {sanity?.story?.length ? (
               <div className="font-sans text-(--color-white-muted) leading-relaxed space-y-4 prose prose-invert prose-sm max-w-none">
                 <PortableText value={sanity.story} />
@@ -236,8 +211,37 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* SECTION 3 — Philosophy */}
-      <section className="py-20" style={{ backgroundColor: "#111827" }}>
+      {/* SECTION 3 — Trust stats bar */}
+      {trustBarStats.length > 0 && (
+        <section className="border-y py-12 bg-(--color-navy-surface) border-(--color-navy-border)">
+          <div className="max-w-7xl mx-auto px-4 md:px-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-0 md:divide-x md:divide-(--color-navy-border)">
+              {trustBarStats.map(({ number, label }) => (
+                <div
+                  key={label}
+                  className="flex flex-col items-center gap-2 md:px-8"
+                >
+                  <span
+                    className="font-mono text-4xl font-bold"
+                    style={{ color: "var(--color-gold)" }}
+                  >
+                    {number}
+                  </span>
+                  <span
+                    className="font-sans text-sm uppercase tracking-wider text-center"
+                    style={{ color: "var(--color-white-muted)" }}
+                  >
+                    {label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* SECTION 4 — Therapycation Philosophy */}
+      <section className="py-20 bg-(--color-navy-surface)">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
@@ -267,100 +271,100 @@ export default async function AboutPage() {
                 </div>
               )}
             </div>
-            {/* Decorative right side */}
-            <div className="flex items-center justify-center">
-              <div className="relative">
-                <div
-                  className="w-px h-64 mx-auto"
-                  style={{ backgroundColor: "var(--color-gold)", opacity: 0.4 }}
-                />
-                <p
-                  className="font-['Cormorant_Garamond'] text-2xl text-white italic font-light text-center mt-8 max-w-xs mx-auto"
-                  style={{ color: "var(--color-gold-muted)" }}
-                >
-                  &ldquo;
-                  {sanity?.missionTitle ??
-                    "Travel should restore you, not exhaust you."}
-                  &rdquo;
-                </p>
-              </div>
+
+            {/* Right — quote card */}
+            <div className="relative rounded-2xl border p-8 overflow-hidden bg-(--color-navy) border-(--color-navy-border)">
+              <div
+                className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full"
+                style={{ backgroundColor: "var(--color-gold)" }}
+              />
+              <p className="font-['Cormorant_Garamond'] text-xl italic font-light text-white leading-relaxed">
+                &ldquo;In the world of high-end travel, there is often too much
+                noise and not enough intent.&rdquo;
+              </p>
+              <p
+                className="font-sans text-sm mt-6"
+                style={{ color: "var(--color-gold)" }}
+              >
+                — Siddhesh Sood, Founder
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* SECTION 4 — Team */}
-      <section className="py-20 max-w-7xl mx-auto px-4 md:px-8">
-        <div className="text-center mb-14">
-          <p className="font-sans text-xs tracking-[0.3em] uppercase text-(--color-gold) mb-3">
-            The People Behind the Magic
-          </p>
-          <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-white font-light">
-            Meet the Team
-          </h2>
-        </div>
+      {/* SECTION 5 — Team (Sanity only) */}
+      {sanity?.team && sanity.team.length > 0 && (
+        <section className="py-20 max-w-7xl mx-auto px-4 md:px-8">
+          <div className="text-center mb-14">
+            <p className="font-sans text-xs tracking-[0.3em] uppercase text-(--color-gold) mb-3">
+              The People Behind the Magic
+            </p>
+            <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-white font-light">
+              Meet the Team
+            </h2>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {displayTeam.slice(0, 2).map((member) => (
-            <div
-              key={member.name}
-              className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-2xl overflow-hidden group hover:border-(--color-gold)/30 transition-colors duration-300"
-            >
-              {/* Portrait */}
-              {member.imageUrl ? (
-                <div className="aspect-3/4 relative overflow-hidden">
-                  <Image
-                    src={member.imageUrl}
-                    alt={member.name}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                  <div className="absolute inset-0 bg-linear-to-t from-(--color-navy-surface)/80 via-transparent to-transparent" />
-                </div>
-              ) : (
-                <div
-                  className="aspect-3/4 flex items-center justify-center"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, var(--color-navy) 0%, color-mix(in srgb, var(--color-gold) 8%, var(--color-navy)) 100%)",
-                  }}
-                >
-                  <span
-                    className="font-['Cormorant_Garamond'] text-7xl font-light"
-                    style={{ color: "var(--color-gold)", opacity: 0.6 }}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {sanity.team.slice(0, 2).map((member) => (
+              <div
+                key={member.name}
+                className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-2xl overflow-hidden group hover:border-(--color-gold)/30 transition-colors duration-300"
+              >
+                {member.imageUrl ? (
+                  <div className="aspect-3/4 relative overflow-hidden">
+                    <Image
+                      src={member.imageUrl}
+                      alt={member.name}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                    <div className="absolute inset-0 bg-linear-to-t from-(--color-navy-surface)/80 via-transparent to-transparent" />
+                  </div>
+                ) : (
+                  <div
+                    className="aspect-3/4 flex items-center justify-center"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, var(--color-navy) 0%, color-mix(in srgb, var(--color-gold) 8%, var(--color-navy)) 100%)",
+                    }}
                   >
-                    {getInitials(member.name)}
-                  </span>
+                    <span
+                      className="font-['Cormorant_Garamond'] text-7xl font-light"
+                      style={{ color: "var(--color-gold)", opacity: 0.6 }}
+                    >
+                      {getInitials(member.name)}
+                    </span>
+                  </div>
+                )}
+
+                <div className="p-6">
+                  <div
+                    className="w-12 h-px mb-4"
+                    style={{ backgroundColor: "var(--color-gold)" }}
+                  />
+                  <h3 className="font-['Cormorant_Garamond'] text-2xl text-white">
+                    {member.name}
+                  </h3>
+                  <p
+                    className="font-sans text-xs tracking-widest uppercase mt-1 mb-3"
+                    style={{ color: "var(--color-gold)" }}
+                  >
+                    {member.role}
+                  </p>
+                  <p className="font-sans text-sm text-(--color-white-muted) leading-relaxed line-clamp-4">
+                    {member.bio}
+                  </p>
                 </div>
-              )}
-
-              {/* Info */}
-              <div className="p-6">
-                <div
-                  className="w-12 h-px mb-4"
-                  style={{ backgroundColor: "var(--color-gold)" }}
-                />
-                <h3 className="font-['Cormorant_Garamond'] text-2xl text-white">
-                  {member.name}
-                </h3>
-                <p
-                  className="font-sans text-xs tracking-widest uppercase mt-1 mb-3"
-                  style={{ color: "var(--color-gold)" }}
-                >
-                  {member.role}
-                </p>
-                <p className="font-sans text-sm text-(--color-white-muted) leading-relaxed line-clamp-4">
-                  {member.bio}
-                </p>
               </div>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
-      {/* SECTION 5 — Our Process */}
-      <section className="py-20" style={{ backgroundColor: "#111827" }}>
+      {/* SECTION 6 — Our Process */}
+      <section className="py-20 bg-(--color-navy-surface)">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="text-center mb-14">
             <p className="font-sans text-xs tracking-[0.3em] uppercase text-(--color-gold) mb-3">
@@ -371,7 +375,6 @@ export default async function AboutPage() {
             </h2>
           </div>
 
-          {/* Timeline — horizontal desktop, vertical mobile */}
           <div className="relative">
             {/* Connector line — desktop */}
             <div
@@ -385,7 +388,6 @@ export default async function AboutPage() {
                   key={step.number}
                   className="flex flex-col items-center text-center md:px-2"
                 >
-                  {/* Step circle */}
                   <div
                     className="relative z-10 w-16 h-16 rounded-full border flex items-center justify-center mb-4 shrink-0"
                     style={{
@@ -413,29 +415,30 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* SECTION 6 — CTA strip */}
+      {/* SECTION 7 — CTA strip */}
       <section
         className="py-20 text-center px-4"
         style={{
-          background: "linear-gradient(135deg, #C9A84C 0%, #A07C30 100%)",
+          background:
+            "linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-muted) 100%)",
         }}
       >
         <h2
           className="font-['Cormorant_Garamond'] text-4xl md:text-5xl font-light mb-4"
-          style={{ color: "#0B1120" }}
+          style={{ color: "#0B0F1A" }}
         >
           Ready to travel with us?
         </h2>
         <p
           className="font-sans text-sm mb-8 max-w-md mx-auto"
-          style={{ color: "rgba(11,17,32,0.7)" }}
+          style={{ color: "rgba(11,15,26,0.7)" }}
         >
           Browse our curated packages and let us design your next Therapycation.
         </p>
         <Link
           href="/packages"
           className="inline-flex items-center gap-2 font-sans font-medium px-10 py-4 rounded-lg text-sm transition-opacity hover:opacity-90"
-          style={{ backgroundColor: "#0B1120", color: "#FFFFFF" }}
+          style={{ backgroundColor: "#0B0F1A", color: "#FFFFFF" }}
         >
           Browse Packages <ArrowRight size={16} />
         </Link>

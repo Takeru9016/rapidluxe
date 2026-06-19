@@ -50,3 +50,4 @@ export { Newsletter } from "./sections/Newsletter";
 export { TravelerCarousel } from "./sections/TravelerCarousel";
 export { Testimonials } from "./sections/Testimonials";
 export { TrustBar } from "./sections/TrustBar";
+export { WhyRapidLuxe } from "./sections/WhyRapidLuxe";

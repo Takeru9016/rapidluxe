@@ -8,7 +8,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
+    <div className="dark fixed inset-0 z-50 overflow-hidden">
       <AdminShell>{children}</AdminShell>
     </div>
   );

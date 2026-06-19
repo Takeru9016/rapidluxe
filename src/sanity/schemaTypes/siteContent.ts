@@ -13,9 +13,18 @@ export const siteContent = defineType({
         {
           type: "object",
           fields: [
-            defineField({ name: "stepNumber", type: "string", title: "Step Number" }),
+            defineField({
+              name: "stepNumber",
+              type: "string",
+              title: "Step Number",
+            }),
             defineField({ name: "title", type: "string", title: "Title" }),
-            defineField({ name: "description", type: "text", title: "Description", rows: 3 }),
+            defineField({
+              name: "description",
+              type: "text",
+              title: "Description",
+              rows: 3,
+            }),
           ],
           preview: { select: { title: "title", subtitle: "stepNumber" } },
         },
@@ -30,7 +39,19 @@ export const siteContent = defineType({
           type: "object",
           fields: [
             defineField({ name: "title", type: "string", title: "Title" }),
-            defineField({ name: "description", type: "text", title: "Description", rows: 3 }),
+            defineField({
+              name: "description",
+              type: "text",
+              title: "Description",
+              rows: 3,
+            }),
+            defineField({
+              name: "icon",
+              type: "string",
+              title: "Icon",
+              description:
+                'Lucide icon name e.g. "Sparkles", "Heart", "Globe", "Shield"',
+            }),
           ],
           preview: { select: { title: "title" } },
         },

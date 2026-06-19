@@ -1,4 +1,14 @@
-import { sanityWriteClient } from "../src/lib/sanity";
+import { config } from "dotenv";
+config({ path: ".env.local" });
+import { createClient } from "@sanity/client";
+
+const sanityWriteClient = createClient({
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
+  apiVersion: "2026-06-13",
+  useCdn: false,
+  token: process.env.SANITY_API_TOKEN,
+});
 
 async function main() {
   const existing = await sanityWriteClient.fetch<{ _id: string } | null>(
@@ -36,24 +46,28 @@ async function main() {
         title: "Bespoke, Not Bulk",
         description:
           "Every itinerary is built around you — not a group tour schedule. Your pace, your preferences, your trip.",
+        icon: "Sparkles",
       },
       {
         _key: "why2",
         title: "Therapycation Philosophy",
         description:
           "We believe travel should restore you. Every journey we design aims to provide a complete mental and emotional recharge.",
+        icon: "Heart",
       },
       {
         _key: "why3",
         title: "Expert Guidance",
         description:
           "Our founder has explored 27 countries. We know what works and what doesn't — and we build that knowledge into every trip.",
+        icon: "Globe",
       },
       {
         _key: "why4",
         title: "Seamless from Start to Finish",
         description:
           "From your first enquiry to your return home, we handle every detail. You focus on the experience. We handle everything else.",
+        icon: "Shield",
       },
     ],
     trustBarStats: [

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTheme } from "next-themes";
 import { Map } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +30,17 @@ export function MapboxMap({
 }: MapboxMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("mapbox-gl").Map | null>(null);
+  const { resolvedTheme } = useTheme();
+  const mapStyle =
+    resolvedTheme === "light"
+      ? "mapbox://styles/mapbox/light-v11"
+      : "mapbox://styles/mapbox/dark-v11";
+
+  useEffect(() => {
+    if (mapRef.current) {
+      mapRef.current.setStyle(mapStyle);
+    }
+  }, [mapStyle]);
 
   useEffect(() => {
     if (!lat || !lng || !containerRef.current) return;
@@ -43,7 +55,7 @@ export function MapboxMap({
 
       map = new mapboxgl.default.Map({
         container: containerRef.current,
-        style: "mapbox://styles/mapbox/dark-v11",
+        style: mapStyle,
         center: [lng, lat],
         zoom,
         attributionControl: false,

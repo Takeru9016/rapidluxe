@@ -5,7 +5,7 @@
 ```
 Phase:          3C — Performance + Final QA
 Active Task:    none
-Last Completed: /profile page wired (real bookings + wishlist + personal details via /api/user/me GET+PATCH, Clerk name sync). /admin/users wired (real data, role change, suspend/unsuspend via Clerk banUser/unbanUser). Prisma migration: dateOfBirth, nationality, passportNumber added to User. npx tsc --noEmit: 0 errors.
+Last Completed: Light/dark mode audit — fixed CSS variable usage across WhyRapidLuxe (card surfaces), TrustBar (section bg + dividers), About page (Sections 3/4/6/7 surfaces, quote card, CTA gradient), MapboxMap (theme-aware style light-v11/dark-v11), admin layout (forced dark class). LeadCaptureModal + WhatsAppButton already correct. npx tsc --noEmit: 0 errors.
 ```
 
 > Update after every completed task.
