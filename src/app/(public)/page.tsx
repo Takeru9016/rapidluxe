@@ -4,7 +4,7 @@ import {
   DestinationsSection,
   HotDealsSection,
   HowItWorks,
-  TravelerCarousel,
+  Testimonials,
   BlogPreview,
   FAQAccordion,
   FinalCTAStrip,
@@ -19,7 +19,7 @@ export default function HomePage() {
       <DestinationsSection />
       <HotDealsSection />
       <HowItWorks />
-      <TravelerCarousel />
+      <Testimonials />
       <BlogPreview />
       <FAQAccordion />
       <FinalCTAStrip />

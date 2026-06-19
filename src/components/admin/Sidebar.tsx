@@ -28,6 +28,7 @@ import {
   Ban,
   ScrollText,
   Shield,
+  Quote,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -96,6 +97,7 @@ const NAV_GROUPS: NavGroup[] = [
         icon: ScrollText,
       },
       { label: "Privacy Policy", href: "/admin/pages/privacy", icon: Shield },
+      { label: "Testimonials", href: "/admin/testimonials", icon: Quote },
     ],
   },
   {

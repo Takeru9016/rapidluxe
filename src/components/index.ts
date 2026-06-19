@@ -48,4 +48,5 @@ export { HotDealsSection } from "./sections/HotDealsSection";
 export { HowItWorks } from "./sections/HowItWorks";
 export { Newsletter } from "./sections/Newsletter";
 export { TravelerCarousel } from "./sections/TravelerCarousel";
+export { Testimonials } from "./sections/Testimonials";
 export { TrustBar } from "./sections/TrustBar";

@@ -2,6 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import Image from "next/image";
+import { toast } from "sonner";
 import {
   Receipt,
   FileText,
@@ -13,11 +14,7 @@ import {
   ClipboardList,
   Plane,
   ArrowRight,
-  Star,
 } from "lucide-react";
-
-import { dummyReviews } from "@/lib/dummy/reviews";
-import { formatDate } from "@/lib/utils";
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -113,13 +110,40 @@ function CorporateForm() {
     register,
     handleSubmit,
     setValue,
-    formState: { errors, isSubmitSuccessful },
+    formState: { errors },
     reset,
   } = useForm<CorporateFormData>();
 
-  const onSubmit = (data: CorporateFormData) => {
-    console.log(data);
-    reset();
+  const onSubmit = async (data: CorporateFormData) => {
+    try {
+      const message = [
+        `Company: ${data.companyName}`,
+        `Team Size: ${data.teamSize}`,
+        data.gstNumber ? `GST: ${data.gstNumber}` : null,
+        "",
+        data.requirements,
+      ]
+        .filter((l) => l !== null)
+        .join("\n");
+
+      const res = await fetch("/api/enquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.contactName,
+          email: data.email,
+          subject: `Corporate Account Request — ${data.companyName}`,
+          message,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      toast.success(
+        "Request submitted! We'll be in touch within one business day.",
+      );
+      reset();
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    }
   };
 
   return (
@@ -249,13 +273,6 @@ function CorporateForm() {
           </p>
         )}
       </div>
-
-      {isSubmitSuccessful && (
-        <div className="rounded-lg border border-(--color-teal)/40 bg-(--color-teal)/10 px-5 py-4 font-sans text-sm text-(--color-teal)">
-          Thank you. Your account manager will reach out within one business
-          day.
-        </div>
-      )}
 
       <Button
         type="submit"

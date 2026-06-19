@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useState } from "react";
 
 import { usePackages } from "@/hooks/api/usePackages";
 import type { ApiPackage } from "@/hooks/api/usePackages";
@@ -16,31 +15,12 @@ import type { Package } from "@/types/package";
 
 gsap.registerPlugin(ScrollTrigger);
 
-type Tab = "Trending" | "Luxury" | "Value";
-
-const TABS: Tab[] = ["Trending", "Luxury", "Value"];
-
-function filterByTab(tab: Tab, packages: ApiPackage[]): ApiPackage[] {
-  if (tab === "Luxury")
-    return packages.filter((p) => p.tags.includes("Luxury"));
-  if (tab === "Value") return packages.filter((p) => p.pricePerPerson < 100000);
-  return [...packages].sort(
-    (a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0),
-  );
-}
-
 export function FeaturedPackages() {
-  const [activeTab, setActiveTab] = useState<Tab>("Trending");
   const gridRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
-  const { data, isLoading } = usePackages({ sort: "featured", limit: 50 });
-  const allPackages = data?.data ?? [];
-
-  const packages = useMemo(
-    () => filterByTab(activeTab, allPackages),
-    [activeTab, allPackages],
-  );
+  const { data, isLoading } = usePackages({ sort: "featured", limit: 6 });
+  const packages: ApiPackage[] = data?.data ?? [];
 
   useEffect(() => {
     const prefersReduced = window.matchMedia(
@@ -89,45 +69,9 @@ export function FeaturedPackages() {
         >
           Featured Packages
         </p>
-
         <h2 className="font-(family-name:--font-display) text-4xl md:text-5xl text-white mt-2">
           Handpicked Journeys for You
         </h2>
-
-        {/* Tabs */}
-        <div className="mt-8 flex gap-2 justify-center">
-          {TABS.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className="font-(family-name:--font-body) font-medium text-sm px-5 py-2 rounded-full transition-colors cursor-pointer"
-              style={
-                activeTab === tab
-                  ? {
-                      backgroundColor: "var(--color-gold)",
-                      color: "var(--color-navy)",
-                    }
-                  : {
-                      border: "1px solid var(--color-navy-border)",
-                      color: "var(--color-white-muted)",
-                    }
-              }
-              onMouseEnter={(e) => {
-                if (activeTab !== tab) {
-                  (e.currentTarget as HTMLButtonElement).style.color = "white";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeTab !== tab) {
-                  (e.currentTarget as HTMLButtonElement).style.color =
-                    "var(--color-white-muted)";
-                }
-              }}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Grid */}

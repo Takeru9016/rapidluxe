@@ -6,7 +6,18 @@ import { category } from "./category";
 import { destination } from "./destination";
 import { staticPage } from "./staticPage";
 import { aboutPage } from "./aboutPage";
+import { siteContent } from "./siteContent";
+import { testimonial } from "./testimonial";
 
 export const schema: { types: SchemaTypeDefinition[] } = {
-  types: [post, author, category, destination, staticPage, aboutPage],
+  types: [
+    post,
+    author,
+    category,
+    destination,
+    staticPage,
+    aboutPage,
+    siteContent,
+    testimonial,
+  ],
 };
