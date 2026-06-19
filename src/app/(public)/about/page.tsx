@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, MapPin, Star, Award, Briefcase } from "lucide-react";
+import { ArrowRight, MapPin, Star, Briefcase } from "lucide-react";
 import type { PortableTextBlock } from "@portabletext/react";
 import { PortableText } from "@portabletext/react";
 
@@ -76,15 +76,6 @@ const FALLBACK_STATS = [
   { value: "50+", label: "Destinations", icon: MapPin },
   { value: "4.8★", label: "Average Rating", icon: Star },
   { value: "8 Years", label: "Of Excellence", icon: Briefcase },
-];
-
-const AWARDS = [
-  "Travel + Leisure India",
-  "Condé Nast Traveller",
-  "Forbes Travel Guide",
-  "TAAI Award 2024",
-  "Outlook Traveller",
-  "Times Travel Awards",
 ];
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -257,28 +248,6 @@ export default async function AboutPage() {
               </div>
             </article>
           ))}
-        </div>
-      </section>
-
-      {/* Awards / Press */}
-      <section className="py-16 border-t border-(--color-navy-border)">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <div className="text-center mb-10">
-            <p className="font-sans text-sm tracking-widest uppercase text-(--color-text-secondary) flex items-center justify-center gap-2">
-              <Award size={14} className="text-(--color-gold)" />
-              As featured in &amp; recognised by
-            </p>
-          </div>
-          <div className="flex flex-wrap justify-center items-center gap-4">
-            {AWARDS.map((name) => (
-              <span
-                key={name}
-                className="font-sans text-xs font-medium tracking-widest uppercase px-5 py-2.5 rounded-full border border-(--color-navy-border) text-(--color-text-secondary) hover:border-(--color-gold)/40 hover:text-(--color-white-muted) transition-colors"
-              >
-                {name}
-              </span>
-            ))}
-          </div>
         </div>
       </section>
 

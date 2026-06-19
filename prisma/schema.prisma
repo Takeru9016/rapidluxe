@@ -217,3 +217,10 @@ model Coupon {
   isActive      Boolean   @default(true)
   createdAt     DateTime  @default(now())
 }
+
+model SiteSettings {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}

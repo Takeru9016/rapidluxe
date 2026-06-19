@@ -1,14 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import { Camera, Globe, Video, AtSign } from "lucide-react";
 
 import { NewsletterForm } from "@/components/layout/NewsletterForm";
+import { useSiteSettings } from "@/hooks/api/useSiteSettings";
 
 const companyLinks = [
   { label: "About", href: "/about" },
   { label: "Blog", href: "/blog" },
-  { label: "Careers", href: "/careers" },
-  { label: "Press", href: "/press" },
-  { label: "Partnerships", href: "/partnerships" },
 ];
 
 const supportLinks = [
@@ -19,19 +19,19 @@ const supportLinks = [
   { label: "Privacy Policy", href: "/privacy" },
 ];
 
-const socialLinks = [
-  { Icon: Camera, label: "Instagram", href: "https://instagram.com" },
-  { Icon: Globe, label: "Facebook", href: "https://facebook.com" },
-  { Icon: Video, label: "YouTube", href: "https://youtube.com" },
-  { Icon: AtSign, label: "Twitter", href: "https://twitter.com" },
+const SOCIAL_ICONS = [
+  { key: "social_instagram" as const, Icon: Camera, label: "Instagram" },
+  { key: "social_facebook" as const, Icon: Globe, label: "Facebook" },
+  { key: "social_youtube" as const, Icon: Video, label: "YouTube" },
+  { key: "social_twitter" as const, Icon: AtSign, label: "Twitter" },
 ];
-
-const paymentMethods = ["UPI", "Visa", "Mastercard", "RuPay"];
 
 const footerLinkClass =
   "text-sm font-sans text-[var(--color-white-muted)] hover:text-[var(--color-gold)] py-1 block transition-colors";
 
 export function Footer() {
+  const { data: settings } = useSiteSettings();
+
   return (
     <footer className="bg-(--color-navy-surface) border-t border-(--color-navy-border)">
       {/* Top section */}
@@ -49,18 +49,22 @@ export function Footer() {
               Luxury Travel. Curated for India.
             </p>
             <div className="mt-6 flex items-center gap-4">
-              {socialLinks.map(({ Icon, label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-(--color-text-secondary) hover:text-(--color-gold) transition-colors"
-                >
-                  <Icon size={20} />
-                </a>
-              ))}
+              {SOCIAL_ICONS.map(({ key, Icon, label }) => {
+                const href = settings?.[key];
+                if (!href) return null;
+                return (
+                  <a
+                    key={label}
+                    href={href}
+                    aria-label={label}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-(--color-text-secondary) hover:text-(--color-gold) transition-colors"
+                  >
+                    <Icon size={20} />
+                  </a>
+                );
+              })}
             </div>
           </div>
 
@@ -119,16 +123,6 @@ export function Footer() {
           <p className="text-sm text-(--color-text-secondary) font-sans">
             © 2026 RapidLuxe. All rights reserved.
           </p>
-          <div className="flex items-center gap-3 opacity-60">
-            {paymentMethods.map((method) => (
-              <span
-                key={method}
-                className="h-6 px-2 flex items-center border border-(--color-navy-border) rounded text-xs font-mono text-(--color-white-muted)"
-              >
-                {method}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
     </footer>

@@ -16,15 +16,14 @@ import type { Package } from "@/types/package";
 
 gsap.registerPlugin(ScrollTrigger);
 
-type Tab = "Trending" | "Luxury" | "Budget";
+type Tab = "Trending" | "Luxury" | "Value";
 
-const TABS: Tab[] = ["Trending", "Luxury", "Budget"];
+const TABS: Tab[] = ["Trending", "Luxury", "Value"];
 
 function filterByTab(tab: Tab, packages: ApiPackage[]): ApiPackage[] {
   if (tab === "Luxury")
     return packages.filter((p) => p.tags.includes("Luxury"));
-  if (tab === "Budget")
-    return packages.filter((p) => p.pricePerPerson < 100000);
+  if (tab === "Value") return packages.filter((p) => p.pricePerPerson < 100000);
   return [...packages].sort(
     (a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0),
   );

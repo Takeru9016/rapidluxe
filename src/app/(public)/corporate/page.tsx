@@ -95,26 +95,6 @@ const STEPS = [
   },
 ];
 
-const COMPANIES = [
-  "Infosys", "Tata Consultancy", "Reliance Industries", "HDFC Bank",
-  "Wipro", "Mahindra Group", "Bajaj Finserv", "Zomato",
-];
-
-const CORPORATE_REVIEWS = [
-  {
-    review: dummyReviews[3],
-    company: "Mahindra Logistics",
-    role: "Head of Administration",
-    reviewer: "Vikram Nair",
-  },
-  {
-    review: dummyReviews[7],
-    company: "TCS Digital",
-    role: "Corporate Travel Manager",
-    reviewer: "Arjun Singh",
-  },
-];
-
 const TEAM_SIZES = ["1–10", "11–50", "51–200", "201–500", "500+"];
 
 // ─── Form ─────────────────────────────────────────────────────────────────────
@@ -155,7 +135,9 @@ function CorporateForm() {
             className="bg-(--color-navy) border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
           />
           {errors.contactName && (
-            <p className="font-sans text-xs text-(--color-coral)">{errors.contactName.message}</p>
+            <p className="font-sans text-xs text-(--color-coral)">
+              {errors.contactName.message}
+            </p>
           )}
         </div>
         <div className="space-y-1.5">
@@ -165,14 +147,19 @@ function CorporateForm() {
           <Input
             {...register("email", {
               required: "Enter a valid email",
-              pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Enter a valid email" },
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: "Enter a valid email",
+              },
             })}
             type="email"
             placeholder="vikram@company.com"
             className="bg-(--color-navy) border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
           />
           {errors.email && (
-            <p className="font-sans text-xs text-(--color-coral)">{errors.email.message}</p>
+            <p className="font-sans text-xs text-(--color-coral)">
+              {errors.email.message}
+            </p>
           )}
         </div>
       </div>
@@ -183,17 +170,22 @@ function CorporateForm() {
             Company Name <span className="text-(--color-coral)">*</span>
           </label>
           <Input
-            {...register("companyName", { required: "Company name is required" })}
+            {...register("companyName", {
+              required: "Company name is required",
+            })}
             placeholder="Acme Enterprises Pvt. Ltd."
             className="bg-(--color-navy) border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
           />
           {errors.companyName && (
-            <p className="font-sans text-xs text-(--color-coral)">{errors.companyName.message}</p>
+            <p className="font-sans text-xs text-(--color-coral)">
+              {errors.companyName.message}
+            </p>
           )}
         </div>
         <div className="space-y-1.5">
           <label className="font-sans text-xs font-medium uppercase tracking-widest text-(--color-white-muted)">
-            GST Number <span className="text-(--color-text-secondary)">(optional)</span>
+            GST Number{" "}
+            <span className="text-(--color-text-secondary)">(optional)</span>
           </label>
           <Input
             {...register("gstNumber")}
@@ -207,8 +199,15 @@ function CorporateForm() {
         <label className="font-sans text-xs font-medium uppercase tracking-widest text-(--color-white-muted)">
           Team Size <span className="text-(--color-coral)">*</span>
         </label>
-        <input type="hidden" {...register("teamSize", { required: "Please select team size" })} />
-        <Select onValueChange={(val) => setValue("teamSize", val, { shouldValidate: true })}>
+        <input
+          type="hidden"
+          {...register("teamSize", { required: "Please select team size" })}
+        />
+        <Select
+          onValueChange={(val) =>
+            setValue("teamSize", val, { shouldValidate: true })
+          }
+        >
           <SelectTrigger className="bg-(--color-navy) border-(--color-navy-border) text-(--color-text-secondary) focus:ring-(--color-gold)/40">
             <SelectValue placeholder="Select team size" />
           </SelectTrigger>
@@ -225,7 +224,9 @@ function CorporateForm() {
           </SelectContent>
         </Select>
         {errors.teamSize && (
-          <p className="font-sans text-xs text-(--color-coral)">{errors.teamSize.message}</p>
+          <p className="font-sans text-xs text-(--color-coral)">
+            {errors.teamSize.message}
+          </p>
         )}
       </div>
 
@@ -243,13 +244,16 @@ function CorporateForm() {
           className="bg-(--color-navy) border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60 resize-none"
         />
         {errors.requirements && (
-          <p className="font-sans text-xs text-(--color-coral)">{errors.requirements.message}</p>
+          <p className="font-sans text-xs text-(--color-coral)">
+            {errors.requirements.message}
+          </p>
         )}
       </div>
 
       {isSubmitSuccessful && (
         <div className="rounded-lg border border-(--color-teal)/40 bg-(--color-teal)/10 px-5 py-4 font-sans text-sm text-(--color-teal)">
-          Thank you. Your account manager will reach out within one business day.
+          Thank you. Your account manager will reach out within one business
+          day.
         </div>
       )}
 
@@ -289,7 +293,8 @@ export default function CorporatePage() {
           </h1>
           <p className="font-sans text-(--color-white-muted) mt-4 max-w-xl text-sm leading-relaxed">
             End-to-end business travel management — from policy configuration to
-            consolidated GST invoicing — built for India&apos;s leading enterprises.
+            consolidated GST invoicing — built for India&apos;s leading
+            enterprises.
           </p>
         </div>
       </section>
@@ -337,7 +342,10 @@ export default function CorporatePage() {
             <div className="hidden md:block absolute top-10 left-[calc(16.67%+20px)] right-[calc(16.67%+20px)] h-px bg-(--color-navy-border)" />
 
             {STEPS.map(({ number, icon: Icon, title, description }) => (
-              <div key={number} className="flex flex-col items-center text-center gap-4 relative">
+              <div
+                key={number}
+                className="flex flex-col items-center text-center gap-4 relative"
+              >
                 <div className="w-20 h-20 rounded-full bg-(--color-navy) border-2 border-(--color-gold)/30 flex items-center justify-center shrink-0 relative z-10">
                   <Icon size={28} className="text-(--color-gold)" />
                 </div>
@@ -351,68 +359,6 @@ export default function CorporatePage() {
                   {description}
                 </p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Company logos */}
-      <section className="py-16 max-w-7xl mx-auto px-4 md:px-8 text-center">
-        <p className="font-sans text-sm tracking-widest uppercase text-(--color-text-secondary) mb-8">
-          Trusted by 500+ Companies across India
-        </p>
-        <div className="flex flex-wrap justify-center items-center gap-4">
-          {COMPANIES.map((name) => (
-            <span
-              key={name}
-              className="font-sans text-xs font-medium tracking-widest uppercase px-5 py-2.5 rounded-full border border-(--color-navy-border) text-(--color-text-secondary) hover:border-(--color-gold)/40 hover:text-(--color-white-muted) transition-colors"
-            >
-              {name}
-            </span>
-          ))}
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-16 bg-(--color-navy-surface) border-y border-(--color-navy-border)">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <div className="text-center mb-12">
-            <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-white font-light">
-              What Our Corporate Clients Say
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {CORPORATE_REVIEWS.map(({ review, company, role, reviewer }) => (
-              <blockquote
-                key={review.id}
-                className="bg-(--color-navy) border border-(--color-navy-border) rounded-xl p-8 flex flex-col gap-5"
-              >
-                <div className="flex gap-1">
-                  {Array.from({ length: review.rating }).map((_, i) => (
-                    <Star key={i} size={14} className="fill-(--color-gold) text-(--color-gold)" />
-                  ))}
-                </div>
-                <h4 className="font-['Cormorant_Garamond'] text-xl text-white">
-                  &ldquo;{review.title}&rdquo;
-                </h4>
-                <p className="font-sans text-sm text-(--color-text-secondary) leading-relaxed flex-1">
-                  {review.body}
-                </p>
-                <footer className="flex items-center gap-3 pt-4 border-t border-(--color-navy-border)">
-                  <div className="w-9 h-9 rounded-full bg-(--color-navy-surface) border border-(--color-navy-border) flex items-center justify-center shrink-0">
-                    <Building2 size={14} className="text-(--color-gold)" />
-                  </div>
-                  <div>
-                    <p className="font-sans text-sm text-white font-medium">{reviewer}</p>
-                    <p className="font-sans text-xs text-(--color-text-secondary)">
-                      {role}, {company}
-                    </p>
-                  </div>
-                  <span className="ml-auto font-sans text-xs text-(--color-text-secondary)">
-                    {formatDate(review.createdAt)}
-                  </span>
-                </footer>
-              </blockquote>
             ))}
           </div>
         </div>

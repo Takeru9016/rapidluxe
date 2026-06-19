@@ -7,6 +7,7 @@ import { Camera, Globe, Video, AtSign } from "lucide-react";
 import gsap from "gsap";
 
 import { useUIStore } from "@/store/uiStore";
+import { useSiteSettings } from "@/hooks/api/useSiteSettings";
 
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
@@ -20,15 +21,16 @@ const navItems = [
   { label: "Contact Us", href: "/contact" },
 ];
 
-const socialLinks = [
-  { Icon: Camera, label: "Instagram", href: "https://instagram.com" },
-  { Icon: Globe, label: "Facebook", href: "https://facebook.com" },
-  { Icon: Video, label: "YouTube", href: "https://youtube.com" },
-  { Icon: AtSign, label: "Twitter", href: "https://twitter.com" },
+const SOCIAL_ICONS = [
+  { key: "social_instagram" as const, Icon: Camera, label: "Instagram" },
+  { key: "social_facebook" as const, Icon: Globe, label: "Facebook" },
+  { key: "social_youtube" as const, Icon: Video, label: "YouTube" },
+  { key: "social_twitter" as const, Icon: AtSign, label: "Twitter" },
 ];
 
 export function MobileMenu() {
   const { mobileMenuOpen, setMobileMenuOpen } = useUIStore();
+  const { data: settings } = useSiteSettings();
   const overlayRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
@@ -145,18 +147,22 @@ export function MobileMenu() {
 
       {/* Social */}
       <div className="mobile-nav-link mt-8 flex items-center gap-5 shrink-0">
-        {socialLinks.map(({ Icon, label, href }) => (
-          <a
-            key={label}
-            href={href}
-            aria-label={label}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-(--color-text-secondary) hover:text-(--color-gold) transition-colors"
-          >
-            <Icon size={20} />
-          </a>
-        ))}
+        {SOCIAL_ICONS.map(({ key, Icon, label }) => {
+          const href = settings?.[key];
+          if (!href) return null;
+          return (
+            <a
+              key={label}
+              href={href}
+              aria-label={label}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-(--color-text-secondary) hover:text-(--color-gold) transition-colors"
+            >
+              <Icon size={20} />
+            </a>
+          );
+        })}
       </div>
     </div>
   );
