@@ -1,15 +1,15 @@
 import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import {
-  checkRateLimit,
   apiLimiter,
+  checkRateLimit,
   rateLimitResponse,
 } from "@/lib/rate-limit";
 import {
-  packageFiltersSchema,
   createPackageSchema,
+  packageFiltersSchema,
 } from "@/lib/validations/package";
 
 export async function GET(req: NextRequest) {
@@ -33,6 +33,8 @@ export async function GET(req: NextRequest) {
     priceMin: searchParams.get("priceMin") ?? undefined,
     priceMax: searchParams.get("priceMax") ?? undefined,
     duration: searchParams.get("duration") ?? undefined,
+    durationMin: searchParams.get("durationMin") ?? undefined,
+    durationMax: searchParams.get("durationMax") ?? undefined,
     tags: searchParams.getAll("tags"),
     type: searchParams.get("type") ?? undefined,
     sort: searchParams.get("sort") ?? undefined,
@@ -54,6 +56,8 @@ export async function GET(req: NextRequest) {
     priceMin,
     priceMax,
     duration,
+    durationMin,
+    durationMax,
     tags,
     sort,
     page,
@@ -81,9 +85,15 @@ export async function GET(req: NextRequest) {
     }
   })();
 
+  const destinationSlugs = destination
+    ? destination.split(",").filter(Boolean)
+    : [];
+
   const where = {
     ...(!all && { status: "PUBLISHED" as const }),
-    ...(destination && { destination: { slug: destination } }),
+    ...(destinationSlugs.length > 0 && {
+      destination: { slug: { in: destinationSlugs } },
+    }),
     ...(priceMin !== undefined && { pricePerPerson: { gte: priceMin } }),
     ...(priceMax !== undefined && {
       pricePerPerson: {
@@ -92,6 +102,13 @@ export async function GET(req: NextRequest) {
       },
     }),
     ...(duration !== undefined && { durationNights: duration }),
+    ...(durationMin !== undefined && { durationNights: { gte: durationMin } }),
+    ...(durationMax !== undefined && {
+      durationNights: {
+        ...(durationMin !== undefined ? { gte: durationMin } : {}),
+        lte: durationMax,
+      },
+    }),
     ...(tags.length > 0 && { tags: { hasSome: tags } }),
   };
 

@@ -10,7 +10,7 @@ import {
 } from "@/lib/rate-limit";
 import { calculateGST } from "@/lib/utils";
 import { createBookingSchema } from "@/lib/validations/booking";
-import type { DisplayStatus, DbBookingStatus } from "@/types/booking";
+import type { DbBookingStatus, DisplayStatus } from "@/types/booking";
 
 function computeDisplayStatus(
   status: DbBookingStatus,
@@ -117,7 +117,12 @@ export async function POST(req: NextRequest) {
           OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
         },
       });
-      if (coupon && coupon.usedCount < (coupon.maxUses ?? Infinity)) {
+      const minAmountMet = !coupon?.minAmount || baseAmount >= coupon.minAmount;
+      if (
+        coupon &&
+        minAmountMet &&
+        coupon.usedCount < (coupon.maxUses ?? Infinity)
+      ) {
         discountAmount =
           coupon.discountType === "PERCENT"
             ? (baseAmount * coupon.discountValue) / 100

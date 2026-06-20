@@ -40,6 +40,8 @@ export interface PackagesQuery {
   priceMin?: number;
   priceMax?: number;
   duration?: number;
+  durationMin?: number;
+  durationMax?: number;
   tags?: string[];
   sort?:
     | "price_asc"
@@ -60,6 +62,10 @@ function buildUrl(filters: PackagesQuery): string {
     params.set("priceMax", String(filters.priceMax));
   if (filters.duration !== undefined)
     params.set("duration", String(filters.duration));
+  if (filters.durationMin !== undefined)
+    params.set("durationMin", String(filters.durationMin));
+  if (filters.durationMax !== undefined)
+    params.set("durationMax", String(filters.durationMax));
   filters.tags?.forEach((t) => params.append("tags", t));
   if (filters.sort) params.set("sort", filters.sort);
   if (filters.page !== undefined) params.set("page", String(filters.page));

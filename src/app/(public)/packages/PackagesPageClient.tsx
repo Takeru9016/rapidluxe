@@ -1,21 +1,12 @@
 "use client";
 
-import { Suspense, useState, useMemo, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import { SlidersHorizontal, PackageSearch } from "lucide-react";
-
-import { formatPrice } from "@/lib/utils";
-
-import { useSearchStore } from "@/store/searchStore";
-import { usePackages } from "@/hooks/api/usePackages";
-import { useDestinations } from "@/hooks/api/useDestinations";
-
+import { PackageSearch, SlidersHorizontal } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { PackageCard } from "@/components/cards/PackageCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PackageCardSkeleton } from "@/components/shared/Skeletons";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Slider } from "@/components/ui/slider";
 import {
   Select,
   SelectContent,
@@ -23,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -30,19 +22,24 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Slider } from "@/components/ui/slider";
+import {
+  type PackageFilterDestination,
+  usePackageFilters,
+} from "@/hooks/api/usePackageFilters";
+import { type PackagesQuery, usePackages } from "@/hooks/api/usePackages";
+import { formatPrice } from "@/lib/utils";
+import { useSearchStore } from "@/store/searchStore";
 
 import type { Package } from "@/types/package";
-import type { ApiDestination } from "@/hooks/api/useDestinations";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const MAX_BUDGET = 500000;
-
-const DURATION_OPTIONS = [
-  { label: "Up to 5N", test: (n: number) => n <= 5 },
-  { label: "6–9N", test: (n: number) => n >= 6 && n <= 9 },
-  { label: "10–14N", test: (n: number) => n >= 10 && n <= 14 },
-  { label: "15N+", test: (n: number) => n >= 15 },
+const DURATION_BUCKETS = [
+  { key: "1-3", label: "1–3 nights", min: 1, max: 3 },
+  { key: "4-7", label: "4–7 nights", min: 4, max: 7 },
+  { key: "8-14", label: "8–14 nights", min: 8, max: 14 },
+  { key: "15+", label: "15+ nights", min: 15, max: undefined },
 ] as const;
 
 const SORT_OPTIONS = [
@@ -52,6 +49,16 @@ const SORT_OPTIONS = [
   { value: "rating", label: "Rating" },
   { value: "duration", label: "Duration" },
 ] as const;
+
+type SortValue = (typeof SORT_OPTIONS)[number]["value"];
+
+const SORT_TO_API: Record<SortValue, PackagesQuery["sort"]> = {
+  popular: "featured",
+  "price-asc": "price_asc",
+  "price-desc": "price_desc",
+  rating: "featured",
+  duration: "duration_asc",
+};
 
 const DUMMY_RATINGS: Record<string, number> = {
   "pkg-bali": 4.8,
@@ -64,18 +71,21 @@ const DUMMY_RATINGS: Record<string, number> = {
   "pkg-singapore": 4.6,
 };
 
+const FALLBACK_PRICE_RANGE = { min: 0, max: 500000 };
+
 // ─── FilterPanel ──────────────────────────────────────────────────────────────
 
 interface FilterPanelProps {
-  destinations: ApiDestination[];
+  destinations: PackageFilterDestination[];
   allTags: string[];
   selectedDestinations: string[];
-  selectedDurations: string[];
-  budgetMax: number;
+  selectedDuration: string | null;
+  priceRange: { min: number; max: number };
+  priceValue: [number, number];
   selectedTags: string[];
-  onToggleDestination: (id: string) => void;
-  onToggleDuration: (label: string) => void;
-  onBudgetChange: (val: number) => void;
+  onToggleDestination: (slug: string) => void;
+  onToggleDuration: (key: string) => void;
+  onPriceChange: (val: [number, number]) => void;
   onToggleTag: (tag: string) => void;
   onReset: () => void;
 }
@@ -84,19 +94,21 @@ function FilterPanel({
   destinations,
   allTags,
   selectedDestinations,
-  selectedDurations,
-  budgetMax,
+  selectedDuration,
+  priceRange,
+  priceValue,
   selectedTags,
   onToggleDestination,
   onToggleDuration,
-  onBudgetChange,
+  onPriceChange,
   onToggleTag,
   onReset,
 }: FilterPanelProps) {
   const hasActiveFilters =
     selectedDestinations.length > 0 ||
-    selectedDurations.length > 0 ||
-    budgetMax < MAX_BUDGET ||
+    selectedDuration !== null ||
+    priceValue[0] > priceRange.min ||
+    priceValue[1] < priceRange.max ||
     selectedTags.length > 0;
 
   return (
@@ -131,8 +143,8 @@ function FilterPanel({
             >
               <input
                 type="checkbox"
-                checked={selectedDestinations.includes(dest.id)}
-                onChange={() => onToggleDestination(dest.id)}
+                checked={selectedDestinations.includes(dest.slug)}
+                onChange={() => onToggleDestination(dest.slug)}
                 className="w-4 h-4 rounded border border-(--color-navy-border) cursor-pointer accent-(--color-gold) shrink-0"
               />
               <span className="text-sm text-(--color-white-muted) group-hover:text-white transition-colors">
@@ -151,19 +163,19 @@ function FilterPanel({
           Duration
         </p>
         <div className="flex flex-col gap-2">
-          {DURATION_OPTIONS.map((opt) => (
+          {DURATION_BUCKETS.map((bucket) => (
             <label
-              key={opt.label}
+              key={bucket.key}
               className="flex items-center gap-3 cursor-pointer group"
             >
               <input
                 type="checkbox"
-                checked={selectedDurations.includes(opt.label)}
-                onChange={() => onToggleDuration(opt.label)}
+                checked={selectedDuration === bucket.key}
+                onChange={() => onToggleDuration(bucket.key)}
                 className="w-4 h-4 rounded border border-(--color-navy-border) cursor-pointer accent-(--color-gold) shrink-0"
               />
               <span className="text-sm text-(--color-white-muted) group-hover:text-white transition-colors font-mono">
-                {opt.label}
+                {bucket.label}
               </span>
             </label>
           ))}
@@ -178,15 +190,19 @@ function FilterPanel({
           Budget
         </p>
         <div className="flex items-center justify-between text-sm font-mono">
-          <span className="text-(--color-gold)">{formatPrice(0)}</span>
-          <span className="text-(--color-gold)">{formatPrice(budgetMax)}</span>
+          <span className="text-(--color-gold)">
+            {formatPrice(priceValue[0])}
+          </span>
+          <span className="text-(--color-gold)">
+            {formatPrice(priceValue[1])}
+          </span>
         </div>
         <Slider
-          value={[budgetMax]}
-          min={0}
-          max={MAX_BUDGET}
+          value={priceValue}
+          min={priceRange.min}
+          max={priceRange.max}
           step={5000}
-          onValueChange={(val) => onBudgetChange(val[0])}
+          onValueChange={(val) => onPriceChange([val[0], val[1]])}
           className="w-full"
         />
       </div>
@@ -228,41 +244,132 @@ function PackagesContent() {
   const [selectedDestinations, setSelectedDestinations] = useState<string[]>(
     [],
   );
-  const [selectedDurations, setSelectedDurations] = useState<string[]>([]);
-  const [budgetMax, setBudgetMax] = useState(MAX_BUDGET);
+  const [selectedDuration, setSelectedDuration] = useState<string | null>(null);
+  const [priceValue, setPriceValue] = useState<[number, number] | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [initializedFromUrl, setInitializedFromUrl] = useState(false);
 
   const { sort, setSort } = useSearchStore();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const urlSyncTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const { data: filtersData } = usePackageFilters();
+  const destinations = filtersData?.destinations ?? [];
+  const priceRange = filtersData?.priceRange ?? FALLBACK_PRICE_RANGE;
+
+  // Restore filter state from URL once filter bounds are known.
+  useEffect(() => {
+    if (initializedFromUrl || !filtersData) return;
+
+    const destParam = searchParams.get("destination");
+    if (destParam)
+      setSelectedDestinations(destParam.split(",").filter(Boolean));
+
+    const durationParam = searchParams.get("duration");
+    if (
+      durationParam &&
+      DURATION_BUCKETS.some((b) => b.key === durationParam)
+    ) {
+      setSelectedDuration(durationParam);
+    }
+
+    const minParam = searchParams.get("minPrice");
+    const maxParam = searchParams.get("maxPrice");
+    setPriceValue([
+      minParam ? Number(minParam) : filtersData.priceRange.min,
+      maxParam ? Number(maxParam) : filtersData.priceRange.max,
+    ]);
+
+    const sortParam = searchParams.get("sort");
+    if (sortParam && SORT_OPTIONS.some((o) => o.value === sortParam)) {
+      setSort(sortParam as SortValue);
+    }
+
+    setInitializedFromUrl(true);
+  }, [filtersData, initializedFromUrl, searchParams, setSort]);
+
+  const effectivePriceValue: [number, number] = priceValue ?? [
+    priceRange.min,
+    priceRange.max,
+  ];
+
+  // Sync filter state to the URL (debounced so slider drags don't spam history).
+  useEffect(() => {
+    if (!initializedFromUrl) return;
+    if (urlSyncTimeout.current) clearTimeout(urlSyncTimeout.current);
+
+    urlSyncTimeout.current = setTimeout(() => {
+      const params = new URLSearchParams();
+      if (selectedDestinations.length > 0)
+        params.set("destination", selectedDestinations.join(","));
+      if (effectivePriceValue[0] > priceRange.min)
+        params.set("minPrice", String(effectivePriceValue[0]));
+      if (effectivePriceValue[1] < priceRange.max)
+        params.set("maxPrice", String(effectivePriceValue[1]));
+      if (selectedDuration) params.set("duration", selectedDuration);
+      if (sort !== "popular") params.set("sort", sort);
+
+      const qs = params.toString();
+      router.push(qs ? `/packages?${qs}` : "/packages", { scroll: false });
+    }, 400);
+
+    return () => {
+      if (urlSyncTimeout.current) clearTimeout(urlSyncTimeout.current);
+    };
+  }, [
+    selectedDestinations,
+    selectedDuration,
+    effectivePriceValue,
+    priceRange.min,
+    priceRange.max,
+    sort,
+    initializedFromUrl,
+    router,
+  ]);
+
+  const durationBucket = DURATION_BUCKETS.find(
+    (b) => b.key === selectedDuration,
+  );
 
   const {
     data: packagesData,
     isLoading: packagesLoading,
     isError: packagesError,
   } = usePackages({
+    destination:
+      selectedDestinations.length > 0
+        ? selectedDestinations.join(",")
+        : undefined,
+    priceMin:
+      effectivePriceValue[0] > priceRange.min
+        ? effectivePriceValue[0]
+        : undefined,
+    priceMax:
+      effectivePriceValue[1] < priceRange.max
+        ? effectivePriceValue[1]
+        : undefined,
+    durationMin: durationBucket?.min,
+    durationMax: durationBucket?.max,
+    tags: selectedTags.length > 0 ? selectedTags : undefined,
+    sort: SORT_TO_API[sort as SortValue] ?? "featured",
     limit: 50,
-    sort: "featured",
   });
-  const { data: destinationsData } = useDestinations();
 
   const allPackages = packagesData?.data ?? [];
-  const destinations = destinationsData?.data ?? [];
 
   const allTags = useMemo(
     () => Array.from(new Set(allPackages.flatMap((p) => p.tags))).sort(),
     [allPackages],
   );
 
-  useEffect(() => {
-    const sortParam = searchParams.get("sort");
-    const valid = SORT_OPTIONS.map((o) => o.value);
-    if (
-      sortParam &&
-      valid.includes(sortParam as (typeof SORT_OPTIONS)[number]["value"])
-    ) {
-      setSort(sortParam as (typeof SORT_OPTIONS)[number]["value"]);
-    }
-  }, [searchParams, setSort]);
+  // The API has no rating field — fall back to client-side resort for this option only.
+  const displayedPackages = useMemo(() => {
+    if (sort !== "rating") return allPackages;
+    return [...allPackages].sort(
+      (a, b) => (DUMMY_RATINGS[b.id] ?? 4.5) - (DUMMY_RATINGS[a.id] ?? 4.5),
+    );
+  }, [allPackages, sort]);
 
   function toggle<T>(arr: T[], item: T): T[] {
     return arr.includes(item) ? arr.filter((x) => x !== item) : [...arr, item];
@@ -270,79 +377,24 @@ function PackagesContent() {
 
   function handleReset() {
     setSelectedDestinations([]);
-    setSelectedDurations([]);
-    setBudgetMax(MAX_BUDGET);
+    setSelectedDuration(null);
+    setPriceValue([priceRange.min, priceRange.max]);
     setSelectedTags([]);
   }
-
-  const filteredPackages = useMemo(() => {
-    let result = allPackages.filter((p) => p.status === "PUBLISHED");
-
-    if (selectedDestinations.length > 0) {
-      result = result.filter((p) =>
-        selectedDestinations.includes(p.destinationId),
-      );
-    }
-
-    if (selectedDurations.length > 0) {
-      result = result.filter((p) =>
-        selectedDurations.some((label) => {
-          const opt = DURATION_OPTIONS.find((o) => o.label === label);
-          return opt ? opt.test(p.durationNights) : false;
-        }),
-      );
-    }
-
-    result = result.filter((p) => p.pricePerPerson <= budgetMax);
-
-    if (selectedTags.length > 0) {
-      result = result.filter((p) =>
-        selectedTags.some((t) => p.tags.includes(t)),
-      );
-    }
-
-    const sorted = [...result];
-    switch (sort) {
-      case "price-asc":
-        sorted.sort((a, b) => a.pricePerPerson - b.pricePerPerson);
-        break;
-      case "price-desc":
-        sorted.sort((a, b) => b.pricePerPerson - a.pricePerPerson);
-        break;
-      case "rating":
-        sorted.sort(
-          (a, b) => (DUMMY_RATINGS[b.id] ?? 4.5) - (DUMMY_RATINGS[a.id] ?? 4.5),
-        );
-        break;
-      case "duration":
-        sorted.sort((a, b) => a.durationNights - b.durationNights);
-        break;
-      default:
-        sorted.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
-    }
-
-    return sorted;
-  }, [
-    allPackages,
-    selectedDestinations,
-    selectedDurations,
-    budgetMax,
-    selectedTags,
-    sort,
-  ]);
 
   const filterPanelProps: FilterPanelProps = {
     destinations,
     allTags,
     selectedDestinations,
-    selectedDurations,
-    budgetMax,
+    selectedDuration,
+    priceRange,
+    priceValue: effectivePriceValue,
     selectedTags,
-    onToggleDestination: (id) =>
-      setSelectedDestinations((prev) => toggle(prev, id)),
-    onToggleDuration: (label) =>
-      setSelectedDurations((prev) => toggle(prev, label)),
-    onBudgetChange: setBudgetMax,
+    onToggleDestination: (slug) =>
+      setSelectedDestinations((prev) => toggle(prev, slug)),
+    onToggleDuration: (key) =>
+      setSelectedDuration((prev) => (prev === key ? null : key)),
+    onPriceChange: setPriceValue,
     onToggleTag: (tag) => setSelectedTags((prev) => toggle(prev, tag)),
     onReset: handleReset,
   };
@@ -417,7 +469,7 @@ function PackagesContent() {
                 <span className="text-sm font-body text-(--color-text-secondary)">
                   {packagesLoading
                     ? "Loading…"
-                    : `${filteredPackages.length} packages found`}
+                    : `${displayedPackages.length} packages found`}
                 </span>
               </div>
 
@@ -446,7 +498,7 @@ function PackagesContent() {
                   <PackageCardSkeleton key={i} />
                 ))}
               </div>
-            ) : filteredPackages.length === 0 ? (
+            ) : displayedPackages.length === 0 ? (
               <EmptyState
                 icon={PackageSearch}
                 title="No packages found"
@@ -465,7 +517,7 @@ function PackagesContent() {
               />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredPackages.map((pkg) => (
+                {displayedPackages.map((pkg) => (
                   <PackageCard
                     key={pkg.id}
                     package={pkg as unknown as Package}

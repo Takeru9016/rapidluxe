@@ -192,6 +192,7 @@ enum DealType {
   FLASH_SALE
   EARLY_BIRD
   LAST_MINUTE
+  SEASONAL
 }
 
 model Enquiry {

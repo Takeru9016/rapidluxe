@@ -17,7 +17,6 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { dummyDeals } from "@/lib/dummy/deals";
 import { formatPrice, calculateGST, formatDate } from "@/lib/utils";
 
 import { useWishlistStore } from "@/store/wishlistStore";
@@ -28,6 +27,7 @@ import {
 } from "@/hooks/api/usePackages";
 import { useReviews, useCheckEligibility } from "@/hooks/api/useReviews";
 import { useCurrencyRates } from "@/hooks/api/useCurrency";
+import { useDeals } from "@/hooks/api/useDeals";
 
 import type { Package } from "@/types/package";
 
@@ -138,6 +138,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
   const { data: similarData } = usePackages({ limit: 6, sort: "featured" });
   const { data: liveHotelsData } = usePackageHotels(slug);
   const { data: currencyData } = useCurrencyRates();
+  const { data: dealsData } = useDeals();
 
   const pkg = pkgData?.data;
   const destination = pkg?.destination ?? null;
@@ -171,16 +172,13 @@ export function PackageDetailClient({ slug }: { slug: string }) {
   const isWishlisted = pkg ? has(pkg.id) : false;
 
   const searchParams = useSearchParams();
+  const deals = dealsData?.data ?? [];
   const activeDeal = useMemo(() => {
     if (!pkg) return null;
     const dealId = searchParams.get("deal");
     if (!dealId) return null;
-    return (
-      dummyDeals.find(
-        (d) => d.id === dealId && d.packageId === pkg.id && d.isActive,
-      ) ?? null
-    );
-  }, [searchParams, pkg]);
+    return deals.find((d) => d.id === dealId && d.packageId === pkg.id) ?? null;
+  }, [searchParams, pkg, deals]);
 
   if (isLoading) return <PackageDetailSkeleton />;
 
@@ -234,7 +232,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
             applied — deal expires in{" "}
             <span className="font-mono text-(--color-coral)">
               {Math.ceil(
-                (activeDeal.expiresAt.getTime() - Date.now()) /
+                (new Date(activeDeal.expiresAt).getTime() - Date.now()) /
                   (1000 * 60 * 60 * 24),
               )}
               d

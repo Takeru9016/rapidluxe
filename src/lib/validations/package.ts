@@ -5,6 +5,8 @@ export const packageFiltersSchema = z.object({
   priceMin: z.coerce.number().optional(),
   priceMax: z.coerce.number().optional(),
   duration: z.coerce.number().optional(),
+  durationMin: z.coerce.number().optional(),
+  durationMax: z.coerce.number().optional(),
   tags: z.array(z.string()).default([]),
   type: z.string().optional(),
   sort: z

@@ -1,108 +1,124 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { Clock } from "lucide-react";
-
-import { Deal } from "@/types/deal";
-import { Package } from "@/types/package";
-
+import { useRouter } from "next/navigation";
+import { CountdownTimer } from "@/components/shared/CountdownTimer";
+import type { ApiDeal } from "@/hooks/api/useDeals";
 import { formatPrice } from "@/lib/utils";
 
-import { Badge } from "@/components/shared/Badge";
-import { CountdownTimer } from "@/components/shared/CountdownTimer";
-
 interface DealCardProps {
-  deal: Deal & { package: Package };
+  deal: ApiDeal;
   className?: string;
 }
 
+const TYPE_LABEL: Record<ApiDeal["type"], string> = {
+  FLASH_SALE: "⚡ FLASH SALE",
+  EARLY_BIRD: "🐦 EARLY BIRD",
+  LAST_MINUTE: "⏰ LAST MINUTE",
+  SEASONAL: "🎉 SEASONAL",
+};
+
+const HOURS_24_MS = 24 * 60 * 60 * 1000;
+
 export function DealCard({ deal, className }: DealCardProps) {
+  const router = useRouter();
   const pkg = deal.package;
   if (!pkg) return null;
 
-  const originalPrice =
-    pkg.originalPrice ?? pkg.pricePerPerson * (1 + deal.discountPct / 100);
-  const savings = originalPrice - pkg.pricePerPerson;
+  const originalPrice = pkg.pricePerPerson;
+  const dealPrice = pkg.pricePerPerson * (1 - deal.discountPct / 100);
+  const savings = originalPrice - dealPrice;
+  const discountPercent = Math.round(deal.discountPct);
+  const expiresAt = new Date(deal.expiresAt);
+  const isEndingSoon = expiresAt.getTime() - Date.now() < HOURS_24_MS;
 
   return (
     <article
       className={[
-        "rounded-xl overflow-hidden bg-(--color-navy-surface)",
+        "group relative rounded-2xl overflow-hidden",
         "border border-(--color-navy-border)",
-        "hover:border-(--color-gold)/50 transition-colors duration-200",
+        "hover:border-(--color-gold)/50",
+        "transition-all duration-300",
+        "bg-(--color-navy-surface)",
         className,
       ]
         .filter(Boolean)
         .join(" ")}
     >
-      {/* Image */}
-      <div className="relative overflow-hidden aspect-video">
+      {/* Image area */}
+      <div className="relative aspect-16/9 overflow-hidden">
         {pkg.images[0] ? (
           <Image
             src={pkg.images[0]}
             alt={pkg.title}
             fill
-            className="object-cover hover:scale-105 transition-transform duration-500"
+            className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         ) : (
-          <div className="absolute inset-0 bg-[#0B0F1A]" />
+          <div className="absolute inset-0 bg-(--color-navy)" />
         )}
 
-        <div className="absolute top-3 left-3">
-          <Badge variant="coral" size="sm">
-            ⚡ FLASH SALE
-          </Badge>
-        </div>
-        <div className="absolute top-3 right-3">
-          <Badge variant="gold" size="sm">
-            {deal.discountPct}% OFF
-          </Badge>
+        <div className="absolute inset-0 bg-gradient-to-t from-(--color-navy)/80 via-transparent to-transparent" />
+
+        <div className="absolute top-4 left-4 flex gap-2 flex-wrap">
+          <span className="bg-(--color-coral)/90 text-white text-xs font-medium px-3 py-1 rounded-full">
+            {TYPE_LABEL[deal.type]}
+          </span>
+          <span className="bg-(--color-gold) text-(--color-navy) font-mono text-sm font-bold px-3 py-1 rounded-full">
+            {discountPercent}% OFF
+          </span>
+          {isEndingSoon && (
+            <span className="bg-(--color-coral) text-white text-xs px-3 py-1 rounded-full animate-pulse">
+              ENDING SOON
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Dashed divider */}
-      <div className="border-t border-dashed border-(--color-navy-border)/80" />
-
       {/* Content */}
-      <div className="p-5">
-        <h3 className="font-['Cormorant_Garamond'] text-lg text-white">
+      <div className="p-5 space-y-3">
+        <span className="inline-block bg-(--color-teal)/20 text-(--color-teal) border border-(--color-teal)/30 rounded-full text-xs px-3 py-1 w-fit font-sans">
+          {pkg.destination.name}, {pkg.destination.country}
+        </span>
+
+        <h3 className="font-['Cormorant_Garamond'] text-xl text-(--color-white)">
           {pkg.title}
         </h3>
-        <p className="text-sm text-(--color-text-secondary) font-sans mt-1">
-          {pkg.durationNights} nights
+
+        <p className="text-sm text-(--color-text-secondary) font-sans">
+          🌙 {pkg.durationNights} nights
         </p>
 
-        {/* Price block */}
-        <div className="mt-4 space-y-1">
-          <p className="line-through text-(--color-text-secondary) text-sm font-['JetBrains_Mono']">
-            {formatPrice(originalPrice)}
-          </p>
-          <p className="text-(--color-gold) text-2xl font-['JetBrains_Mono'] font-semibold">
-            {formatPrice(pkg.pricePerPerson)}
-          </p>
-          <p className="text-(--color-coral) text-sm font-sans">
+        <div className="mt-2">
+          <div className="flex items-end gap-3">
+            <span className="line-through text-(--color-text-secondary) text-sm">
+              {formatPrice(originalPrice)}
+            </span>
+            <span className="font-['JetBrains_Mono'] text-2xl text-(--color-gold) font-bold">
+              {formatPrice(dealPrice)}
+            </span>
+          </div>
+          <span className="mt-1 inline-block bg-(--color-teal)/20 text-(--color-teal) border border-(--color-teal)/30 rounded-full text-xs px-2 py-0.5 w-fit">
             Save {formatPrice(savings)}
+          </span>
+          <p className="text-xs text-(--color-text-secondary) font-sans mt-1">
+            per person · includes 5% GST
           </p>
         </div>
 
-        {/* Timer row */}
-        <div className="mt-3 flex items-center gap-2 text-sm text-(--color-text-secondary)">
-          <Clock size={14} />
+        <div className="flex items-center gap-2 mt-2 text-xs text-(--color-text-secondary) font-sans">
           <span>Ends in:</span>
-          <CountdownTimer expiresAt={deal.expiresAt} variant="inline" />
+          <CountdownTimer expiresAt={expiresAt} variant="inline" />
         </div>
 
-        {/* CTA */}
-        <div className="mt-4">
-          <Link
-            href={`/packages/${pkg.slug}?deal=${deal.id}`}
-            className="block w-full bg-(--color-coral) text-white font-sans font-medium py-3 rounded-lg hover:bg-(--color-coral)/90 transition-colors text-center"
-          >
-            Book This Deal
-          </Link>
-        </div>
+        <button
+          type="button"
+          onClick={() => router.push(`/packages/${pkg.slug}?deal=${deal.id}`)}
+          className="mt-4 w-full bg-(--color-coral) text-white h-10 rounded-lg font-sans font-medium hover:bg-(--color-coral)/90 transition-colors duration-200"
+        >
+          Book This Deal →
+        </button>
       </div>
     </article>
   );

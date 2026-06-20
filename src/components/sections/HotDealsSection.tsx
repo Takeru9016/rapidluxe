@@ -1,35 +1,46 @@
 "use client";
 
-import Link from "next/link";
 import { Zap } from "lucide-react";
-
-import { dummyDeals } from "@/lib/dummy/deals";
-import { dummyPackages } from "@/lib/dummy/packages";
-
+import Link from "next/link";
 import { DealCard } from "@/components/cards/DealCard";
 import { CountdownTimer } from "@/components/shared/CountdownTimer";
-
-const activeDeals = dummyDeals.filter((d) => d.isActive);
-
-const globalExpiry = activeDeals.reduce<Date>(
-  (earliest, deal) => (deal.expiresAt < earliest ? deal.expiresAt : earliest),
-  activeDeals[0].expiresAt
-);
-
-const dealsWithPackages = activeDeals
-  .slice(0, 3)
-  .map((deal) => {
-    const pkg = dummyPackages.find((p) => p.id === deal.packageId);
-    return pkg ? { ...deal, package: pkg } : null;
-  })
-  .filter((d): d is NonNullable<typeof d> => d !== null);
+import { useDeals } from "@/hooks/api/useDeals";
 
 export function HotDealsSection() {
+  const { data, isError } = useDeals();
+  const deals = (data?.data ?? []).slice(0, 3);
+
+  if (isError) {
+    return (
+      <section className="py-20 md:py-32">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 text-center">
+          <p
+            className="font-(family-name:--font-body) text-sm"
+            style={{ color: "var(--color-text-secondary)" }}
+          >
+            Couldn&apos;t load today&apos;s deals. Please refresh the page.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  if (deals.length === 0) return null;
+
+  const globalExpiry = new Date(
+    deals.reduce(
+      (earliest, deal) =>
+        deal.expiresAt < earliest ? deal.expiresAt : earliest,
+      deals[0].expiresAt,
+    ),
+  );
+
   return (
     <section
       className="py-20 md:py-32"
       style={{
-        backgroundColor: "color-mix(in srgb, var(--color-navy-surface) 40%, transparent)",
+        backgroundColor:
+          "color-mix(in srgb, var(--color-navy-surface) 40%, transparent)",
       }}
     >
       {/* Header */}
@@ -40,9 +51,7 @@ export function HotDealsSection() {
               size={24}
               style={{ color: "var(--color-gold)", fill: "var(--color-gold)" }}
             />
-            <h2
-              className="font-(family-name:--font-display) text-4xl text-white"
-            >
+            <h2 className="font-(family-name:--font-display) text-4xl text-white">
               Hot Deals &amp; Flash Sales
             </h2>
           </div>
@@ -60,7 +69,7 @@ export function HotDealsSection() {
 
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {dealsWithPackages.map((deal) => (
+          {deals.map((deal) => (
             <DealCard key={deal.id} deal={deal} />
           ))}
         </div>
@@ -69,6 +78,7 @@ export function HotDealsSection() {
         <div className="mt-10 text-center">
           <Link href="/deals">
             <button
+              type="button"
               className="font-(family-name:--font-body) font-medium text-sm px-8 py-3 rounded-lg transition-colors cursor-pointer"
               style={{
                 border: "1px solid var(--color-gold)",
@@ -79,7 +89,8 @@ export function HotDealsSection() {
                   "color-mix(in srgb, var(--color-gold) 10%, transparent)";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                  "transparent";
               }}
             >
               See All Deals →

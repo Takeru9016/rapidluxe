@@ -1,21 +1,21 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { Check, CheckCircle2, Info, Minus, Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { use, useEffect, useState } from "react";
+import type { DateRange } from "react-day-picker";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Check, CheckCircle2, Info, Minus, Plus } from "lucide-react";
-import type { DateRange } from "react-day-picker";
 
 import { Calendar } from "@/components/ui/calendar";
 import { Separator } from "@/components/ui/separator";
-
-import { useBookingStore } from "@/store/bookingStore";
 import { dummyPackages } from "@/lib/dummy/packages";
-import { formatPrice, formatDate, formatDateRange } from "@/lib/utils";
+import { formatDate, formatDateRange, formatPrice } from "@/lib/utils";
+import { useBookingStore } from "@/store/bookingStore";
 
 import type { TravelerDetail } from "@/types/booking";
+import type { Coupon } from "@/types/coupon";
 import type { Package } from "@/types/package";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -243,6 +243,7 @@ function Step1({ pkg }: { pkg: Package }) {
     flexibleDuration,
     flexibleMonths,
     baseAmount,
+    appliedCoupon,
     setTravelers,
     setOccasion,
     setDateMode,
@@ -253,6 +254,7 @@ function Step1({ pkg }: { pkg: Package }) {
   } = useBookingStore();
 
   const [couponInput, setCouponInput] = useState("");
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [calMonths, setCalMonths] = useState(1);
 
   useEffect(() => {
@@ -275,13 +277,37 @@ function Step1({ pkg }: { pkg: Package }) {
       .updateAmounts(pkg.pricePerPerson * (next.adults + next.children));
   }
 
-  function handleApplyCoupon() {
-    if (couponInput.trim().toUpperCase() === "WELCOME20") {
-      const discount = Math.round(baseAmount * 0.2 * 100) / 100;
-      setCoupon("WELCOME20", null, discount);
-      toast.success("Coupon applied! 20% discount added.");
-    } else {
-      toast.error("Invalid coupon code.");
+  async function handleApplyCoupon() {
+    const code = couponInput.trim();
+    if (!code) return;
+
+    setIsApplyingCoupon(true);
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, baseAmount }),
+      });
+      const json = (await res.json()) as {
+        data?: { coupon: Coupon; discountAmount: number };
+        error?: string;
+      };
+      if (!res.ok || !json.data) {
+        toast.error(json.error ?? "Invalid coupon code.");
+        return;
+      }
+      setCoupon(
+        json.data.coupon.code,
+        json.data.coupon,
+        json.data.discountAmount,
+      );
+      toast.success(
+        `Coupon applied! ${formatPrice(json.data.discountAmount)} off.`,
+      );
+    } catch {
+      toast.error("Failed to apply coupon. Please try again.");
+    } finally {
+      setIsApplyingCoupon(false);
     }
   }
 
@@ -506,11 +532,18 @@ function Step1({ pkg }: { pkg: Package }) {
         <button
           type="button"
           onClick={handleApplyCoupon}
-          className="px-4 py-2.5 rounded-lg border border-(--color-gold)/60 text-(--color-gold) text-sm font-['DM_Sans'] font-medium hover:bg-(--color-gold)/10 transition-colors whitespace-nowrap"
+          disabled={isApplyingCoupon}
+          className="px-4 py-2.5 rounded-lg border border-(--color-gold)/60 text-(--color-gold) text-sm font-['DM_Sans'] font-medium hover:bg-(--color-gold)/10 transition-colors whitespace-nowrap disabled:opacity-50"
         >
-          Apply
+          {isApplyingCoupon ? "Applying…" : "Apply"}
         </button>
       </div>
+
+      {appliedCoupon && (
+        <p className="mt-2 text-sm font-['DM_Sans'] text-(--color-teal)">
+          ✓ {appliedCoupon.code} applied
+        </p>
+      )}
 
       <button
         type="button"

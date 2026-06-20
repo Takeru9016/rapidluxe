@@ -5,7 +5,7 @@
 ```
 Phase:          3C — Performance + Final QA
 Active Task:    none
-Last Completed: Light/dark mode audit — fixed CSS variable usage across WhyRapidLuxe (card surfaces), TrustBar (section bg + dividers), About page (Sections 3/4/6/7 surfaces, quote card, CTA gradient), MapboxMap (theme-aware style light-v11/dark-v11), admin layout (forced dark class). LeadCaptureModal + WhatsAppButton already correct. npx tsc --noEmit: 0 errors.
+Last Completed: Deals system end-to-end fix — admin /admin/deals was 100% mock (dummy data, console.log save, dead Edit/Delete). Public pipeline (api/deals, useDeals, DealCard, HotDealsSection, DealsPageClient) was already correct and untouched. Added src/app/api/admin/deals/route.ts (GET/POST) + [id]/route.ts (PATCH/DELETE), rewired admin page to real CRUD with package dropdown (/api/packages?all=true), future-date validation, computed deal-price preview, isActive toggle. Added SEASONAL to Prisma DealType enum (migration add-seasonal-deal-type) to match src/types/deal.ts which already supported it. Added error-state fallback to HotDealsSection. Verified create→public-filter→deactivate cycle directly against DB. npx tsc --noEmit: 0 errors.
 ```
 
 > Update after every completed task.
