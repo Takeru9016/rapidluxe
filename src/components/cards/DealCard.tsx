@@ -46,7 +46,7 @@ export function DealCard({ deal, className }: DealCardProps) {
         .join(" ")}
     >
       {/* Image area */}
-      <div className="relative aspect-16/9 overflow-hidden">
+      <div className="relative aspect-video overflow-hidden">
         {pkg.images[0] ? (
           <Image
             src={pkg.images[0]}
@@ -59,7 +59,7 @@ export function DealCard({ deal, className }: DealCardProps) {
           <div className="absolute inset-0 bg-(--color-navy)" />
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-(--color-navy)/80 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-(--color-navy)/80 via-transparent to-transparent" />
 
         <div className="absolute top-4 left-4 flex gap-2 flex-wrap">
           <span className="bg-(--color-coral)/90 text-white text-xs font-medium px-3 py-1 rounded-full">
@@ -82,7 +82,7 @@ export function DealCard({ deal, className }: DealCardProps) {
           {pkg.destination.name}, {pkg.destination.country}
         </span>
 
-        <h3 className="font-['Cormorant_Garamond'] text-xl text-(--color-white)">
+        <h3 className="font-['Cormorant_Garamond'] text-xl text-white">
           {pkg.title}
         </h3>
 
