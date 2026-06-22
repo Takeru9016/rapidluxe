@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Heart } from "lucide-react";
+import { Globe, Heart } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
@@ -58,13 +58,19 @@ export function PackageCard({
             variant === "compact" ? "aspect-video" : "aspect-4/3",
           )}
         >
-          <Image
-            src={pkg.images[0]}
-            alt={pkg.title}
-            fill
-            className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
+          {pkg.images[0] ? (
+            <Image
+              src={pkg.images[0]}
+              alt={pkg.title}
+              fill
+              className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-linear-to-br from-(--color-navy-surface) to-(--color-navy-border) flex items-center justify-center">
+              <Globe className="w-12 h-12 text-(--color-gold)/30" />
+            </div>
+          )}
 
           {/* Badges row */}
           <div className="absolute top-3 left-3 right-3 flex justify-between items-start">

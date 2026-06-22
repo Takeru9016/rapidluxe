@@ -1,18 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { ArrowLeft, Plus, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
-  useForm,
-  useFieldArray,
   Controller,
   type SubmitHandler,
+  useFieldArray,
+  useForm,
 } from "react-hook-form";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, X } from "lucide-react";
-
-import { generateSlug } from "@/lib/utils";
 import { CloudinaryUpload } from "@/components/admin/CloudinaryUpload";
 import {
   Select,
@@ -21,11 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { generateSlug } from "@/lib/utils";
 import type {
-  Continent,
-  VisaType,
-  CrowdLevel,
   AvailabilityStatus,
+  Continent,
+  CrowdLevel,
+  DestinationCrowdLevel,
+  VisaType,
 } from "@/types/destination";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -55,6 +55,10 @@ interface DestinationFormValues {
   visaType: VisaType | "";
   currency: string;
   language: string;
+  lat: string;
+  lng: string;
+  countryCode: string;
+  crowdLevel: DestinationCrowdLevel | "";
 
   // ── Sanity editorial fields ──────────────────────────────────────────────
   // Phase 2E: replace textareas with Tiptap / PortableText editor
@@ -82,6 +86,16 @@ const VISA_TYPES: { value: VisaType; label: string }[] = [
   { value: "VISA_ON_ARRIVAL", label: "Visa on Arrival" },
   { value: "E_VISA", label: "e-Visa" },
   { value: "VISA_REQUIRED", label: "Visa Required" },
+];
+
+const DESTINATION_CROWD_LEVELS: {
+  value: DestinationCrowdLevel;
+  label: string;
+}[] = [
+  { value: "LOW", label: "Low" },
+  { value: "MODERATE", label: "Moderate" },
+  { value: "HIGH", label: "High" },
+  { value: "VERY_HIGH", label: "Very High" },
 ];
 
 const MONTHS = [
@@ -203,6 +217,10 @@ export default function NewDestinationPage() {
       visaType: "",
       currency: "",
       language: "",
+      lat: "",
+      lng: "",
+      countryCode: "",
+      crowdLevel: "",
       about: "",
       travelTips: "",
       metaTitle: "",
@@ -244,6 +262,10 @@ export default function NewDestinationPage() {
           visaType: data.visaType || undefined,
           currency: data.currency || undefined,
           language: data.language || undefined,
+          lat: data.lat ? Number(data.lat) : undefined,
+          lng: data.lng ? Number(data.lng) : undefined,
+          countryCode: data.countryCode || undefined,
+          crowdLevel: data.crowdLevel || undefined,
           whenToVisit: data.whenToVisit,
           howToGetThere: data.howToGetThere,
           about: data.about || undefined,
@@ -389,6 +411,68 @@ export default function NewDestinationPage() {
               </select>
             </Field>
           </div>
+        </SectionCard>
+
+        {/* ── Coordinates ── */}
+        <SectionCard
+          title="Coordinates"
+          subtitle="Used for the interactive map on destination page"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Latitude">
+              <input
+                type="number"
+                step={0.000001}
+                {...register("lat")}
+                placeholder="e.g. -8.4095"
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Longitude">
+              <input
+                type="number"
+                step={0.000001}
+                {...register("lng")}
+                placeholder="e.g. 115.1889"
+                className={inputCls}
+              />
+            </Field>
+          </div>
+        </SectionCard>
+
+        {/* ── Country Code ── */}
+        <SectionCard
+          title="Country Code"
+          subtitle="ISO 3166-1 alpha-2 country code"
+        >
+          <Field label="Country Code">
+            <input
+              {...register("countryCode")}
+              maxLength={2}
+              placeholder="e.g. ID for Indonesia, CH for Switzerland"
+              className={inputCls + " uppercase"}
+              onChange={(e) =>
+                setValue("countryCode", e.target.value.toUpperCase())
+              }
+            />
+          </Field>
+        </SectionCard>
+
+        {/* ── Crowd Level ── */}
+        <SectionCard
+          title="Crowd Level"
+          subtitle="Overall crowd level for this destination"
+        >
+          <Field label="Crowd Level">
+            <select {...register("crowdLevel")} className={selectCls}>
+              <option value="">Select crowd level</option>
+              {DESTINATION_CROWD_LEVELS.map(({ value, label }) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </Field>
         </SectionCard>
 
         {/* ── Sanity: Editorial ── */}

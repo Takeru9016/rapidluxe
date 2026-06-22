@@ -61,23 +61,3 @@ export async function PUT(
 
   return NextResponse.json({ data: pkg });
 }
-
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: Promise<{ slug: string }> },
-) {
-  const { sessionClaims } = await auth();
-  const role = (sessionClaims?.metadata as { role?: string } | null)?.role;
-  if (role !== "admin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  const { slug } = await params;
-
-  const pkg = await prisma.package.update({
-    where: { slug },
-    data: { status: "ARCHIVED" },
-  });
-
-  return NextResponse.json({ data: pkg });
-}

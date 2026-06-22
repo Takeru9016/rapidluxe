@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@/generated/prisma/client";
-import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { sanityWriteClient } from "@/lib/sanity";
@@ -28,6 +28,34 @@ export async function GET(
   return NextResponse.json({ data: destination });
 }
 
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  if (!(await requireAdmin())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const { id } = await params;
+
+  const packages = await prisma.package.count({
+    where: { destinationId: id },
+  });
+  if (packages > 0) {
+    return NextResponse.json(
+      {
+        error:
+          "Cannot delete — destination has packages linked to it. Delete or reassign packages first.",
+      },
+      { status: 400 },
+    );
+  }
+
+  await prisma.destination.delete({ where: { id } });
+
+  return NextResponse.json({ success: true });
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -48,6 +76,10 @@ export async function PATCH(
     visaType?: string;
     currency?: string;
     language?: string;
+    lat?: number;
+    lng?: number;
+    countryCode?: string;
+    crowdLevel?: string;
     whenToVisit?: unknown;
     howToGetThere?: unknown;
     about?: string;
@@ -76,6 +108,13 @@ export async function PATCH(
       ...(body.visaType !== undefined && { visaType: body.visaType }),
       ...(body.currency !== undefined && { currency: body.currency }),
       ...(body.language !== undefined && { language: body.language }),
+      ...(body.lat !== undefined && { lat: body.lat }),
+      ...(body.lng !== undefined && { lng: body.lng }),
+      ...(body.countryCode !== undefined && { countryCode: body.countryCode }),
+      ...(body.crowdLevel !== undefined && {
+        crowdLevel:
+          body.crowdLevel as Prisma.DestinationUpdateInput["crowdLevel"],
+      }),
       ...(body.whenToVisit !== undefined && {
         whenToVisit:
           body.whenToVisit === null

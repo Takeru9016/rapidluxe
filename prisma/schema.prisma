@@ -31,9 +31,9 @@ enum Role {
 }
 
 model Destination {
-  id            String    @id @default(cuid())
+  id            String                 @id @default(cuid())
   name          String
-  slug          String    @unique
+  slug          String                 @unique
   country       String
   continent     String
   description   String?
@@ -46,11 +46,19 @@ model Destination {
   lat           Float?
   lng           Float?
   countryCode   String? // ISO-3166-1 alpha-2, e.g. "ID"
+  crowdLevel    DestinationCrowdLevel?
   whenToVisit   Json? // WhenToVisitMonth[]
   howToGetThere Json? // TransportOption[]
   surroundings  Json? // SurroundingPlace[]
   packages      Package[]
-  createdAt     DateTime  @default(now())
+  createdAt     DateTime               @default(now())
+}
+
+enum DestinationCrowdLevel {
+  LOW
+  MODERATE
+  HIGH
+  VERY_HIGH
 }
 
 model Package {

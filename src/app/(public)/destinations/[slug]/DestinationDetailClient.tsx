@@ -1,43 +1,23 @@
 "use client";
 
-import { useState } from "react";
 import {
-  Globe,
-  CreditCard,
-  Languages,
-  Stamp,
-  Bus,
-  Train,
-  Car,
-  Ship,
-  CheckCircle,
-  XCircle,
   AlertCircle,
-  ThumbsUp,
-  ThumbsDown,
+  Bus,
+  Car,
+  CheckCircle,
+  CreditCard,
   Footprints,
+  Globe,
+  Languages,
   Milestone,
+  Ship,
+  Stamp,
+  ThumbsDown,
+  ThumbsUp,
+  Train,
+  XCircle,
 } from "lucide-react";
-
-import type { Activity } from "@/types/package";
-import type {
-  VisaType,
-  TransportType,
-  CrowdLevel,
-  AvailabilityStatus,
-  VisitRecommendation,
-} from "@/types/destination";
-import type { Package } from "@/types/package";
-
-import {
-  useDestination,
-  useDestinationWeather,
-  useDestinationActivities,
-} from "@/hooks/api/useDestinations";
-import { usePackages } from "@/hooks/api/usePackages";
-import { useDestinationEditorial } from "@/hooks/api/useDestinationEditorial";
-import { PortableTextBody } from "@/components/shared/PortableTextBody";
-
+import { useState } from "react";
 import {
   ActivityCard,
   Badge,
@@ -46,7 +26,23 @@ import {
   UsefulLinks,
 } from "@/components";
 import { MapboxMap } from "@/components/shared/MapboxMap";
+import { PortableTextBody } from "@/components/shared/PortableTextBody";
 import { PackageCardSkeleton } from "@/components/shared/Skeletons";
+import { useDestinationEditorial } from "@/hooks/api/useDestinationEditorial";
+import {
+  useDestination,
+  useDestinationActivities,
+  useDestinationWeather,
+} from "@/hooks/api/useDestinations";
+import { usePackages } from "@/hooks/api/usePackages";
+import type {
+  AvailabilityStatus,
+  CrowdLevel,
+  TransportType,
+  VisaType,
+  VisitRecommendation,
+} from "@/types/destination";
+import type { Activity, Package } from "@/types/package";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -133,7 +129,15 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
     .slice(0, 6);
   const monthlyWeather = weatherData?.data ?? [];
 
-  const images = dest?.images ?? (dest?.imageUrl ? [dest.imageUrl] : []);
+  const heroImageUrl = editorial?.featuredImage?.asset?.url ?? null;
+  const images =
+    dest?.images && dest.images.length > 0
+      ? dest.images
+      : heroImageUrl
+        ? [heroImageUrl]
+        : dest?.imageUrl
+          ? [dest.imageUrl]
+          : [];
   const allMonths = dest?.whenToVisit ?? [];
   const visibleMonths = showAllMonths ? allMonths : allMonths.slice(0, 6);
 
@@ -174,8 +178,12 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
   return (
     <main>
       {/* ── 1. DETAIL PHOTO GRID ──────────────────────────────────────────── */}
-      {images.length > 0 && (
+      {images.length > 0 ? (
         <DetailPhotoGrid images={images} alt={dest.name} priority />
+      ) : (
+        <div className="w-full h-64 md:h-[480px] bg-linear-to-br from-(--color-navy-surface) to-(--color-navy-border) flex items-center justify-center">
+          <Globe className="w-12 h-12 text-(--color-gold)/30" />
+        </div>
       )}
 
       <div className="max-w-7xl mx-auto px-4 md:px-8">
@@ -386,7 +394,10 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
                             .filter(Boolean)
                             .join(" ")}
                         >
-                          {CROWD_BADGE[row.crowdLevel as CrowdLevel].label}
+                          {row.crowdLevel &&
+                          CROWD_BADGE[row.crowdLevel as CrowdLevel]
+                            ? CROWD_BADGE[row.crowdLevel as CrowdLevel].label
+                            : "—"}
                         </span>
                       </td>
                       <td className="font-sans text-sm text-(--color-white-muted) px-4 py-4 hidden md:table-cell max-w-xs">

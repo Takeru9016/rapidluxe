@@ -1,20 +1,17 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, Plus, X } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
+import { use, useEffect, useState } from "react";
 import {
-  useForm,
-  useFieldArray,
   Controller,
   type SubmitHandler,
+  useFieldArray,
+  useForm,
 } from "react-hook-form";
-import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, X } from "lucide-react";
-
-import { generateSlug } from "@/lib/utils";
 import { CloudinaryUpload } from "@/components/admin/CloudinaryUpload";
 import {
   Select,
@@ -23,11 +20,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { generateSlug } from "@/lib/utils";
 import type {
-  Continent,
-  VisaType,
-  CrowdLevel,
   AvailabilityStatus,
+  Continent,
+  CrowdLevel,
+  DestinationCrowdLevel,
+  VisaType,
 } from "@/types/destination";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -56,6 +55,10 @@ interface DestinationFormValues {
   visaType: VisaType | "";
   currency: string;
   language: string;
+  lat: string;
+  lng: string;
+  countryCode: string;
+  crowdLevel: DestinationCrowdLevel | "";
   about: string;
   travelTips: string;
   metaTitle: string;
@@ -76,6 +79,10 @@ interface DestinationData {
   visaType: string | null;
   currency: string | null;
   language: string | null;
+  lat: number | null;
+  lng: number | null;
+  countryCode: string | null;
+  crowdLevel: string | null;
   whenToVisit: WhenToVisitRow[] | null;
   howToGetThere: TransportRow[] | null;
 }
@@ -96,6 +103,16 @@ const VISA_TYPES: { value: VisaType; label: string }[] = [
   { value: "VISA_ON_ARRIVAL", label: "Visa on Arrival" },
   { value: "E_VISA", label: "e-Visa" },
   { value: "VISA_REQUIRED", label: "Visa Required" },
+];
+
+const DESTINATION_CROWD_LEVELS: {
+  value: DestinationCrowdLevel;
+  label: string;
+}[] = [
+  { value: "LOW", label: "Low" },
+  { value: "MODERATE", label: "Moderate" },
+  { value: "HIGH", label: "High" },
+  { value: "VERY_HIGH", label: "Very High" },
 ];
 
 const MONTHS = [
@@ -241,6 +258,10 @@ export default function EditDestinationPage({
       visaType: "",
       currency: "",
       language: "",
+      lat: "",
+      lng: "",
+      countryCode: "",
+      crowdLevel: "",
       about: "",
       travelTips: "",
       metaTitle: "",
@@ -263,6 +284,10 @@ export default function EditDestinationPage({
       visaType: (dest.visaType as VisaType | "") ?? "",
       currency: dest.currency ?? "",
       language: dest.language ?? "",
+      lat: dest.lat !== null && dest.lat !== undefined ? String(dest.lat) : "",
+      lng: dest.lng !== null && dest.lng !== undefined ? String(dest.lng) : "",
+      countryCode: dest.countryCode ?? "",
+      crowdLevel: (dest.crowdLevel as DestinationCrowdLevel | "") ?? "",
       about: "",
       travelTips: "",
       metaTitle: "",
@@ -298,6 +323,10 @@ export default function EditDestinationPage({
           visaType: formData.visaType || undefined,
           currency: formData.currency || undefined,
           language: formData.language || undefined,
+          lat: formData.lat ? Number(formData.lat) : undefined,
+          lng: formData.lng ? Number(formData.lng) : undefined,
+          countryCode: formData.countryCode || undefined,
+          crowdLevel: formData.crowdLevel || undefined,
           whenToVisit: formData.whenToVisit,
           howToGetThere: formData.howToGetThere,
           about: formData.about || undefined,
@@ -456,6 +485,68 @@ export default function EditDestinationPage({
               </select>
             </Field>
           </div>
+        </SectionCard>
+
+        {/* ── Coordinates ── */}
+        <SectionCard
+          title="Coordinates"
+          subtitle="Used for the interactive map on destination page"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Latitude">
+              <input
+                type="number"
+                step={0.000001}
+                {...register("lat")}
+                placeholder="e.g. -8.4095"
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Longitude">
+              <input
+                type="number"
+                step={0.000001}
+                {...register("lng")}
+                placeholder="e.g. 115.1889"
+                className={inputCls}
+              />
+            </Field>
+          </div>
+        </SectionCard>
+
+        {/* ── Country Code ── */}
+        <SectionCard
+          title="Country Code"
+          subtitle="ISO 3166-1 alpha-2 country code"
+        >
+          <Field label="Country Code">
+            <input
+              {...register("countryCode")}
+              maxLength={2}
+              placeholder="e.g. ID for Indonesia, CH for Switzerland"
+              className={inputCls + " uppercase"}
+              onChange={(e) =>
+                setValue("countryCode", e.target.value.toUpperCase())
+              }
+            />
+          </Field>
+        </SectionCard>
+
+        {/* ── Crowd Level ── */}
+        <SectionCard
+          title="Crowd Level"
+          subtitle="Overall crowd level for this destination"
+        >
+          <Field label="Crowd Level">
+            <select {...register("crowdLevel")} className={selectCls}>
+              <option value="">Select crowd level</option>
+              {DESTINATION_CROWD_LEVELS.map(({ value, label }) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </Field>
         </SectionCard>
 
         {/* ── Editorial ── */}

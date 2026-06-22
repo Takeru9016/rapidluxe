@@ -9,7 +9,7 @@ import {
 } from "@/lib/rate-limit";
 import { getResend } from "@/lib/resend";
 
-const FROM = process.env.RESEND_FROM_EMAIL ?? "hello@rapidluxe.com";
+const FROM = process.env.RESEND_FROM_EMAIL ?? "bookings@rapidluxe.com";
 const ADMIN = process.env.ADMIN_EMAIL ?? "";
 
 const bodySchema = z.object({ email: z.string().email() });

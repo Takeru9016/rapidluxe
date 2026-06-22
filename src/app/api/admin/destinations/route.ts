@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@/generated/prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { sanityWriteClient } from "@/lib/sanity";
@@ -26,6 +27,10 @@ export async function POST(req: NextRequest) {
     visaType?: string;
     currency?: string;
     language?: string;
+    lat?: number;
+    lng?: number;
+    countryCode?: string;
+    crowdLevel?: string;
     whenToVisit?: unknown;
     howToGetThere?: unknown;
     about?: string;
@@ -60,6 +65,11 @@ export async function POST(req: NextRequest) {
       visaType: body.visaType ?? null,
       currency: body.currency ?? null,
       language: body.language ?? null,
+      lat: body.lat ?? null,
+      lng: body.lng ?? null,
+      countryCode: body.countryCode ?? null,
+      crowdLevel: (body.crowdLevel ??
+        null) as Prisma.DestinationCreateInput["crowdLevel"],
       whenToVisit: body.whenToVisit ?? undefined,
       howToGetThere: body.howToGetThere ?? undefined,
     },

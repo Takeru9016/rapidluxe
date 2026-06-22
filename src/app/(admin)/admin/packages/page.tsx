@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Plus, Pencil, Archive } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -49,7 +49,7 @@ const TABS: { value: TabValue; label: string }[] = [
 // ── Columns ───────────────────────────────────────────────────────────────────
 
 function buildColumns(
-  onArchive: (slug: string) => void,
+  onDelete: (pkg: ApiPackage) => void,
 ): ColumnDef<ApiPackage>[] {
   return [
     {
@@ -124,15 +124,13 @@ function buildColumns(
             <Pencil size={12} />
             Edit
           </Link>
-          {row.original.status !== "ARCHIVED" && (
-            <button
-              onClick={() => onArchive(row.original.slug)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-['DM_Sans'] border border-(--color-navy-border) text-(--color-white-muted) hover:text-(--color-coral) hover:border-(--color-coral)/40 transition-colors"
-            >
-              <Archive size={12} />
-              Archive
-            </button>
-          )}
+          <button
+            onClick={() => onDelete(row.original)}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-['DM_Sans'] border border-(--color-navy-border) text-(--color-white-muted) hover:text-(--color-coral) hover:border-(--color-coral)/40 transition-colors"
+          >
+            <Trash2 size={12} />
+            Delete
+          </button>
         </div>
       ),
     },
@@ -160,22 +158,39 @@ export default function AdminPackagesPage() {
     },
   });
 
-  const archiveMutation = useMutation({
-    mutationFn: async (slug: string) => {
-      const res = await fetch(`/api/packages/${slug}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed");
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/admin/packages/${id}`, {
+        method: "DELETE",
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(json.error ?? "Failed to delete package");
+      }
+      return json;
     },
     onSuccess: () => {
-      toast.success("Package archived.");
+      toast.success("Package deleted");
       queryClient.invalidateQueries({ queryKey: ["admin-packages"] });
     },
-    onError: () => toast.error("Failed to archive package."),
+    onError: (error: Error) => toast.error(error.message),
   });
+
+  function handleDelete(pkg: ApiPackage) {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${pkg.title}? This cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+    deleteMutation.mutate(pkg.id);
+  }
 
   const packages = data?.data ?? [];
   const filtered =
     tab === "all" ? packages : packages.filter((p) => p.status === tab);
-  const columns = buildColumns((slug) => archiveMutation.mutate(slug));
+  const columns = buildColumns(handleDelete);
 
   return (
     <div className="px-4 md:px-8 py-6">

@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { ImageIcon, Loader2, Search, Upload, X } from "lucide-react";
 import Image from "next/image";
-import { Upload, X, ImageIcon } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
 
 interface SignedParams {
   timestamp: number;
@@ -10,6 +10,12 @@ interface SignedParams {
   apiKey: string;
   cloudName: string;
   folder: string;
+}
+
+interface PexelsPhoto {
+  id: number;
+  src: { medium: string; large: string };
+  alt: string;
 }
 
 interface Props {
@@ -30,6 +36,14 @@ export function CloudinaryUpload({
   const [error, setError] = useState("");
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const [pexelsQuery, setPexelsQuery] = useState("");
+  const [pexelsResults, setPexelsResults] = useState<PexelsPhoto[]>([]);
+  const [pexelsSearching, setPexelsSearching] = useState(false);
+  const [pexelsError, setPexelsError] = useState("");
+  const [pexelsImportingId, setPexelsImportingId] = useState<number | null>(
+    null,
+  );
 
   const uploadFile = useCallback(
     async (file: File) => {
@@ -108,6 +122,52 @@ export function CloudinaryUpload({
     onUpload("");
     if (inputRef.current) inputRef.current.value = "";
   };
+
+  const searchPexels = useCallback(
+    async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (!pexelsQuery.trim()) return;
+
+      setPexelsSearching(true);
+      setPexelsError("");
+      try {
+        const res = await fetch(
+          `/api/pexels?q=${encodeURIComponent(pexelsQuery)}&per_page=9`,
+        );
+        if (!res.ok) throw new Error("Search failed");
+        const { data } = (await res.json()) as { data: PexelsPhoto[] };
+        setPexelsResults(data);
+      } catch (err) {
+        setPexelsError(err instanceof Error ? err.message : "Search failed");
+      } finally {
+        setPexelsSearching(false);
+      }
+    },
+    [pexelsQuery],
+  );
+
+  const importPexelsPhoto = useCallback(
+    async (photo: PexelsPhoto) => {
+      setPexelsImportingId(photo.id);
+      setPexelsError("");
+      try {
+        const imgRes = await fetch(photo.src.large);
+        if (!imgRes.ok) throw new Error("Failed to fetch image");
+        const blob = await imgRes.blob();
+        const file = new File([blob], `pexels-${photo.id}.jpg`, {
+          type: blob.type || "image/jpeg",
+        });
+        await uploadFile(file);
+      } catch (err) {
+        setPexelsError(
+          err instanceof Error ? err.message : "Failed to import image",
+        );
+      } finally {
+        setPexelsImportingId(null);
+      }
+    },
+    [uploadFile],
+  );
 
   return (
     <div className="space-y-2">
@@ -218,13 +278,60 @@ export function CloudinaryUpload({
           )}
         </>
       ) : (
-        <div className="w-full h-40 rounded-lg border border-(--color-navy-border) flex flex-col items-center justify-center gap-2">
-          <p className="text-sm font-['DM_Sans'] text-(--color-text-secondary)">
-            Pexels search — Phase 3A
-          </p>
-          <p className="text-xs font-['DM_Sans'] text-(--color-text-secondary)/60">
-            Stock photo library coming soon
-          </p>
+        <div className="space-y-2">
+          <form onSubmit={searchPexels} className="flex gap-2">
+            <input
+              type="text"
+              value={pexelsQuery}
+              onChange={(e) => setPexelsQuery(e.target.value)}
+              placeholder="Search Pexels — e.g. Bali beach"
+              className="flex-1 bg-(--color-navy) border border-(--color-navy-border) rounded-lg px-3 py-2 text-sm font-['DM_Sans'] text-white placeholder:text-(--color-text-secondary) focus:outline-none focus:border-(--color-gold)/60 transition-colors"
+            />
+            <button
+              type="submit"
+              disabled={pexelsSearching || !pexelsQuery.trim()}
+              className="shrink-0 px-3 py-2 rounded-lg bg-(--color-gold) text-(--color-navy) disabled:opacity-50 transition-colors"
+            >
+              {pexelsSearching ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Search size={16} />
+              )}
+            </button>
+          </form>
+
+          {pexelsError && (
+            <p className="text-xs font-['DM_Sans'] text-(--color-coral)">
+              {pexelsError}
+            </p>
+          )}
+
+          {pexelsResults.length > 0 && (
+            <div className="grid grid-cols-3 gap-2">
+              {pexelsResults.map((photo) => (
+                <button
+                  key={photo.id}
+                  type="button"
+                  onClick={() => importPexelsPhoto(photo)}
+                  disabled={pexelsImportingId !== null}
+                  className="relative aspect-square rounded-lg overflow-hidden border border-(--color-navy-border) hover:border-(--color-gold)/60 transition-colors disabled:opacity-50"
+                >
+                  <Image
+                    src={photo.src.medium}
+                    alt={photo.alt || "Pexels photo"}
+                    fill
+                    className="object-cover"
+                    sizes="120px"
+                  />
+                  {pexelsImportingId === photo.id && (
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                      <Loader2 size={18} className="text-white animate-spin" />
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

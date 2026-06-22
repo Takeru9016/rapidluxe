@@ -27,14 +27,14 @@ const CONTACT_BLOCKS = [
   {
     icon: Phone,
     heading: "Phone",
-    detail: "+91 98765 43210",
-    href: "tel:+919876543210",
+    detail: "+91 91374 56611",
+    href: "tel:+919137456611",
   },
   {
     icon: Mail,
     heading: "Email",
-    detail: "hello@rapidluxe.com",
-    href: "mailto:hello@rapidluxe.com",
+    detail: "info@rapidluxe.com",
+    href: "mailto:info@rapidluxe.com",
   },
   {
     icon: Clock,
@@ -45,7 +45,8 @@ const CONTACT_BLOCKS = [
   {
     icon: MapPin,
     heading: "Location",
-    detail: "Mumbai, Maharashtra, India",
+    detail:
+      "Ground Floor, 20/21, Ekta Tripolis, Siddharth Nagar, Goregaon West, Mumbai - 400104, Maharashtra",
     href: null,
   },
 ];

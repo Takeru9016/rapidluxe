@@ -13,6 +13,7 @@ export type VisaType =
   | "VISA_REQUIRED";
 
 export type CrowdLevel = "LOW" | "MEDIUM" | "HIGH";
+export type DestinationCrowdLevel = "LOW" | "MODERATE" | "HIGH" | "VERY_HIGH";
 export type AvailabilityStatus = "Open" | "Closed" | "Limited";
 export type VisitRecommendation = "Recommended" | "Not recommended";
 export type TransportType =
@@ -60,6 +61,8 @@ export interface Destination {
   images?: string[];
   lat?: number | null;
   lng?: number | null;
+  countryCode?: string | null;
+  crowdLevel?: DestinationCrowdLevel | null;
   bestTimeFrom?: string;
   bestTimeTo?: string;
   visaType?: VisaType;

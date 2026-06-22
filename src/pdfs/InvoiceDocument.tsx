@@ -243,7 +243,7 @@ export function InvoiceDocument({ booking }: Props) {
   return (
     <Document
       title={`Invoice INV-${booking.bookingRef ?? "NA"}`}
-      author="RapidLuxe Travel Pvt. Ltd."
+      author="Rapidluxe Pvt. Ltd."
     >
       <Page size="A4" style={styles.page}>
         {/* Header */}
@@ -251,8 +251,12 @@ export function InvoiceDocument({ booking }: Props) {
           <View>
             <Text style={styles.companyName}>RapidLuxe</Text>
             <Text style={styles.companyMeta}>
-              RapidLuxe Travel Pvt. Ltd.{"\n"}
-              GSTIN: {process.env.GSTIN ?? "XXXXXXXXXXXX"}
+              Rapidluxe Pvt. Ltd.{"\n"}
+              Ground Floor, 20/21, Ekta Tripolis, Siddharth Nagar,{"\n"}
+              Goregaon West, Mumbai - 400104, Maharashtra{"\n"}
+              GSTIN: {process.env.GSTIN ?? "27AAPCR1322N1Z"}
+              {"\n"}
+              PAN: {process.env.PAN ?? "AAPCR1322N"}
               {"\n"}
               SAC / HSN: 998551 (Tour Operator Services)
             </Text>
@@ -375,10 +379,15 @@ export function InvoiceDocument({ booking }: Props) {
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>RapidLuxe Travel Pvt. Ltd.</Text>
+          <Text style={styles.footerText}>Rapidluxe Pvt. Ltd.</Text>
+          <Text style={styles.footerText}>
+            Ground Floor, 20/21, Ekta Tripolis, Siddharth Nagar, Goregaon West,
+            Mumbai - 400104, Maharashtra
+          </Text>
           <Text style={styles.footerText}>bookings@rapidluxe.com</Text>
           <Text style={styles.footerText}>
-            GSTIN: {process.env.GSTIN ?? "XXXXXXXXXXXX"}
+            GSTIN: {process.env.GSTIN ?? "27AAPCR1322N1Z"} · PAN:{" "}
+            {process.env.PAN ?? "AAPCR1322N"}
           </Text>
         </View>
       </Page>

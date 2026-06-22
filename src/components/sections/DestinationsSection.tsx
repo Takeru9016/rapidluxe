@@ -5,9 +5,12 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-import { dummyDestinations } from "@/lib/dummy/destinations";
+import { useDestinations } from "@/hooks/api/useDestinations";
 
 import { DestinationCard } from "@/components/cards/DestinationCard";
+import { DestinationCardSkeleton } from "@/components/shared/Skeletons";
+
+import type { Destination } from "@/types/destination";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -15,8 +18,13 @@ export function DestinationsSection() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
+  const { data, isLoading } = useDestinations();
+  const destinations = data?.data ?? [];
+
   useEffect(() => {
-    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     if (prefersReduced || !headerRef.current) return;
 
     gsap.fromTo(
@@ -32,7 +40,7 @@ export function DestinationsSection() {
           start: "top 80%",
           once: true,
         },
-      }
+      },
     );
   }, []);
 
@@ -57,9 +65,7 @@ export function DestinationsSection() {
           >
             Top Destinations
           </p>
-          <h2
-            className="font-(family-name:--font-display) text-4xl md:text-5xl text-white mt-2"
-          >
+          <h2 className="font-(family-name:--font-display) text-4xl md:text-5xl text-white mt-2">
             Explore the World
           </h2>
         </div>
@@ -98,9 +104,17 @@ export function DestinationsSection() {
 
       {/* Mobile: stacked grid */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 grid grid-cols-1 gap-6 md:hidden">
-        {dummyDestinations.map((dest) => (
-          <DestinationCard key={dest.id} destination={dest} />
-        ))}
+        {isLoading
+          ? Array.from({ length: 3 }).map((_, i) => (
+              <DestinationCardSkeleton key={i} />
+            ))
+          : destinations.map((dest) => (
+              <DestinationCard
+                key={dest.id}
+                destination={dest as unknown as Destination}
+                packageCount={dest._count.packages}
+              />
+            ))}
       </div>
 
       {/* Desktop: horizontal scroll */}
@@ -108,11 +122,20 @@ export function DestinationsSection() {
         ref={scrollRef}
         className="hidden md:flex gap-6 max-w-7xl mx-auto px-4 md:px-8 overflow-x-auto pb-4 scroll-smooth scrollbar-none [&::-webkit-scrollbar]:hidden"
       >
-        {dummyDestinations.map((dest) => (
-          <div key={dest.id} className="shrink-0 w-72">
-            <DestinationCard destination={dest} />
-          </div>
-        ))}
+        {isLoading
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="shrink-0 w-72">
+                <DestinationCardSkeleton />
+              </div>
+            ))
+          : destinations.map((dest) => (
+              <div key={dest.id} className="shrink-0 w-72">
+                <DestinationCard
+                  destination={dest as unknown as Destination}
+                  packageCount={dest._count.packages}
+                />
+              </div>
+            ))}
       </div>
     </section>
   );

@@ -73,11 +73,11 @@ function Field({
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 const DEFAULT_VALUES: SettingsForm = {
-  companyName: "RapidLuxe Travel Pvt Ltd",
-  gstin: "27AABCU9603R1ZX",
+  companyName: "Rapidluxe Pvt. Ltd.",
+  gstin: "27AAPCR1322N1Z",
   hsnCode: "998551",
   invoicePrefix: "RL-INV",
-  contactEmail: "hello@rapidluxe.com",
+  contactEmail: "info@rapidluxe.com",
   whatsappNumber: "+91 98765 00000",
 };
 

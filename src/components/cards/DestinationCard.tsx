@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Globe } from "lucide-react";
 
 import { Destination } from "@/types/destination";
 
@@ -35,7 +36,9 @@ export function DestinationCard({
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         ) : (
-          <div className="absolute inset-0 bg-[#0B0F1A]" />
+          <div className="absolute inset-0 bg-linear-to-br from-(--color-navy-surface) to-(--color-navy-border) flex items-center justify-center">
+            <Globe className="w-12 h-12 text-(--color-gold)/30" />
+          </div>
         )}
 
         <div className="absolute inset-0 bg-linear-to-t from-[#0B0F1A]/90 via-[#0B0F1A]/20 to-transparent" />

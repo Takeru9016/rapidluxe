@@ -3,8 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Plus, Pencil, Trash2 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
+import { toast } from "sonner";
 
 import { DataTable } from "@/components/admin/DataTable";
 
@@ -33,87 +34,95 @@ const CONTINENT_LABEL: Record<string, string> = {
 
 // ── Columns ───────────────────────────────────────────────────────────────────
 
-const columns: ColumnDef<AdminDestination>[] = [
-  {
-    id: "image",
-    header: "Image",
-    cell: ({ row }) => {
-      const src =
-        row.original.imageUrl ??
-        "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=200&q=60";
-      return (
-        <div className="relative w-8 h-8 rounded overflow-hidden shrink-0">
-          <Image
-            src={src}
-            alt={row.original.name}
-            fill
-            className="object-cover"
-            sizes="32px"
-          />
-        </div>
-      );
+function buildColumns(
+  onDelete: (destination: AdminDestination) => void,
+): ColumnDef<AdminDestination>[] {
+  return [
+    {
+      id: "image",
+      header: "Image",
+      cell: ({ row }) => {
+        const src =
+          row.original.imageUrl ??
+          "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=200&q=60";
+        return (
+          <div className="relative w-8 h-8 rounded overflow-hidden shrink-0">
+            <Image
+              src={src}
+              alt={row.original.name}
+              fill
+              className="object-cover"
+              sizes="32px"
+            />
+          </div>
+        );
+      },
     },
-  },
-  {
-    accessorKey: "name",
-    header: "Name",
-    cell: ({ getValue }) => (
-      <span className="font-['DM_Sans'] font-medium text-white whitespace-nowrap">
-        {getValue<string>()}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "country",
-    header: "Country",
-    cell: ({ getValue }) => (
-      <span className="text-(--color-text-secondary)">
-        {getValue<string>()}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "continent",
-    header: "Continent",
-    cell: ({ getValue }) => (
-      <span className="text-(--color-text-secondary)">
-        {CONTINENT_LABEL[getValue<string>()] ?? getValue<string>()}
-      </span>
-    ),
-  },
-  {
-    id: "packages",
-    header: "Packages",
-    cell: ({ row }) => (
-      <span className="font-['JetBrains_Mono'] text-sm text-(--color-gold)">
-        {row.original._count.packages}
-      </span>
-    ),
-  },
-  {
-    id: "actions",
-    header: "Actions",
-    cell: ({ row }) => (
-      <div className="flex items-center gap-2">
-        <Link
-          href={`/admin/destinations/${row.original.id}`}
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-['DM_Sans'] border border-(--color-navy-border) text-(--color-white-muted) hover:text-white hover:border-(--color-gold)/40 transition-colors"
-        >
-          <Pencil size={12} />
-          Edit
-        </Link>
-        <button className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-['DM_Sans'] border border-(--color-navy-border) text-(--color-white-muted) hover:text-(--color-coral) hover:border-(--color-coral)/40 transition-colors">
-          <Trash2 size={12} />
-          Delete
-        </button>
-      </div>
-    ),
-  },
-];
+    {
+      accessorKey: "name",
+      header: "Name",
+      cell: ({ getValue }) => (
+        <span className="font-['DM_Sans'] font-medium text-white whitespace-nowrap">
+          {getValue<string>()}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "country",
+      header: "Country",
+      cell: ({ getValue }) => (
+        <span className="text-(--color-text-secondary)">
+          {getValue<string>()}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "continent",
+      header: "Continent",
+      cell: ({ getValue }) => (
+        <span className="text-(--color-text-secondary)">
+          {CONTINENT_LABEL[getValue<string>()] ?? getValue<string>()}
+        </span>
+      ),
+    },
+    {
+      id: "packages",
+      header: "Packages",
+      cell: ({ row }) => (
+        <span className="font-['JetBrains_Mono'] text-sm text-(--color-gold)">
+          {row.original._count.packages}
+        </span>
+      ),
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/admin/destinations/${row.original.id}`}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-['DM_Sans'] border border-(--color-navy-border) text-(--color-white-muted) hover:text-white hover:border-(--color-gold)/40 transition-colors"
+          >
+            <Pencil size={12} />
+            Edit
+          </Link>
+          <button
+            onClick={() => onDelete(row.original)}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-['DM_Sans'] border border-(--color-navy-border) text-(--color-white-muted) hover:text-(--color-coral) hover:border-(--color-coral)/40 transition-colors"
+          >
+            <Trash2 size={12} />
+            Delete
+          </button>
+        </div>
+      ),
+    },
+  ];
+}
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AdminDestinationsPage() {
+  const queryClient = useQueryClient();
   const { data, isLoading, isError } = useQuery<{ data: AdminDestination[] }>({
     queryKey: ["admin-destinations"],
     queryFn: async () => {
@@ -129,6 +138,36 @@ export default function AdminDestinationsPage() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/admin/destinations/${id}`, {
+        method: "DELETE",
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(json.error ?? "Failed to delete destination");
+      }
+      return json;
+    },
+    onSuccess: () => {
+      toast.success("Destination deleted");
+      void queryClient.invalidateQueries({ queryKey: ["admin-destinations"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  function handleDelete(destination: AdminDestination) {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${destination.name}? This cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+    deleteMutation.mutate(destination.id);
+  }
+
+  const columns = buildColumns(handleDelete);
   const destinations = data?.data ?? [];
 
   return (
