@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 
-import type { Package } from "@/types/package";
+import type { ApiPackage } from "@/hooks/api/usePackages";
 
 import { useWishlist } from "@/hooks/api/useWishlist";
 
@@ -17,17 +17,9 @@ import { Badge } from "@/components/shared/Badge";
 import { PriceDisplay } from "@/components/shared/PriceDisplay";
 
 interface PackageCardProps {
-  package: Package;
+  package: ApiPackage;
   variant?: "default" | "compact";
   className?: string;
-}
-
-function destinationLabel(destinationId: string): string {
-  return destinationId
-    .replace(/^dest-/, "")
-    .split("-")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
 }
 
 export function PackageCard({
@@ -35,7 +27,7 @@ export function PackageCard({
   variant = "default",
   className,
 }: PackageCardProps) {
-  const { isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn } = useAuth();
   const router = useRouter();
   const { has, toggle } = useWishlist();
   const isWishlisted = has(pkg.id);
@@ -74,9 +66,12 @@ export function PackageCard({
 
           {/* Badges row */}
           <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
-            <Badge variant="teal" size="sm">
-              {destinationLabel(pkg.destinationId)}
-            </Badge>
+            {pkg.destination && (
+              <Badge variant="teal" size="sm">
+                {pkg.destination.name}
+                {pkg.destination.country ? `, ${pkg.destination.country}` : ""}
+              </Badge>
+            )}
             <button
               type="button"
               aria-label={
@@ -84,6 +79,8 @@ export function PackageCard({
               }
               onClick={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
+                if (!isLoaded) return;
                 if (!isSignedIn) {
                   router.push("/sign-in");
                   return;

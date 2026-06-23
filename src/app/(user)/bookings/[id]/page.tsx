@@ -286,15 +286,6 @@ export default function BookingDetailPage({
 
         {/* ── Actions Row ── */}
         <div className="flex flex-wrap gap-3">
-          <button
-            disabled
-            title="Available after payment"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-(--color-navy-border) text-(--color-text-secondary) text-sm font-['DM_Sans'] cursor-not-allowed opacity-50"
-          >
-            <Download size={14} />
-            Download Voucher
-          </button>
-
           {booking.displayStatus === "upcoming" ||
           booking.displayStatus === "completed" ? (
             <a

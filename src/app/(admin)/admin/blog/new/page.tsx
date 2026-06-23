@@ -396,6 +396,7 @@ export default function NewBlogPostPage() {
             folder="rapidluxe/blog"
             currentUrl={watch("imageUrl")}
             onUpload={(url) => setValue("imageUrl", url)}
+            onRemove={() => setValue("imageUrl", "")}
           />
         </SectionCard>
 

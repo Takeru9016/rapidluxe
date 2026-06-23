@@ -17,7 +17,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { formatPrice, calculateGST, formatDate } from "@/lib/utils";
+import { formatPrice, calculateGST } from "@/lib/utils";
 
 import { useWishlistStore } from "@/store/wishlistStore";
 import {
@@ -28,8 +28,6 @@ import {
 import { useReviews, useCheckEligibility } from "@/hooks/api/useReviews";
 import { useCurrencyRates } from "@/hooks/api/useCurrency";
 import { useDeals } from "@/hooks/api/useDeals";
-
-import type { Package } from "@/types/package";
 
 import { DetailPhotoGrid } from "@/components/shared/DetailPhotoGrid";
 import { AttributeQualityBadges } from "@/components/shared/AttributeQualityBadges";
@@ -55,12 +53,6 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -163,8 +155,6 @@ export function PackageDetailClient({ slug }: { slug: string }) {
 
   const avgRating = pkg ? (DUMMY_RATINGS[pkg.id] ?? 4.5) : 4.5;
 
-  const [date, setDate] = useState<Date | undefined>(undefined);
-  const [calendarOpen, setCalendarOpen] = useState(false);
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
 
@@ -683,10 +673,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                 <div className="flex gap-5 overflow-x-auto pb-2">
                   {similarPackages.map((p) => (
                     <div key={p.id} className="w-72 shrink-0">
-                      <PackageCard
-                        package={p as unknown as Package}
-                        variant="compact"
-                      />
+                      <PackageCard package={p} variant="compact" />
                     </div>
                   ))}
                 </div>
@@ -721,40 +708,6 @@ export function PackageDetailClient({ slug }: { slug: string }) {
               </div>
 
               <Separator className="bg-(--color-navy-border)" />
-
-              {/* Date picker */}
-              <div>
-                <p className="text-xs font-sans font-medium text-(--color-white-muted) uppercase tracking-widest mb-2">
-                  Departure Date
-                </p>
-                <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-                  <PopoverTrigger asChild>
-                    <button className="w-full flex items-center gap-2 bg-(--color-navy-border)/50 border border-(--color-navy-border) rounded-lg px-3 py-2.5 text-sm text-(--color-white-muted) hover:border-(--color-gold)/40 transition-colors">
-                      <Calendar
-                        size={14}
-                        className="text-(--color-gold) shrink-0"
-                      />
-                      <span className={date ? "text-white" : ""}>
-                        {date ? formatDate(date) : "Select a date"}
-                      </span>
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="w-auto p-0 bg-(--color-navy-surface) border-(--color-navy-border)"
-                    align="start"
-                  >
-                    <CalendarPicker
-                      mode="single"
-                      selected={date}
-                      onSelect={(d) => {
-                        setDate(d);
-                        setCalendarOpen(false);
-                      }}
-                      disabled={(d) => d < new Date()}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
 
               {/* Travellers */}
               <div>

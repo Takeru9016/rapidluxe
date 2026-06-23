@@ -15,7 +15,7 @@ export async function GET() {
 
   const items = await sanityWriteClient.fetch(
     `*[_type == "testimonial"] | order(_createdAt desc) {
-      _id, clientName, clientTitle, quote, destination, rating, tripDate, isFeatured
+      _id, clientName, clientTitle, quote, destination, rating, tripDate, isFeatured, imageUrl
     }`,
   );
 
@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
     rating: number;
     tripDate?: string;
     isFeatured?: boolean;
+    imageUrl?: string;
   };
 
   if (!body.clientName || !body.quote) {

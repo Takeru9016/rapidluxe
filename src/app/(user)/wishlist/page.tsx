@@ -4,8 +4,6 @@ import { Heart } from "lucide-react";
 
 import { useWishlist } from "@/hooks/api/useWishlist";
 
-import type { Package } from "@/types/package";
-
 import { PackageCard } from "@/components/cards/PackageCard";
 import { PackageCardSkeleton } from "@/components/shared/Skeletons";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -44,7 +42,7 @@ export default function WishlistPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {packages.map((p) => (
-              <PackageCard key={p.id} package={p as unknown as Package} />
+              <PackageCard key={p.id} package={p} />
             ))}
           </div>
         )}

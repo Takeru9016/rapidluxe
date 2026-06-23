@@ -1,6 +1,7 @@
 "use client";
 
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { Phone, Mail, MessageCircle, Clock, MapPin, Send } from "lucide-react";
 
 import { MapboxMap } from "@/components/shared/MapboxMap";
@@ -60,9 +61,26 @@ export default function ContactPageClient() {
     reset,
   } = useForm<FormData>();
 
-  const onSubmit = (data: FormData) => {
-    console.log(data);
-    reset();
+  const onSubmit = async (data: FormData) => {
+    try {
+      const res = await fetch("/api/enquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          phone: data.phone ?? "",
+          subject: data.subject,
+          message: data.message,
+          type: "GENERAL",
+        }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      toast.success("Message sent! We'll be in touch within 2 hours.");
+      reset();
+    } catch {
+      toast.error("Failed to send. Please try WhatsApp or email us directly.");
+    }
   };
 
   return (

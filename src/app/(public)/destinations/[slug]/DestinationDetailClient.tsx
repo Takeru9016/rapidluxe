@@ -42,7 +42,7 @@ import type {
   VisaType,
   VisitRecommendation,
 } from "@/types/destination";
-import type { Activity, Package } from "@/types/package";
+import type { Activity } from "@/types/package";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -278,7 +278,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
           ) : packages.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {packages.map((pkg) => (
-                <PackageCard key={pkg.id} package={pkg as unknown as Package} />
+                <PackageCard key={pkg.id} package={pkg} />
               ))}
             </div>
           ) : null}

@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Inbox, Mail, MessageCircle, Phone } from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { ColumnDef } from "@tanstack/react-table";
 
-import { DataTable } from "@/components/admin/DataTable";
-import { formatDate } from "@/lib/utils";
+import { Badge } from "@/components/shared/Badge";
+import { formatDate, truncate } from "@/lib/utils";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
+
+type EnquiryType = "CORPORATE" | "GENERAL";
+type EnquiryStatus = "OPEN" | "RESOLVED";
 
 interface Enquiry {
   id: string;
@@ -17,15 +20,34 @@ interface Enquiry {
   phone: string | null;
   subject: string;
   message: string;
+  type: EnquiryType;
+  status: EnquiryStatus;
   createdAt: string;
   isRead: boolean;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function timeAgo(dateStr: string): string {
+  const date = new Date(dateStr);
+  const diffMs = Date.now() - date.getTime();
+  const minutes = Math.floor(diffMs / 60_000);
+  const hours = Math.floor(diffMs / 3_600_000);
+  const days = Math.floor(diffMs / 86_400_000);
+
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  return formatDate(date);
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AdminEnquiriesPage() {
   const queryClient = useQueryClient();
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery<{ data: Enquiry[] }>({
     queryKey: ["admin-enquiries"],
@@ -51,142 +73,199 @@ export default function AdminEnquiriesPage() {
     onError: () => toast.error("Failed to mark as read."),
   });
 
-  function handleView(id: string) {
-    markReadMutation.mutate(id);
-    setExpandedId((prev) => (prev === id ? null : id));
-  }
+  const resolveMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/admin/enquiries/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "RESOLVED" }),
+      });
+      if (!res.ok) throw new Error("Failed");
+    },
+    onSuccess: () => {
+      toast.success("Enquiry marked as resolved");
+      void queryClient.invalidateQueries({ queryKey: ["admin-enquiries"] });
+    },
+    onError: () => toast.error("Failed to mark as resolved."),
+  });
 
   const enquiries = data?.data ?? [];
-  const expandedEnquiry = enquiries.find((e) => e.id === expandedId);
 
-  const columns: ColumnDef<Enquiry>[] = [
-    {
-      accessorKey: "name",
-      header: "Name",
-      cell: ({ getValue }) => (
-        <span className="text-white font-medium">{getValue<string>()}</span>
-      ),
-    },
-    {
-      accessorKey: "email",
-      header: "Email",
-      cell: ({ getValue }) => (
-        <span className="text-(--color-text-secondary) text-sm">
-          {getValue<string>()}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "subject",
-      header: "Subject",
-      cell: ({ getValue }) => (
-        <span className="text-white text-sm truncate max-w-[200px] block">
-          {getValue<string>()}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "message",
-      header: "Preview",
-      cell: ({ getValue }) => (
-        <span className="text-(--color-text-secondary) text-xs">
-          {getValue<string>().slice(0, 50)}…
-        </span>
-      ),
-    },
-    {
-      accessorKey: "createdAt",
-      header: "Date",
-      cell: ({ getValue }) => (
-        <span className="text-(--color-text-secondary) text-sm whitespace-nowrap">
-          {formatDate(getValue<string>())}
-        </span>
-      ),
-    },
-    {
-      id: "readStatus",
-      header: "Status",
-      cell: ({ row }) => {
-        const isRead = row.original.isRead;
+  const sorted = useMemo(
+    () =>
+      [...enquiries].sort((a, b) => {
+        if (a.isRead !== b.isRead) return a.isRead ? 1 : -1;
         return (
-          <button
-            onClick={() => {
-              if (!isRead) markReadMutation.mutate(row.original.id);
-            }}
-            className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
-              isRead
-                ? "text-(--color-text-secondary) border-(--color-navy-border) cursor-default"
-                : "text-(--color-gold) border-(--color-gold)/40 hover:bg-(--color-gold)/10"
-            }`}
-          >
-            {isRead ? "Read ✓" : "Mark Read"}
-          </button>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-      },
-    },
-    {
-      id: "actions",
-      header: "Actions",
-      cell: ({ row }) => (
-        <button
-          onClick={() => handleView(row.original.id)}
-          className="px-2.5 py-1.5 rounded-md text-xs font-['DM_Sans'] border border-(--color-navy-border) text-(--color-white-muted) hover:text-white hover:border-(--color-gold)/40 transition-colors"
-        >
-          View
-        </button>
-      ),
-    },
-  ];
+      }),
+    [enquiries],
+  );
+
+  const selected = enquiries.find((e) => e.id === selectedId) ?? null;
+
+  function handleSelect(enquiry: Enquiry) {
+    setSelectedId(enquiry.id);
+    if (!enquiry.isRead) markReadMutation.mutate(enquiry.id);
+  }
 
   return (
     <div className="px-4 md:px-8 py-6">
-      {/* Header */}
       <div className="mb-6">
         <h1 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white">
           Enquiries
         </h1>
       </div>
 
-      {/* Table */}
-      <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) overflow-x-auto">
-        {isLoading ? (
-          <div className="py-12 text-center font-['DM_Sans'] text-sm text-(--color-text-secondary)">
-            Loading…
-          </div>
-        ) : (
-          <DataTable columns={columns} data={enquiries} />
-        )}
-      </div>
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* ── Left panel — list ── */}
+        <div className="w-full lg:w-[35%] shrink-0 space-y-2">
+          {isLoading ? (
+            <div className="py-12 text-center font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+              Loading…
+            </div>
+          ) : sorted.length === 0 ? (
+            <div className="py-12 text-center font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+              No enquiries yet.
+            </div>
+          ) : (
+            sorted.map((enquiry) => (
+              <button
+                key={enquiry.id}
+                type="button"
+                onClick={() => handleSelect(enquiry)}
+                className={`w-full text-left rounded-xl border p-4 transition-colors ${
+                  selectedId === enquiry.id
+                    ? "border-(--color-gold)/60 bg-(--color-gold)/5"
+                    : enquiry.isRead
+                      ? "border-(--color-navy-border) bg-(--color-navy-surface) hover:border-(--color-gold)/30"
+                      : "border-(--color-navy-border) bg-(--color-navy-border)/30 hover:border-(--color-gold)/30"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <div className="min-w-0">
+                    <p className="font-['DM_Sans'] text-sm font-medium text-white truncate">
+                      {enquiry.name}
+                    </p>
+                    <p className="font-['DM_Sans'] text-xs text-(--color-text-secondary) truncate">
+                      {enquiry.email}
+                    </p>
+                  </div>
+                  {!enquiry.isRead && (
+                    <span className="w-2 h-2 rounded-full bg-(--color-gold) shrink-0 mt-1" />
+                  )}
+                </div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge
+                    variant={enquiry.type === "CORPORATE" ? "teal" : "gold"}
+                    size="sm"
+                  >
+                    {enquiry.type === "CORPORATE" ? "Corporate" : "General"}
+                  </Badge>
+                  <span className="text-xs font-['DM_Sans'] text-(--color-text-secondary)">
+                    {timeAgo(enquiry.createdAt)}
+                  </span>
+                </div>
+                <p className="text-xs font-['DM_Sans'] text-(--color-white-muted) line-clamp-2">
+                  {truncate(enquiry.message, 60)}
+                </p>
+              </button>
+            ))
+          )}
+        </div>
 
-      {/* Expanded Message */}
-      {expandedEnquiry && (
-        <div className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-6 mt-4">
-          <div className="flex items-start justify-between gap-4 mb-4">
-            <div>
-              <h2 className="font-['Cormorant_Garamond'] text-xl text-white mb-1">
-                {expandedEnquiry.subject}
-              </h2>
-              <p className="text-xs font-['DM_Sans'] text-(--color-text-secondary)">
-                From{" "}
-                <span className="text-(--color-white-muted)">
-                  {expandedEnquiry.name}
-                </span>{" "}
-                &lt;{expandedEnquiry.email}&gt; ·{" "}
-                {formatDate(expandedEnquiry.createdAt)}
+        {/* ── Right panel — detail ── */}
+        <div className="w-full lg:w-[65%]">
+          {selected ? (
+            <div className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-6">
+              <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge
+                      variant={selected.type === "CORPORATE" ? "teal" : "gold"}
+                      size="sm"
+                    >
+                      {selected.type === "CORPORATE" ? "Corporate" : "General"}
+                    </Badge>
+                    <Badge
+                      variant={
+                        selected.status === "RESOLVED" ? "teal" : "coral"
+                      }
+                      size="sm"
+                    >
+                      {selected.status === "RESOLVED" ? "Resolved" : "Open"}
+                    </Badge>
+                  </div>
+                  <h2 className="font-['Cormorant_Garamond'] text-xl text-white mb-1">
+                    {selected.name}
+                  </h2>
+                  <p className="text-xs font-['DM_Sans'] text-(--color-text-secondary)">
+                    {selected.email}
+                    {selected.phone ? ` · ${selected.phone}` : ""} ·{" "}
+                    {formatDate(selected.createdAt)}
+                  </p>
+                </div>
+                {!selected.isRead && (
+                  <button
+                    type="button"
+                    onClick={() => markReadMutation.mutate(selected.id)}
+                    className="px-4 py-2 rounded-lg bg-(--color-gold)/20 border border-(--color-gold)/40 text-(--color-gold) text-sm font-['DM_Sans'] font-medium hover:bg-(--color-gold)/30 transition-colors shrink-0"
+                  >
+                    Mark as Read
+                  </button>
+                )}
+              </div>
+
+              <div className="bg-(--color-navy-surface) p-6 rounded-xl border border-(--color-navy-border) mb-5">
+                <p className="font-['DM_Sans'] text-sm text-(--color-white-muted) leading-relaxed whitespace-pre-wrap">
+                  {selected.message}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href={`mailto:${selected.email}?subject=Re: Your RapidLuxe Enquiry`}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-(--color-gold)/40 text-(--color-gold) text-sm font-['DM_Sans'] hover:bg-(--color-gold)/10 transition-colors"
+                >
+                  <Mail size={14} />
+                  Reply via Email
+                </a>
+                {selected.phone && (
+                  <a
+                    href={`https://wa.me/${selected.phone.replace(/\D/g, "")}?text=${encodeURIComponent(
+                      `Hi ${selected.name}, thank you for reaching out to RapidLuxe.`,
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-(--color-teal)/40 text-(--color-teal) text-sm font-['DM_Sans'] hover:bg-(--color-teal)/10 transition-colors"
+                  >
+                    <Phone size={14} />
+                    WhatsApp
+                  </a>
+                )}
+                {selected.status !== "RESOLVED" && (
+                  <button
+                    type="button"
+                    onClick={() => resolveMutation.mutate(selected.id)}
+                    disabled={resolveMutation.isPending}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) text-sm font-['DM_Sans'] hover:text-white hover:border-(--color-gold)/40 transition-colors disabled:opacity-50"
+                  >
+                    <MessageCircle size={14} />
+                    Mark Resolved
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="h-full min-h-[300px] flex flex-col items-center justify-center text-center bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-12">
+              <Inbox size={40} className="text-(--color-gold)/30 mb-4" />
+              <p className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+                Select an enquiry to view
               </p>
             </div>
-            <button
-              onClick={() => setExpandedId(null)}
-              className="px-3 py-1.5 rounded-md text-xs font-['DM_Sans'] border border-(--color-navy-border) text-(--color-text-secondary) hover:text-white transition-colors shrink-0"
-            >
-              Close
-            </button>
-          </div>
-          <p className="font-['DM_Sans'] text-sm text-(--color-white-muted) leading-relaxed">
-            {expandedEnquiry.message}
-          </p>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

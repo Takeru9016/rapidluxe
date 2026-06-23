@@ -15,6 +15,7 @@ const enquirySchema = z.object({
   phone: z.string().optional(),
   subject: z.string().min(3).max(200),
   message: z.string().min(10).max(2000),
+  type: z.enum(["CORPORATE", "GENERAL"]).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -35,10 +36,17 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-    const { name, email, phone, subject, message } = parsed.data;
+    const { name, email, phone, subject, message, type } = parsed.data;
 
     await prisma.enquiry.create({
-      data: { name, email, phone: phone ?? null, subject, message },
+      data: {
+        name,
+        email,
+        phone: phone ?? null,
+        subject,
+        message,
+        type: type ?? "GENERAL",
+      },
     });
 
     const adminEmail = process.env.ADMIN_EMAIL ?? "";

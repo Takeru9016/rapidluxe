@@ -2,7 +2,7 @@
 
 import { ImageIcon, Loader2, Search, Upload, X } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface SignedParams {
   timestamp: number;
@@ -21,16 +21,22 @@ interface PexelsPhoto {
 interface Props {
   folder?: string;
   onUpload: (url: string) => void;
+  onRemove?: () => void;
   currentUrl?: string;
 }
 
 export function CloudinaryUpload({
   folder = "rapidluxe",
   onUpload,
+  onRemove,
   currentUrl,
 }: Props) {
   const [activeTab, setActiveTab] = useState<"upload" | "pexels">("upload");
   const [preview, setPreview] = useState<string>(currentUrl ?? "");
+
+  useEffect(() => {
+    setPreview(currentUrl ?? "");
+  }, [currentUrl]);
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -120,6 +126,7 @@ export function CloudinaryUpload({
   const remove = () => {
     setPreview("");
     onUpload("");
+    onRemove?.();
     if (inputRef.current) inputRef.current.value = "";
   };
 

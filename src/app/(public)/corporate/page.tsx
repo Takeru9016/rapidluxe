@@ -134,6 +134,7 @@ function CorporateForm() {
           email: data.email,
           subject: `Corporate Account Request — ${data.companyName}`,
           message,
+          type: "CORPORATE",
         }),
       });
       if (!res.ok) throw new Error("Failed");

@@ -31,8 +31,6 @@ import { type PackagesQuery, usePackages } from "@/hooks/api/usePackages";
 import { formatPrice } from "@/lib/utils";
 import { useSearchStore } from "@/store/searchStore";
 
-import type { Package } from "@/types/package";
-
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const DURATION_BUCKETS = [
@@ -518,11 +516,7 @@ function PackagesContent() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {displayedPackages.map((pkg) => (
-                  <PackageCard
-                    key={pkg.id}
-                    package={pkg as unknown as Package}
-                    variant="default"
-                  />
+                  <PackageCard key={pkg.id} package={pkg} variant="default" />
                 ))}
               </div>
             )}

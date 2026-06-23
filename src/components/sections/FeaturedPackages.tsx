@@ -11,8 +11,6 @@ import type { ApiPackage } from "@/hooks/api/usePackages";
 import { PackageCard } from "@/components/cards/PackageCard";
 import { PackageCardSkeleton } from "@/components/shared/Skeletons";
 
-import type { Package } from "@/types/package";
-
 gsap.registerPlugin(ScrollTrigger);
 
 export function FeaturedPackages() {
@@ -88,11 +86,7 @@ export function FeaturedPackages() {
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
           >
             {packages.map((pkg) => (
-              <PackageCard
-                key={pkg.id}
-                package={pkg as unknown as Package}
-                variant="default"
-              />
+              <PackageCard key={pkg.id} package={pkg} variant="default" />
             ))}
           </div>
         )}

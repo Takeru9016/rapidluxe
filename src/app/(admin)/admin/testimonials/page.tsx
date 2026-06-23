@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, Star, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
+
+import { CloudinaryUpload } from "@/components/admin/CloudinaryUpload";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -17,6 +20,7 @@ interface AdminTestimonial {
   rating: number;
   tripDate: string | null;
   isFeatured: boolean;
+  imageUrl: string | null;
 }
 
 interface TestimonialForm {
@@ -27,6 +31,7 @@ interface TestimonialForm {
   rating: number;
   tripDate: string;
   isFeatured: boolean;
+  imageUrl: string;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -52,9 +57,10 @@ export default function AdminTestimonialsPage() {
 
   const testimonials = data?.data ?? [];
 
-  const { register, handleSubmit, reset } = useForm<TestimonialForm>({
-    defaultValues: { rating: 5, isFeatured: true },
-  });
+  const { register, handleSubmit, reset, watch, setValue } =
+    useForm<TestimonialForm>({
+      defaultValues: { rating: 5, isFeatured: true, imageUrl: "" },
+    });
 
   async function onCreate(values: TestimonialForm) {
     setSubmitting(true);
@@ -68,6 +74,7 @@ export default function AdminTestimonialsPage() {
           clientTitle: values.clientTitle || undefined,
           destination: values.destination || undefined,
           tripDate: values.tripDate || undefined,
+          imageUrl: values.imageUrl || undefined,
         }),
       });
       if (!res.ok) throw new Error("Failed");
@@ -142,6 +149,17 @@ export default function AdminTestimonialsPage() {
           onSubmit={handleSubmit(onCreate)}
           className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-6 mb-6 grid grid-cols-1 md:grid-cols-2 gap-4"
         >
+          <div className="md:col-span-2">
+            <label className="text-xs font-['DM_Sans'] text-(--color-text-secondary) block mb-1.5">
+              Client Photo
+            </label>
+            <CloudinaryUpload
+              folder="rapidluxe/testimonials"
+              currentUrl={watch("imageUrl")}
+              onUpload={(url) => setValue("imageUrl", url)}
+              onRemove={() => setValue("imageUrl", "")}
+            />
+          </div>
           <div className="md:col-span-2">
             <label className="text-xs font-['DM_Sans'] text-(--color-text-secondary) block mb-1.5">
               Client Name *
@@ -259,6 +277,17 @@ export default function AdminTestimonialsPage() {
               key={t._id}
               className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-5 flex items-start gap-4"
             >
+              {t.imageUrl ? (
+                <Image
+                  src={t.imageUrl}
+                  alt={t.clientName}
+                  width={40}
+                  height={40}
+                  className="w-10 h-10 rounded-full object-cover shrink-0"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-(--color-navy-border) shrink-0" />
+              )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <p className="font-['DM_Sans'] text-sm font-medium text-white truncate">

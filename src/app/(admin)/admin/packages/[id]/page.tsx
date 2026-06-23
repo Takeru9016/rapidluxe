@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 
 import { generateSlug } from "@/lib/utils";
+import { CloudinaryUpload } from "@/components/admin/CloudinaryUpload";
 import {
   Select,
   SelectContent,
@@ -674,23 +675,29 @@ export default function EditPackagePage({
 
         {/* ── Images ── */}
         <SectionCard title="Images">
-          <div className="space-y-2">
+          <div className="space-y-4">
             {images.fields.map((field, i) => (
-              <div key={field.id} className="flex gap-2">
-                <input
-                  {...register(`images.${i}.url`)}
-                  placeholder="https://..."
-                  className={inputCls}
+              <div key={field.id} className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-['JetBrains_Mono'] text-xs text-(--color-text-secondary)">
+                    Image {i + 1}
+                  </span>
+                  {images.fields.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => images.remove(i)}
+                      className="p-1 text-(--color-coral) hover:bg-(--color-coral)/10 rounded transition-colors"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
+                </div>
+                <CloudinaryUpload
+                  folder="rapidluxe/packages"
+                  currentUrl={field.url}
+                  onUpload={(url) => setValue(`images.${i}.url`, url)}
+                  onRemove={() => setValue(`images.${i}.url`, "")}
                 />
-                {images.fields.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => images.remove(i)}
-                    className="shrink-0 p-2 text-(--color-coral) hover:bg-(--color-coral)/10 rounded-lg transition-colors"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )}
               </div>
             ))}
           </div>

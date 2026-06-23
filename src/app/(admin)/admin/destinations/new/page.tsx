@@ -382,6 +382,7 @@ export default function NewDestinationPage() {
                 folder="rapidluxe/destinations"
                 currentUrl={watch("imageUrl")}
                 onUpload={(url) => setValue("imageUrl", url)}
+                onRemove={() => setValue("imageUrl", "")}
               />
             </div>
           </div>

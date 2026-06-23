@@ -4,7 +4,10 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
 
-const patchSchema = z.object({ isRead: z.boolean() });
+const patchSchema = z.object({
+  isRead: z.boolean().optional(),
+  status: z.enum(["OPEN", "RESOLVED"]).optional(),
+});
 
 export async function PATCH(
   req: NextRequest,
@@ -30,7 +33,7 @@ export async function PATCH(
 
   const updated = await prisma.enquiry.update({
     where: { id },
-    data: { isRead: parsed.data.isRead },
+    data: parsed.data,
   });
 
   return NextResponse.json({ data: updated });

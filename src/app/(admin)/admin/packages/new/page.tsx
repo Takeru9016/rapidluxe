@@ -504,6 +504,7 @@ export default function NewPackagePage() {
                   folder="rapidluxe/packages"
                   currentUrl={field.url}
                   onUpload={(url) => setValue(`images.${i}.url`, url)}
+                  onRemove={() => setValue(`images.${i}.url`, "")}
                 />
               </div>
             ))}

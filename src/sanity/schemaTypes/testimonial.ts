@@ -23,6 +23,12 @@ export const testimonial = defineType({
       options: { hotspot: true },
     }),
     defineField({
+      name: "imageUrl",
+      title: "Client Photo URL",
+      type: "string",
+      description: "Cloudinary URL — used by the admin upload widget",
+    }),
+    defineField({
       name: "isFeatured",
       title: "Featured on Homepage",
       type: "boolean",
