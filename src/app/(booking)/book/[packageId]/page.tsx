@@ -1,6 +1,16 @@
 "use client";
 
-import { Check, CheckCircle2, Info, Minus, Plus } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Check,
+  CheckCircle2,
+  Info,
+  Minus,
+  Plus,
+  UserCheck,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
@@ -569,6 +579,15 @@ interface Step2FormValues {
   additional: { name: string; dob: string; passportNo: string }[];
 }
 
+interface ProfileData {
+  name: string | null;
+  email: string;
+  phone: string | null;
+  dateOfBirth: string | null;
+  nationality: string | null;
+  passportNumber: string | null;
+}
+
 function Step2() {
   const {
     adults,
@@ -588,6 +607,7 @@ function Step2() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<Step2FormValues>({
     defaultValues: {
@@ -598,6 +618,36 @@ function Step2() {
       })),
     },
   });
+
+  // ── Profile autofill ──────────────────────────────────────────────────────
+  const { isLoaded, isSignedIn } = useUser();
+  const [autofillDismissed, setAutofillDismissed] = useState(false);
+
+  const { data: profileResp } = useQuery<{ data: ProfileData }>({
+    queryKey: ["user-profile"],
+    queryFn: async () => {
+      const res = await fetch("/api/user/me");
+      if (!res.ok) throw new Error("Failed to load profile");
+      return res.json() as Promise<{ data: ProfileData }>;
+    },
+    enabled: isLoaded && !!isSignedIn,
+  });
+  const profile = profileResp?.data;
+
+  const showAutofill =
+    !autofillDismissed && !!profile?.name && !!profile?.phone;
+  const showProfilePrompt =
+    !!isSignedIn && !!profile && (!profile.name || !profile.phone);
+
+  function handleAutofill() {
+    if (!profile) return;
+    setValue("leadName", profile.name ?? "");
+    setValue("leadPhone", profile.phone ?? "");
+    setValue("leadEmail", profile.email ?? "");
+    setValue("leadDob", profile.dateOfBirth?.slice(0, 10) ?? "");
+    setValue("leadPassport", profile.passportNumber ?? "");
+    setAutofillDismissed(true);
+  }
 
   function toggleDietary(option: string) {
     if (option === "None") {
@@ -641,6 +691,46 @@ function Step2() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {/* Autofill banner */}
+      {showAutofill && (
+        <div className="relative bg-(--color-gold)/10 border border-(--color-gold)/30 rounded-xl p-4 mb-6 flex items-start gap-3">
+          <UserCheck className="text-(--color-gold) w-5 h-5 mt-0.5 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="font-['DM_Sans'] font-medium text-(--color-white)">
+              Pre-fill with your saved details?
+            </p>
+            <p className="font-['DM_Sans'] text-sm text-(--color-white-muted) mt-0.5">
+              We found your profile information. Fill in Traveller 1
+              automatically.
+            </p>
+            <div className="flex gap-3 mt-3">
+              <button
+                type="button"
+                onClick={handleAutofill}
+                className="h-8 px-3 rounded-lg border border-(--color-gold)/60 text-(--color-gold) text-sm font-['DM_Sans'] font-medium hover:bg-(--color-gold)/10 transition-colors"
+              >
+                Yes, pre-fill
+              </button>
+              <button
+                type="button"
+                onClick={() => setAutofillDismissed(true)}
+                className="h-8 px-3 rounded-lg text-(--color-white-muted) text-sm font-['DM_Sans'] hover:text-white transition-colors"
+              >
+                No thanks
+              </button>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAutofillDismissed(true)}
+            aria-label="Dismiss"
+            className="absolute top-3 right-3 text-(--color-text-secondary) hover:text-white transition-colors"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
       {/* Lead traveler */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6 space-y-5">
         <p className="font-['DM_Sans'] font-semibold text-white text-base">
@@ -832,6 +922,18 @@ function Step2() {
           placeholder="Share any specific requirements, accessibility needs, or preferences..."
         />
       </div>
+
+      {showProfilePrompt && (
+        <p className="font-['DM_Sans'] text-xs text-(--color-text-secondary) mt-1">
+          💡 Save your details to your profile for faster booking —{" "}
+          <Link
+            href="/profile?tab=personal"
+            className="text-(--color-gold) hover:underline"
+          >
+            update profile
+          </Link>
+        </p>
+      )}
 
       <div className="flex gap-3 mt-6">
         <button

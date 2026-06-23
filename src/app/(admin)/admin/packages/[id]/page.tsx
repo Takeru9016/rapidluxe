@@ -1,21 +1,18 @@
 // This form dual-writes to Postgres in Phase 2F
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
+import { use, useEffect, useState } from "react";
 import {
-  useForm,
-  useFieldArray,
   Controller,
   type SubmitHandler,
+  useFieldArray,
+  useForm,
 } from "react-hook-form";
-import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
-
-import { generateSlug } from "@/lib/utils";
 import { CloudinaryUpload } from "@/components/admin/CloudinaryUpload";
 import {
   Select,
@@ -24,7 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { PackageStatus, AttributeQuality } from "@/types/package";
+import { generateSlug } from "@/lib/utils";
+import type { AttributeQuality, PackageStatus } from "@/types/package";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -75,6 +73,9 @@ interface PackageFormValues {
   maxGroupSize: number;
   pricePerPerson: number;
   originalPrice: number;
+  childPrice?: number;
+  infantPrice?: number;
+  toursPrice?: number;
   description: string;
   images: { url: string }[];
   itinerary: ItineraryDayForm[];
@@ -183,6 +184,9 @@ interface DbPackage {
   maxGroupSize: number;
   pricePerPerson: number;
   originalPrice: number | null;
+  childPrice: number | null;
+  infantPrice: number | null;
+  toursPrice: number | null;
   images: string[];
   itinerary: Array<{
     day: number;
@@ -322,6 +326,9 @@ export default function EditPackagePage({
       maxGroupSize: pkg.maxGroupSize,
       pricePerPerson: pkg.pricePerPerson,
       originalPrice: pkg.originalPrice ?? 0,
+      childPrice: pkg.childPrice ?? undefined,
+      infantPrice: pkg.infantPrice ?? undefined,
+      toursPrice: pkg.toursPrice ?? undefined,
       description: pkg.description,
       images:
         pkg.images.length > 0
@@ -462,6 +469,15 @@ export default function EditPackagePage({
         durationNights: data.durationNights,
         pricePerPerson: data.pricePerPerson,
         originalPrice: data.originalPrice || undefined,
+        childPrice: Number.isFinite(data.childPrice)
+          ? data.childPrice
+          : undefined,
+        infantPrice: Number.isFinite(data.infantPrice)
+          ? data.infantPrice
+          : undefined,
+        toursPrice: Number.isFinite(data.toursPrice)
+          ? data.toursPrice
+          : undefined,
         minGroupSize: data.minGroupSize,
         maxGroupSize: data.maxGroupSize,
         inclusions: data.inclusions.map((i) => i.value).filter(Boolean),
@@ -642,7 +658,7 @@ export default function EditPackagePage({
         {/* ── Pricing ── */}
         <SectionCard title="Pricing">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Price per Person (₹)">
+            <Field label="Price per Person (Adults 12+) (₹)">
               <input
                 type="number"
                 min={0}
@@ -657,6 +673,42 @@ export default function EditPackagePage({
                 {...register("originalPrice", { valueAsNumber: true })}
                 className={inputCls}
               />
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 pt-4 border-t border-(--color-navy-border)">
+            <Field label="Per Child (Age 2–11) (₹)">
+              <input
+                type="number"
+                min={0}
+                {...register("childPrice", { valueAsNumber: true })}
+                placeholder="Leave empty if not applicable"
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Per Infant (Under 2) (₹)">
+              <input
+                type="number"
+                min={0}
+                {...register("infantPrice", { valueAsNumber: true })}
+                placeholder="0 if infants travel free"
+                className={inputCls}
+              />
+              <p className="font-['DM_Sans'] text-xs text-(--color-text-secondary) mt-1">
+                Enter 0 for free, leave empty if not accepted
+              </p>
+            </Field>
+            <Field label="Tours & Transfers (per person) (₹)">
+              <input
+                type="number"
+                min={0}
+                {...register("toursPrice", { valueAsNumber: true })}
+                placeholder="e.g. 5068 — from Bali quotation"
+                className={inputCls}
+              />
+              <p className="font-['DM_Sans'] text-xs text-(--color-text-secondary) mt-1">
+                Separate cost for guided tours and transfers
+              </p>
             </Field>
           </div>
         </SectionCard>

@@ -71,6 +71,9 @@ model Package {
   durationNights     Int
   pricePerPerson     Float
   originalPrice      Float?
+  childPrice         Float? // price per child age 2-11
+  infantPrice        Float? // price per infant under 2, 0 = free
+  toursPrice         Float? // tours & transfers cost per person
   minGroupSize       Int           @default(1)
   maxGroupSize       Int           @default(20)
   inclusions         String[]

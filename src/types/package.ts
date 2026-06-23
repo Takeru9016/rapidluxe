@@ -57,6 +57,9 @@ export interface Package {
   durationNights: number;
   pricePerPerson: number;
   originalPrice?: number;
+  childPrice?: number;
+  infantPrice?: number;
+  toursPrice?: number;
   minGroupSize: number;
   maxGroupSize: number;
   inclusions: string[];

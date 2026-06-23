@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Package" ADD COLUMN     "childPrice" DOUBLE PRECISION,
+ADD COLUMN     "infantPrice" DOUBLE PRECISION,
+ADD COLUMN     "toursPrice" DOUBLE PRECISION;

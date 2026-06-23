@@ -1,58 +1,51 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 import {
   Calendar,
-  Users,
-  Plane,
-  Heart,
-  ChevronRight,
   Check,
-  X,
-  Minus,
-  Plus,
+  ChevronRight,
+  Heart,
   MessageSquare,
+  Plane,
   Sparkles,
+  Users,
+  X,
 } from "lucide-react";
-
-import { formatPrice, calculateGST } from "@/lib/utils";
-
-import { useWishlistStore } from "@/store/wishlistStore";
-import {
-  usePackage,
-  usePackages,
-  usePackageHotels,
-} from "@/hooks/api/usePackages";
-import { useReviews, useCheckEligibility } from "@/hooks/api/useReviews";
-import { useCurrencyRates } from "@/hooks/api/useCurrency";
-import { useDeals } from "@/hooks/api/useDeals";
-
-import { DetailPhotoGrid } from "@/components/shared/DetailPhotoGrid";
-import { AttributeQualityBadges } from "@/components/shared/AttributeQualityBadges";
-import { MultiPlatformRatings } from "@/components/shared/MultiPlatformRatings";
-import { ReviewSummaryCards } from "@/components/shared/ReviewSummaryCards";
-import { Rating } from "@/components/shared/Rating";
-import { PriceDisplay } from "@/components/shared/PriceDisplay";
-import { MapboxMap } from "@/components/shared/MapboxMap";
-import { ReviewForm } from "@/components/shared/ReviewForm";
-import { HotelCard } from "@/components/cards/HotelCard";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useMemo } from "react";
 import { ActivityCard } from "@/components/cards/ActivityCard";
-import { ReviewCard } from "@/components/cards/ReviewCard";
+import { HotelCard } from "@/components/cards/HotelCard";
 import { PackageCard } from "@/components/cards/PackageCard";
+import { ReviewCard } from "@/components/cards/ReviewCard";
+import { AttributeQualityBadges } from "@/components/shared/AttributeQualityBadges";
 import { Badge } from "@/components/shared/Badge";
+import { DetailPhotoGrid } from "@/components/shared/DetailPhotoGrid";
+import { MapboxMap } from "@/components/shared/MapboxMap";
+import { MultiPlatformRatings } from "@/components/shared/MultiPlatformRatings";
+import { PriceDisplay } from "@/components/shared/PriceDisplay";
+import { Rating } from "@/components/shared/Rating";
+import { ReviewForm } from "@/components/shared/ReviewForm";
+import { ReviewSummaryCards } from "@/components/shared/ReviewSummaryCards";
 import { PackageDetailSkeleton } from "@/components/shared/Skeletons";
-
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Accordion,
+  AccordionContent,
   AccordionItem,
   AccordionTrigger,
-  AccordionContent,
 } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useDeals } from "@/hooks/api/useDeals";
+import {
+  usePackage,
+  usePackageHotels,
+  usePackages,
+} from "@/hooks/api/usePackages";
+import { useCheckEligibility, useReviews } from "@/hooks/api/useReviews";
+import { formatPrice } from "@/lib/utils";
+import { useWishlistStore } from "@/store/wishlistStore";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -129,13 +122,11 @@ export function PackageDetailClient({ slug }: { slug: string }) {
   const { data: pkgData, isLoading } = usePackage(slug);
   const { data: similarData } = usePackages({ limit: 6, sort: "featured" });
   const { data: liveHotelsData } = usePackageHotels(slug);
-  const { data: currencyData } = useCurrencyRates();
   const { data: dealsData } = useDeals();
 
   const pkg = pkgData?.data;
   const destination = pkg?.destination ?? null;
   const liveHotels = liveHotelsData?.data ?? [];
-  const rates = currencyData?.data;
 
   const { data: reviewsData, isLoading: reviewsLoading } = useReviews(
     pkg?.id ?? "",
@@ -154,9 +145,6 @@ export function PackageDetailClient({ slug }: { slug: string }) {
     .slice(0, 3);
 
   const avgRating = pkg ? (DUMMY_RATINGS[pkg.id] ?? 4.5) : 4.5;
-
-  const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(0);
 
   const { toggle, has } = useWishlistStore();
   const isWishlisted = pkg ? has(pkg.id) : false;
@@ -200,10 +188,6 @@ export function PackageDetailClient({ slug }: { slug: string }) {
   const effectiveOriginalPrice = activeDeal
     ? pkg.pricePerPerson
     : pkg.originalPrice;
-
-  const travelers = adults + children;
-  const subtotal = effectivePrice * travelers;
-  const { gst, total } = calculateGST(subtotal);
 
   const highlights = pkg.itinerary.slice(0, 4).map((d) => d.title);
 
@@ -683,143 +667,107 @@ export function PackageDetailClient({ slug }: { slug: string }) {
 
           {/* ── Right Column — Sticky Sidebar ───────────── */}
           <aside className="hidden lg:flex lg:flex-col w-80 xl:w-96 shrink-0 sticky top-24 gap-4">
-            {/* Price card */}
+            {/* Price Guide card */}
             <div className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-6 flex flex-col gap-5">
               <div>
-                <PriceDisplay
-                  price={effectivePrice}
-                  originalPrice={effectiveOriginalPrice}
-                  size="lg"
-                  showDiscount
-                />
-                <p className="font-sans text-xs text-(--color-text-secondary) mt-1">
+                <h3 className="font-display text-2xl text-white leading-tight">
+                  Price Guide
+                </h3>
+                <div className="h-px bg-(--color-gold) mt-3" />
+              </div>
+
+              {/* Adults */}
+              <div>
+                <p className="font-sans text-xs uppercase tracking-wider text-(--color-text-secondary)">
+                  Adults (12+ years)
+                </p>
+                <p className="font-mono text-3xl text-(--color-gold) mt-1">
+                  From ₹{formatPrice(effectivePrice)}
+                </p>
+                <p className="font-sans text-xs text-(--color-text-secondary) mt-0.5">
                   per person
                 </p>
-                {rates && (
-                  <p className="font-mono text-xs text-(--color-text-secondary) mt-2">
-                    ≈ ${(effectivePrice * rates.USD).toFixed(0)} / £
-                    {(effectivePrice * rates.GBP).toFixed(0)} / AED{" "}
-                    {Math.round(effectivePrice * rates.AED).toLocaleString(
-                      "en-IN",
-                    )}{" "}
-                    per person
+              </div>
+
+              {/* Children */}
+              {pkg.childPrice != null && (
+                <div>
+                  <p className="font-sans text-xs uppercase tracking-wider text-(--color-text-secondary)">
+                    Children (Age 2–11)
                   </p>
-                )}
-              </div>
+                  <p className="font-mono text-xl text-(--color-white) mt-1">
+                    ₹{formatPrice(pkg.childPrice)}
+                  </p>
+                  <p className="font-sans text-xs text-(--color-text-secondary) mt-0.5">
+                    per child
+                  </p>
+                </div>
+              )}
 
-              <Separator className="bg-(--color-navy-border)" />
+              {/* Infants */}
+              {pkg.infantPrice != null && (
+                <div>
+                  <p className="font-sans text-xs uppercase tracking-wider text-(--color-text-secondary)">
+                    Infants (Under 2)
+                  </p>
+                  {pkg.infantPrice === 0 ? (
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="font-sans text-sm text-(--color-white)">
+                        Infants (under 2) travel free
+                      </p>
+                      <span className="font-sans text-xs font-medium uppercase tracking-wide text-(--color-teal) bg-(--color-teal)/10 px-2 py-0.5 rounded">
+                        Free
+                      </span>
+                    </div>
+                  ) : (
+                    <p className="font-mono text-xl text-(--color-white) mt-1">
+                      ₹{formatPrice(pkg.infantPrice)}{" "}
+                      <span className="font-sans text-xs text-(--color-text-secondary)">
+                        per infant
+                      </span>
+                    </p>
+                  )}
+                </div>
+              )}
 
-              {/* Travellers */}
-              <div>
-                <p className="text-xs font-sans font-medium text-(--color-white-muted) uppercase tracking-widest mb-3">
-                  Travellers
+              {/* Tours & Transfers */}
+              {pkg.toursPrice != null && (
+                <div>
+                  <Separator className="bg-(--color-navy-border) mb-4" />
+                  <p className="font-sans text-xs uppercase tracking-wider text-(--color-text-secondary)">
+                    Tours &amp; Transfers
+                  </p>
+                  <p className="font-mono text-lg text-(--color-white-muted) mt-1">
+                    + ₹{formatPrice(pkg.toursPrice)}
+                  </p>
+                  <p className="font-sans text-xs text-(--color-text-secondary) mt-0.5">
+                    per person (included in quote)
+                  </p>
+                </div>
+              )}
+
+              {/* Transparency note */}
+              <div className="bg-(--color-navy-surface) rounded-lg p-4 mt-4 border border-(--color-navy-border)">
+                <p className="font-sans text-xs text-(--color-text-secondary) leading-relaxed">
+                  Prices shown are base rates per person. Your final quote will
+                  include exact costs for your group size, dates, and
+                  requirements. 5% GST is applicable on the total amount.
+                  Flights and visa costs are not included unless stated.
                 </p>
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-white">Adults</p>
-                      <p className="text-xs text-(--color-text-secondary)">
-                        Age 12+
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() =>
-                          setAdults((prev) => Math.max(1, prev - 1))
-                        }
-                        disabled={adults <= 1}
-                        className="w-7 h-7 flex items-center justify-center rounded-full border border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/40 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        <Minus size={12} />
-                      </button>
-                      <span className="font-mono text-sm text-white w-4 text-center">
-                        {adults}
-                      </span>
-                      <button
-                        onClick={() =>
-                          setAdults((prev) =>
-                            Math.min(pkg.maxGroupSize - children, prev + 1),
-                          )
-                        }
-                        disabled={adults + children >= pkg.maxGroupSize}
-                        className="w-7 h-7 flex items-center justify-center rounded-full border border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/40 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        <Plus size={12} />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-white">Children</p>
-                      <p className="text-xs text-(--color-text-secondary)">
-                        Age 2–11
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() =>
-                          setChildren((prev) => Math.max(0, prev - 1))
-                        }
-                        disabled={children <= 0}
-                        className="w-7 h-7 flex items-center justify-center rounded-full border border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/40 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        <Minus size={12} />
-                      </button>
-                      <span className="font-mono text-sm text-white w-4 text-center">
-                        {children}
-                      </span>
-                      <button
-                        onClick={() =>
-                          setChildren((prev) =>
-                            Math.min(pkg.maxGroupSize - adults, prev + 1),
-                          )
-                        }
-                        disabled={adults + children >= pkg.maxGroupSize}
-                        className="w-7 h-7 flex items-center justify-center rounded-full border border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/40 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        <Plus size={12} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
               </div>
 
-              <Separator className="bg-(--color-navy-border)" />
-
-              {/* Price breakdown */}
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-(--color-text-secondary)">
-                    {formatPrice(effectivePrice)} × {travelers} traveller
-                    {travelers !== 1 ? "s" : ""}
-                  </span>
-                  <span className="font-mono text-(--color-white-muted)">
-                    {formatPrice(subtotal)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-(--color-text-secondary)">+5% GST</span>
-                  <span className="font-mono text-(--color-white-muted)">
-                    {formatPrice(gst)}
-                  </span>
-                </div>
-                <Separator className="bg-(--color-navy-border) my-1" />
-                <div className="flex justify-between">
-                  <span className="text-sm font-medium text-white">
-                    Estimated Total
-                  </span>
-                  <span className="font-mono font-semibold text-(--color-gold)">
-                    {formatPrice(total)}
-                  </span>
-                </div>
+              {/* CTA */}
+              <div>
+                <Link href={`/book/${pkg.id}`}>
+                  <Button className="w-full bg-(--color-coral) hover:bg-(--color-coral)/90 text-white font-sans font-medium h-11">
+                    Submit Booking Request
+                  </Button>
+                </Link>
+                <p className="font-sans text-xs text-(--color-text-secondary) text-center mt-3 leading-relaxed">
+                  No payment required to enquire. We&apos;ll confirm
+                  availability and send your quote.
+                </p>
               </div>
-
-              <Link href={`/book/${pkg.id}`}>
-                <Button className="w-full bg-(--color-coral) hover:bg-(--color-coral)/90 text-white font-sans font-medium h-11">
-                  Submit Booking Request
-                </Button>
-              </Link>
             </div>
 
             {/* Quote card */}

@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { type NextRequest, NextResponse } from "next/server";
+import { after, type NextRequest, NextResponse } from "next/server";
 
 import { sendQuoteEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
@@ -43,7 +43,9 @@ export async function POST(
     include: { user: true, package: true },
   });
 
-  await sendQuoteEmail(booking);
+  // Send the email after the response is flushed so a slow Resend call never
+  // blocks the admin's "Send Quote" action. sendQuoteEmail swallows its own errors.
+  after(() => sendQuoteEmail(booking));
 
   return NextResponse.json({
     data: { bookingId: booking.id, status: "QUOTE_SENT" },
