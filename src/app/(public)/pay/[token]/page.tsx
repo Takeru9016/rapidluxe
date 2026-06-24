@@ -218,7 +218,7 @@ export default function PayPage({
             message="This payment link has expired. Contact us to request a new one."
           >
             <a
-              href="https://wa.me/919999999999"
+              href={`https://wa.me/${(process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? "+919137456611").replace(/\D/g, "")}`}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-6 px-6 py-3 rounded-xl bg-(--color-teal) text-white font-['DM_Sans'] font-semibold text-sm hover:opacity-90 transition-opacity"

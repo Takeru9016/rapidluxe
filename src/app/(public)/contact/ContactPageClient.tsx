@@ -24,18 +24,22 @@ interface FormData {
   message: string;
 }
 
+const SUPPORT_PHONE = process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? "+919137456611";
+const SUPPORT_EMAIL =
+  process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "info@rapidluxe.com";
+
 const CONTACT_BLOCKS = [
   {
     icon: Phone,
     heading: "Phone",
-    detail: "+91 91374 56611",
-    href: "tel:+919137456611",
+    detail: SUPPORT_PHONE,
+    href: `tel:${SUPPORT_PHONE}`,
   },
   {
     icon: Mail,
     heading: "Email",
-    detail: "info@rapidluxe.com",
-    href: "mailto:info@rapidluxe.com",
+    detail: SUPPORT_EMAIL,
+    href: `mailto:${SUPPORT_EMAIL}`,
   },
   {
     icon: Clock,

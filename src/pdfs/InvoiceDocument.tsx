@@ -601,8 +601,9 @@ export function InvoiceDocument({ booking }: Props) {
             Rates quoted are in Indian Rupees (INR).{"\n"}• GST charged under
             HSN 998551 — Tour Operator Services.{"\n"}• Prices exclude flights,
             visa, and personal expenses unless explicitly stated in the package
-            inclusions.{"\n"}• For support: bookings@rapidluxe.com | +91 91374
-            56611
+            inclusions.{"\n"}• For support:{" "}
+            {process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "info@rapidluxe.com"} |{" "}
+            {process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? "+919137456611"}
           </Text>
         </View>
 

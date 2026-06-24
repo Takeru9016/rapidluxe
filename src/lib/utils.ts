@@ -23,6 +23,40 @@ export function calculateGST(amount: number): {
   return { base: amount, gst, total };
 }
 
+export interface PackagePricing {
+  pricePerPerson: number;
+  childPrice?: number | null;
+  infantPrice?: number | null;
+  toursPrice?: number | null;
+}
+
+export interface BookingPriceBreakdown {
+  adultTotal: number;
+  childTotal: number;
+  infantTotal: number;
+  toursTotal: number;
+  baseAmount: number;
+}
+
+export function calculateBookingBaseAmount(
+  pkg: PackagePricing,
+  adults: number,
+  children: number,
+  infants: number,
+): BookingPriceBreakdown {
+  const adultTotal = pkg.pricePerPerson * adults;
+  const childTotal = (pkg.childPrice ?? 0) * children;
+  const infantTotal = (pkg.infantPrice ?? 0) * infants;
+  const toursTotal = (pkg.toursPrice ?? 0) * (adults + children);
+  return {
+    adultTotal,
+    childTotal,
+    infantTotal,
+    toursTotal,
+    baseAmount: adultTotal + childTotal + infantTotal + toursTotal,
+  };
+}
+
 export function generateSlug(text: string): string {
   return text
     .toLowerCase()

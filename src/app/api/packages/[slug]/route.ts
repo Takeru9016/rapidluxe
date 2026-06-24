@@ -54,9 +54,16 @@ export async function PUT(
     );
   }
 
+  const { destinationId, ...rest } = parsed.data;
+
   const pkg = await prisma.package.update({
     where: { slug },
-    data: parsed.data,
+    data: {
+      ...rest,
+      ...(destinationId
+        ? { destination: { connect: { id: destinationId } } }
+        : {}),
+    },
   });
 
   return NextResponse.json({ data: pkg });

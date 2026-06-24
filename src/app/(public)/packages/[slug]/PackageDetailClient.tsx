@@ -682,7 +682,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                   Adults (12+ years)
                 </p>
                 <p className="font-mono text-3xl text-(--color-gold) mt-1">
-                  From ₹{formatPrice(effectivePrice)}
+                  From {formatPrice(effectivePrice)}
                 </p>
                 <p className="font-sans text-xs text-(--color-text-secondary) mt-0.5">
                   per person
@@ -695,8 +695,8 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                   <p className="font-sans text-xs uppercase tracking-wider text-(--color-text-secondary)">
                     Children (Age 2–11)
                   </p>
-                  <p className="font-mono text-xl text-(--color-white) mt-1">
-                    ₹{formatPrice(pkg.childPrice)}
+                  <p className="font-mono text-xl text-white mt-1">
+                    {formatPrice(pkg.childPrice)}
                   </p>
                   <p className="font-sans text-xs text-(--color-text-secondary) mt-0.5">
                     per child
@@ -712,7 +712,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                   </p>
                   {pkg.infantPrice === 0 ? (
                     <div className="flex items-center gap-2 mt-1">
-                      <p className="font-sans text-sm text-(--color-white)">
+                      <p className="font-sans text-sm text-white">
                         Infants (under 2) travel free
                       </p>
                       <span className="font-sans text-xs font-medium uppercase tracking-wide text-(--color-teal) bg-(--color-teal)/10 px-2 py-0.5 rounded">
@@ -720,8 +720,8 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                       </span>
                     </div>
                   ) : (
-                    <p className="font-mono text-xl text-(--color-white) mt-1">
-                      ₹{formatPrice(pkg.infantPrice)}{" "}
+                    <p className="font-mono text-xl text-white mt-1">
+                      {formatPrice(pkg.infantPrice)}{" "}
                       <span className="font-sans text-xs text-(--color-text-secondary)">
                         per infant
                       </span>
@@ -738,7 +738,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                     Tours &amp; Transfers
                   </p>
                   <p className="font-mono text-lg text-(--color-white-muted) mt-1">
-                    + ₹{formatPrice(pkg.toursPrice)}
+                    + {formatPrice(pkg.toursPrice)}
                   </p>
                   <p className="font-sans text-xs text-(--color-text-secondary) mt-0.5">
                     per person (included in quote)
@@ -758,7 +758,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
 
               {/* CTA */}
               <div>
-                <Link href={`/book/${pkg.id}`}>
+                <Link href={`/book/${pkg.slug}`}>
                   <Button className="w-full bg-(--color-coral) hover:bg-(--color-coral)/90 text-white font-sans font-medium h-11">
                     Submit Booking Request
                   </Button>
@@ -815,7 +815,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
           suffix="/ person"
           showDiscount={!!activeDeal}
         />
-        <Link href={`/book/${pkg.id}`} className="shrink-0">
+        <Link href={`/book/${pkg.slug}`} className="shrink-0">
           <Button className="bg-(--color-coral) hover:bg-(--color-coral)/90 text-white font-sans font-medium text-sm h-10 px-4">
             Submit Booking Request
           </Button>

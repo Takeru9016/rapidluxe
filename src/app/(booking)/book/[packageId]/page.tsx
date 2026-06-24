@@ -20,8 +20,13 @@ import { toast } from "sonner";
 
 import { Calendar } from "@/components/ui/calendar";
 import { Separator } from "@/components/ui/separator";
-import { dummyPackages } from "@/lib/dummy/packages";
-import { formatDate, formatDateRange, formatPrice } from "@/lib/utils";
+import { usePackage } from "@/hooks/api/usePackages";
+import {
+  calculateBookingBaseAmount,
+  formatDate,
+  formatDateRange,
+  formatPrice,
+} from "@/lib/utils";
 import { useBookingStore } from "@/store/bookingStore";
 
 import type { TravelerDetail } from "@/types/booking";
@@ -162,6 +167,9 @@ function BookingSidebar({ pkg }: { pkg: Package }) {
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(", ");
 
+  const { adultTotal, childTotal, infantTotal, toursTotal } =
+    calculateBookingBaseAmount(pkg, adults, children, infants);
+
   return (
     <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6 space-y-5">
       <div className="relative aspect-video rounded-lg overflow-hidden">
@@ -206,7 +214,46 @@ function BookingSidebar({ pkg }: { pkg: Package }) {
 
       <div className="flex flex-col gap-2 text-sm font-['DM_Sans']">
         <div className="flex justify-between">
-          <span className="text-(--color-text-secondary)">Base</span>
+          <span className="text-(--color-text-secondary)">
+            Adults ({adults} × {formatPrice(pkg.pricePerPerson)})
+          </span>
+          <span className="text-(--color-white-muted)">
+            {formatPrice(adultTotal)}
+          </span>
+        </div>
+        {children > 0 && (
+          <div className="flex justify-between">
+            <span className="text-(--color-text-secondary)">
+              Children ({children} × {formatPrice(pkg.childPrice ?? 0)})
+            </span>
+            <span className="text-(--color-white-muted)">
+              {formatPrice(childTotal)}
+            </span>
+          </div>
+        )}
+        {infants > 0 && (
+          <div className="flex justify-between">
+            <span className="text-(--color-text-secondary)">
+              Infants ({infants} × {formatPrice(pkg.infantPrice ?? 0)})
+            </span>
+            <span className="text-(--color-white-muted)">
+              {formatPrice(infantTotal)}
+            </span>
+          </div>
+        )}
+        {pkg.toursPrice != null && (
+          <div className="flex justify-between">
+            <span className="text-(--color-text-secondary)">
+              Tours &amp; Transfers
+            </span>
+            <span className="text-(--color-white-muted)">
+              {formatPrice(toursTotal)}
+            </span>
+          </div>
+        )}
+        <Separator className="bg-(--color-navy-border) my-1" />
+        <div className="flex justify-between">
+          <span className="text-(--color-text-secondary)">Subtotal</span>
           <span className="text-(--color-white-muted)">
             {formatPrice(baseAmount)}
           </span>
@@ -282,9 +329,28 @@ function Step1({ pkg }: { pkg: Package }) {
     const min = type === "adults" ? 1 : 0;
     const next = { ...curr, [type]: Math.max(min, curr[type] + delta) };
     setTravelers(next.adults, next.children, next.infants);
-    useBookingStore
-      .getState()
-      .updateAmounts(pkg.pricePerPerson * (next.adults + next.children));
+    const { baseAmount: nextBase } = calculateBookingBaseAmount(
+      pkg,
+      next.adults,
+      next.children,
+      next.infants,
+    );
+    useBookingStore.getState().updateAmounts(nextBase);
+  }
+
+  function applyFlexibleSelection(
+    duration: 7 | 14 | 21 | null,
+    months: string[],
+  ) {
+    setFlexibleOptions(duration, months);
+    if (!duration || months.length === 0) return;
+    const [year, monthIndex] = months
+      .map((key) => key.split("-").map(Number) as [number, number])
+      .sort(([y1, m1], [y2, m2]) => y1 - y2 || m1 - m2)[0];
+    const departure = new Date(year, monthIndex, 1);
+    const returnDate = new Date(departure);
+    returnDate.setDate(returnDate.getDate() + duration);
+    setExactDates(departure, returnDate);
   }
 
   async function handleApplyCoupon() {
@@ -479,7 +545,7 @@ function Step1({ pkg }: { pkg: Package }) {
                   <button
                     key={d}
                     type="button"
-                    onClick={() => setFlexibleOptions(d, flexibleMonths)}
+                    onClick={() => applyFlexibleSelection(d, flexibleMonths)}
                     className={`px-4 py-2 rounded-full text-sm font-['DM_Sans'] transition-colors ${
                       flexibleDuration === d
                         ? "bg-(--color-gold) text-(--color-navy) font-medium"
@@ -507,7 +573,7 @@ function Step1({ pkg }: { pkg: Package }) {
                         const next = selected
                           ? flexibleMonths.filter((m) => m !== key)
                           : [...flexibleMonths, key];
-                        setFlexibleOptions(flexibleDuration, next);
+                        applyFlexibleSelection(flexibleDuration, next);
                       }}
                       className={`flex flex-col items-center py-3 px-2 rounded-xl border text-center cursor-pointer transition-colors ${
                         selected
@@ -956,7 +1022,7 @@ function Step2() {
 
 // ── Step 3 — Review & Submit ──────────────────────────────────────────────────
 
-function Step3({ pkg, packageId }: { pkg: Package; packageId: string }) {
+function Step3({ pkg }: { pkg: Package }) {
   const {
     departureDate,
     adults,
@@ -971,6 +1037,9 @@ function Step3({ pkg, packageId }: { pkg: Package; packageId: string }) {
 
   const [submitting, setSubmitting] = useState(false);
 
+  const { adultTotal, childTotal, infantTotal, toursTotal } =
+    calculateBookingBaseAmount(pkg, adults, children, infants);
+
   async function handleSubmit() {
     const store = useBookingStore.getState();
     if (!store.departureDate) {
@@ -984,7 +1053,7 @@ function Step3({ pkg, packageId }: { pkg: Package; packageId: string }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          packageId,
+          packageId: pkg.id,
           departureDate: store.departureDate.toISOString(),
           adults: store.adults,
           children: store.children,
@@ -1043,7 +1112,46 @@ function Step3({ pkg, packageId }: { pkg: Package; packageId: string }) {
         </p>
         <div className="flex justify-between text-sm">
           <span className="font-['DM_Sans'] text-(--color-text-secondary)">
-            Base
+            Adults ({adults} × {formatPrice(pkg.pricePerPerson)})
+          </span>
+          <span className="font-['JetBrains_Mono'] text-white">
+            {formatPrice(adultTotal)}
+          </span>
+        </div>
+        {children > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="font-['DM_Sans'] text-(--color-text-secondary)">
+              Children ({children} × {formatPrice(pkg.childPrice ?? 0)})
+            </span>
+            <span className="font-['JetBrains_Mono'] text-white">
+              {formatPrice(childTotal)}
+            </span>
+          </div>
+        )}
+        {infants > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="font-['DM_Sans'] text-(--color-text-secondary)">
+              Infants ({infants} × {formatPrice(pkg.infantPrice ?? 0)})
+            </span>
+            <span className="font-['JetBrains_Mono'] text-white">
+              {formatPrice(infantTotal)}
+            </span>
+          </div>
+        )}
+        {pkg.toursPrice != null && (
+          <div className="flex justify-between text-sm">
+            <span className="font-['DM_Sans'] text-(--color-text-secondary)">
+              Tours &amp; Transfers
+            </span>
+            <span className="font-['JetBrains_Mono'] text-white">
+              {formatPrice(toursTotal)}
+            </span>
+          </div>
+        )}
+        <Separator className="bg-(--color-navy-border) my-2" />
+        <div className="flex justify-between text-sm">
+          <span className="font-['DM_Sans'] text-(--color-text-secondary)">
+            Subtotal
           </span>
           <span className="font-['JetBrains_Mono'] text-white">
             {formatPrice(baseAmount)}
@@ -1181,15 +1289,51 @@ export default function BookingPage({
 }: {
   params: Promise<{ packageId: string }>;
 }) {
-  const { packageId } = use(params);
-  const pkg = dummyPackages.find((p) => p.id === packageId) ?? dummyPackages[0];
+  const { packageId: slug } = use(params);
+  const { data: pkgData, isLoading, isError } = usePackage(slug);
 
-  const { currentStep, updateAmounts, adults } = useBookingStore();
+  const { currentStep, updateAmounts, adults, children, infants } =
+    useBookingStore();
+
+  const pkg: Package | undefined = pkgData?.data
+    ? ({
+        ...pkgData.data,
+        createdAt: new Date(pkgData.data.createdAt),
+        updatedAt: new Date(pkgData.data.updatedAt),
+      } as Package)
+    : undefined;
 
   useEffect(() => {
-    updateAmounts(pkg.pricePerPerson * adults);
+    if (!pkg) return;
+    const { baseAmount } = calculateBookingBaseAmount(
+      pkg,
+      adults,
+      children,
+      infants,
+    );
+    updateAmounts(baseAmount);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pkg.id]);
+  }, [pkg?.id]);
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-(--color-navy) pt-24">
+        <div className="max-w-6xl mx-auto px-4 md:px-8 py-12 text-center text-(--color-text-secondary)">
+          Loading package details…
+        </div>
+      </main>
+    );
+  }
+
+  if (isError || !pkg) {
+    return (
+      <main className="min-h-screen bg-(--color-navy) pt-24">
+        <div className="max-w-6xl mx-auto px-4 md:px-8 py-12 text-center text-(--color-text-secondary)">
+          Package not found.
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-(--color-navy) pt-24">
@@ -1200,7 +1344,7 @@ export default function BookingPage({
           <div className="flex-1 min-w-0">
             {currentStep === 1 && <Step1 pkg={pkg} />}
             {currentStep === 2 && <Step2 />}
-            {currentStep === 3 && <Step3 pkg={pkg} packageId={packageId} />}
+            {currentStep === 3 && <Step3 pkg={pkg} />}
             {currentStep === 4 && <Step4 />}
           </div>
 

@@ -8,7 +8,7 @@ import {
   rateLimitResponse,
   strictLimiter,
 } from "@/lib/rate-limit";
-import { calculateGST } from "@/lib/utils";
+import { calculateBookingBaseAmount, calculateGST } from "@/lib/utils";
 import { createBookingSchema } from "@/lib/validations/booking";
 import type { DbBookingStatus, DisplayStatus } from "@/types/booking";
 
@@ -106,7 +106,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Package not found" }, { status: 404 });
     }
 
-    const baseAmount = pkg.pricePerPerson * (data.adults + data.children);
+    const { baseAmount } = calculateBookingBaseAmount(
+      pkg,
+      data.adults,
+      data.children,
+      data.infants,
+    );
 
     let discountAmount = 0;
     if (data.couponCode) {
