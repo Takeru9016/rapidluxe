@@ -84,23 +84,6 @@ export const createPackageSchema = z.object({
       }),
     )
     .optional(),
-  platformRatings: z
-    .array(
-      z.object({
-        platform: z.string(),
-        rating: z.number().min(0).max(5),
-        count: z.number().int(),
-        url: z.string().url().optional(),
-      }),
-    )
-    .optional(),
-  reviewSummary: z
-    .object({
-      average: z.number().min(0).max(5),
-      total: z.number().int(),
-      distribution: z.record(z.string(), z.number()).optional(),
-    })
-    .optional(),
   isFeatured: z.boolean().default(false),
   includesFlights: z.boolean().default(false),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),

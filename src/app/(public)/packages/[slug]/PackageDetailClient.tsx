@@ -22,11 +22,9 @@ import { AttributeQualityBadges } from "@/components/shared/AttributeQualityBadg
 import { Badge } from "@/components/shared/Badge";
 import { DetailPhotoGrid } from "@/components/shared/DetailPhotoGrid";
 import { MapboxMap } from "@/components/shared/MapboxMap";
-import { MultiPlatformRatings } from "@/components/shared/MultiPlatformRatings";
 import { PriceDisplay } from "@/components/shared/PriceDisplay";
 import { Rating } from "@/components/shared/Rating";
 import { ReviewForm } from "@/components/shared/ReviewForm";
-import { ReviewSummaryCards } from "@/components/shared/ReviewSummaryCards";
 import { PackageDetailSkeleton } from "@/components/shared/Skeletons";
 import {
   Accordion,
@@ -47,35 +45,25 @@ import { useCheckEligibility, useReviews } from "@/hooks/api/useReviews";
 import { formatPrice } from "@/lib/utils";
 import { useWishlistStore } from "@/store/wishlistStore";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const DUMMY_RATINGS: Record<string, number> = {
-  "pkg-bali": 4.8,
-  "pkg-maldives": 4.9,
-  "pkg-kerala": 4.6,
-  "pkg-switzerland": 4.7,
-  "pkg-santorini": 4.8,
-  "pkg-dubai": 4.5,
-  "pkg-rajasthan": 4.7,
-  "pkg-singapore": 4.6,
-};
-
 // ─── RatingBarBreakdown ───────────────────────────────────────────────────────
 
 function RatingBarBreakdown({
+  reviews,
   avgRating,
   total,
 }: {
+  reviews: { rating: number }[];
   avgRating: number;
   total: number;
 }) {
-  const bars = [
-    { label: "5★", pct: 58 },
-    { label: "4★", pct: 27 },
-    { label: "3★", pct: 9 },
-    { label: "2★", pct: 4 },
-    { label: "1★", pct: 2 },
-  ];
+  const bars = [5, 4, 3, 2, 1].map((star) => ({
+    label: `${star}★`,
+    pct: Math.round(
+      (reviews.filter((r) => Math.round(r.rating) === star).length /
+        reviews.length) *
+        100,
+    ),
+  }));
   return (
     <div className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-5 mb-6">
       <div className="flex items-center gap-6">
@@ -144,7 +132,10 @@ export function PackageDetailClient({ slug }: { slug: string }) {
     .filter((p) => p.slug !== slug)
     .slice(0, 3);
 
-  const avgRating = pkg ? (DUMMY_RATINGS[pkg.id] ?? 4.5) : 4.5;
+  const avgRating =
+    reviews.length > 0
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+      : 0;
 
   const { toggle, has } = useWishlistStore();
   const isWishlisted = pkg ? has(pkg.id) : false;
@@ -219,7 +210,10 @@ export function PackageDetailClient({ slug }: { slug: string }) {
       <div className="border-b border-(--color-navy-border) bg-(--color-navy-surface)">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-3">
           <nav className="flex items-center gap-2 text-xs font-sans text-(--color-text-secondary)">
-            <Link href="/" className="hover:text-white transition-colors">
+            <Link
+              href="/"
+              className="hover:text-white transition-colors"
+            >
               Home
             </Link>
             <ChevronRight size={12} className="shrink-0" />
@@ -280,12 +274,18 @@ export function PackageDetailClient({ slug }: { slug: string }) {
               </div>
 
               <div className="flex items-center justify-between gap-4">
-                <Rating
-                  rating={avgRating}
-                  reviewCount={reviews.length}
-                  size="md"
-                  showCount
-                />
+                {reviews.length > 0 ? (
+                  <Rating
+                    rating={avgRating}
+                    reviewCount={reviews.length}
+                    size="md"
+                    showCount
+                  />
+                ) : (
+                  <span className="font-sans text-sm text-(--color-text-secondary)">
+                    No reviews yet
+                  </span>
+                )}
                 <button
                   onClick={() => toggle(pkg.id)}
                   className="flex items-center gap-1.5 text-sm text-(--color-text-secondary) hover:text-white transition-colors"
@@ -308,14 +308,6 @@ export function PackageDetailClient({ slug }: { slug: string }) {
               <AttributeQualityBadges
                 attributes={pkg.attributes}
                 className="mt-4"
-              />
-            )}
-
-            {/* Multi-platform ratings row */}
-            {pkg.platformRatings && pkg.platformRatings.length > 0 && (
-              <MultiPlatformRatings
-                ratings={pkg.platformRatings}
-                className="mt-3"
               />
             )}
 
@@ -598,19 +590,14 @@ export function PackageDetailClient({ slug }: { slug: string }) {
 
               {/* ── Reviews ── */}
               <TabsContent value="reviews" className="mt-6 flex flex-col gap-6">
-                {/* Review summary cards */}
-                {pkg.reviewSummary && (
-                  <ReviewSummaryCards
-                    loves={pkg.reviewSummary.loves}
-                    dislikes={pkg.reviewSummary.dislikes}
+                {/* Rating bar breakdown */}
+                {reviews.length > 0 && (
+                  <RatingBarBreakdown
+                    reviews={reviews}
+                    avgRating={avgRating}
+                    total={reviewsData?.pagination.total ?? 0}
                   />
                 )}
-
-                {/* Rating bar breakdown */}
-                <RatingBarBreakdown
-                  avgRating={avgRating}
-                  total={reviewsData?.pagination.total ?? 0}
-                />
 
                 {/* Review cards */}
                 {reviewsLoading ? (

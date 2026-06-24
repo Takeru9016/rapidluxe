@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles, Heart, Globe, Shield, type LucideIcon } from "lucide-react";
+import { Globe, Heart, type LucideIcon, Shield, Sparkles } from "lucide-react";
 
 import { useSiteContent } from "@/hooks/api/useSiteContent";
 

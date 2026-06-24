@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { sanityReadClient } from "@/lib/sanity";
-import { STATIC_PAGE_QUERY } from "@/lib/queries/pages";
-import type { StaticPageData } from "@/types/staticPage";
-import { formatDate } from "@/lib/utils";
 import { PortableTextBody } from "@/components/shared/PortableTextBody";
+import { STATIC_PAGE_QUERY } from "@/lib/queries/pages";
+import { sanityReadClient } from "@/lib/sanity";
+import { formatDate } from "@/lib/utils";
+import type { StaticPageData } from "@/types/staticPage";
 
 export const revalidate = 3600;
 
@@ -31,7 +31,7 @@ export default async function CancellationPolicyPage() {
     <section className="bg-(--color-navy) min-h-screen">
       <div className="max-w-4xl mx-auto px-4 py-20">
         <div className="border-b border-(--color-gold)/30 pb-8 mb-10">
-          <h1 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-white font-light leading-tight">
+          <h1 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-(--color-white) font-light leading-tight">
             {page?.title ?? "Cancellation Policy"}
           </h1>
           {page?.subtitle && (

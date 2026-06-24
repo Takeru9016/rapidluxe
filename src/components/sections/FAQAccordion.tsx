@@ -22,7 +22,8 @@ const faqs = [
       "Yes, minor changes like meal preferences or optional add-ons can usually be accommodated. Significant changes (dates, destination) depend on availability and may have associated fees. Contact your dedicated travel expert to discuss.",
   },
   {
-    question: "How is RapidLuxe different from booking websites or travel agents?",
+    question:
+      "How is RapidLuxe different from booking websites or travel agents?",
     answer:
       "Unlike booking websites, we provide human expertise and genuine curation — every package is handpicked and vetted. Unlike traditional agents, our process is fully digital and transparent. You get the best of both: expert guidance without the friction.",
   },
@@ -41,7 +42,10 @@ export function FAQAccordion() {
         <div className="text-center mb-12">
           <p
             className="text-xs tracking-widest uppercase"
-            style={{ fontFamily: "var(--font-body)", color: "var(--color-gold)" }}
+            style={{
+              fontFamily: "var(--font-body)",
+              color: "var(--color-gold)",
+            }}
           >
             FAQ
           </p>
@@ -54,7 +58,11 @@ export function FAQAccordion() {
         </div>
 
         {/* Accordion */}
-        <Accordion type="single" collapsible className="w-full border-t border-(--color-navy-border)">
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full border-t border-(--color-navy-border)"
+        >
           {faqs.map((faq, index) => (
             <AccordionItem
               key={index}

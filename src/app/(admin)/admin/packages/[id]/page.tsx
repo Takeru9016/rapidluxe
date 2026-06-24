@@ -57,11 +57,6 @@ interface AttributeRow {
   quality: AttributeQuality | "";
 }
 
-interface PlatformRow {
-  score: number;
-  reviewCount: number;
-}
-
 interface PackageFormValues {
   title: string;
   slug: string;
@@ -89,8 +84,6 @@ interface PackageFormValues {
   metaDescription: string;
   isFeatured: boolean;
   attributes: AttributeRow[];
-  platformRatings: PlatformRow[];
-  reviewSummary: { loves: string[]; dislikes: string[] };
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -112,8 +105,6 @@ const ATTRIBUTE_LABELS = [
   "Neighbourhood Vibrancy",
   "Safety",
 ] as const;
-
-const PLATFORM_LABELS = ["TripAdvisor", "Google", "Booking.com"] as const;
 
 const DEFAULT_CANCELLATION: CancellationRow[] = [
   { daysBeforeDeparture: 30, refundPercent: 90 },
@@ -218,12 +209,6 @@ interface DbPackage {
   metaDescription: string | null;
   isFeatured: boolean;
   attributes: Array<{ label: string; quality: AttributeQuality }> | null;
-  platformRatings: Array<{
-    platform: string;
-    score: number;
-    reviewCount?: number;
-  }> | null;
-  reviewSummary: { loves: string[]; dislikes: string[] } | null;
 }
 
 export default function EditPackagePage({
@@ -305,11 +290,6 @@ export default function EditPackagePage({
       metaDescription: "",
       isFeatured: false,
       attributes: ATTRIBUTE_LABELS.map(() => ({ quality: "" as const })),
-      platformRatings: PLATFORM_LABELS.map(() => ({
-        score: 0,
-        reviewCount: 0,
-      })),
-      reviewSummary: { loves: ["", "", ""], dislikes: ["", "", ""] },
     },
   });
 
@@ -400,25 +380,6 @@ export default function EditPackagePage({
         const found = pkg.attributes?.find((a) => a.label === label);
         return { quality: (found?.quality ?? "") as AttributeQuality | "" };
       }),
-      platformRatings: PLATFORM_LABELS.map((platform) => {
-        const found = pkg.platformRatings?.find((r) => r.platform === platform);
-        return {
-          score: found?.score ?? 0,
-          reviewCount: found?.reviewCount ?? 0,
-        };
-      }),
-      reviewSummary: {
-        loves: [
-          pkg.reviewSummary?.loves[0] ?? "",
-          pkg.reviewSummary?.loves[1] ?? "",
-          pkg.reviewSummary?.loves[2] ?? "",
-        ],
-        dislikes: [
-          pkg.reviewSummary?.dislikes[0] ?? "",
-          pkg.reviewSummary?.dislikes[1] ?? "",
-          pkg.reviewSummary?.dislikes[2] ?? "",
-        ],
-      },
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pkg]);
@@ -896,14 +857,15 @@ export default function EditPackagePage({
                       className={inputCls}
                     />
                   </Field>
-                  <Field label="Image URL">
-                    <input
-                      {...register(`hotels.${i}.imageUrl`)}
-                      placeholder="https://..."
-                      className={inputCls}
-                    />
-                  </Field>
                 </div>
+                <Field label="Hotel Image">
+                  <CloudinaryUpload
+                    folder="rapidluxe/hotels"
+                    currentUrl={watch(`hotels.${i}.imageUrl`)}
+                    onUpload={(url) => setValue(`hotels.${i}.imageUrl`, url)}
+                    onRemove={() => setValue(`hotels.${i}.imageUrl`, "")}
+                  />
+                </Field>
                 <label className="flex items-center gap-2 text-sm font-['DM_Sans'] text-(--color-white-muted) cursor-pointer">
                   <input
                     type="checkbox"
@@ -1223,90 +1185,6 @@ export default function EditPackagePage({
                 />
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* ── Platform Scores ── */}
-        <div className="bg-(--color-navy-surface)/50 rounded-xl border border-(--color-navy-border) p-6 mt-6">
-          <h2 className="font-['DM_Sans'] text-xs font-semibold uppercase tracking-widest text-(--color-gold) mb-1">
-            External Platform Scores
-          </h2>
-          <p className="font-['DM_Sans'] text-xs text-(--color-text-secondary) mb-5">
-            Shown on package detail for social proof
-          </p>
-          <div className="space-y-3">
-            {PLATFORM_LABELS.map((platform, i) => (
-              <div key={platform} className="flex gap-4 items-end">
-                <span className="font-['DM_Sans'] text-sm text-(--color-white-muted) w-32 shrink-0 pb-2.5">
-                  {platform}
-                </span>
-                <Field label="Score (0–10)">
-                  <input
-                    type="number"
-                    min={0}
-                    max={10}
-                    step={0.1}
-                    {...register(`platformRatings.${i}.score`, {
-                      valueAsNumber: true,
-                    })}
-                    className={inputCls}
-                  />
-                </Field>
-                <Field label="Reviews">
-                  <input
-                    type="number"
-                    min={0}
-                    {...register(`platformRatings.${i}.reviewCount`, {
-                      valueAsNumber: true,
-                    })}
-                    className={inputCls}
-                    placeholder="e.g. 1200"
-                  />
-                </Field>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Review Summary ── */}
-        <div className="bg-(--color-navy-surface)/50 rounded-xl border border-(--color-navy-border) p-6 mt-6">
-          <h2 className="font-['DM_Sans'] text-xs font-semibold uppercase tracking-widest text-(--color-gold) mb-1">
-            Review Summary
-          </h2>
-          <p className="font-['DM_Sans'] text-xs text-(--color-text-secondary) mb-5">
-            Manually curate 3 highlights and 3 downsides for the Reviews tab
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <p className="font-['DM_Sans'] text-xs font-medium text-(--color-teal) uppercase tracking-widest mb-3">
-                What guests love
-              </p>
-              <div className="space-y-2">
-                {([0, 1, 2] as const).map((j) => (
-                  <input
-                    key={j}
-                    {...register(`reviewSummary.loves.${j}`)}
-                    placeholder="e.g. Prime location near attractions"
-                    className={inputCls}
-                  />
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="font-['DM_Sans'] text-xs font-medium text-(--color-coral) uppercase tracking-widest mb-3">
-                What guests dislike
-              </p>
-              <div className="space-y-2">
-                {([0, 1, 2] as const).map((j) => (
-                  <input
-                    key={j}
-                    {...register(`reviewSummary.dislikes.${j}`)}
-                    placeholder="e.g. Can be crowded in peak season"
-                    className={inputCls}
-                  />
-                ))}
-              </div>
-            </div>
           </div>
         </div>
 

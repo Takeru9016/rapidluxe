@@ -1,9 +1,7 @@
+import { MapPin, Star } from "lucide-react";
 import Image from "next/image";
-import { Star, MapPin } from "lucide-react";
-
-import { Hotel } from "@/types/package";
-
 import { Badge } from "@/components/shared/Badge";
+import type { Hotel } from "@/types/package";
 
 interface HotelCardProps {
   hotel: Hotel;

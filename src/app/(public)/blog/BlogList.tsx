@@ -1,15 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import Link from "next/link";
+import { ArrowRight, Clock } from "lucide-react";
 import Image from "next/image";
-import { Clock, ArrowRight } from "lucide-react";
-
-import type { BlogCardData } from "@/types/blog";
-import { formatDate } from "@/lib/utils";
-
+import Link from "next/link";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/shared/Badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { formatDate } from "@/lib/utils";
+import type { BlogCardData } from "@/types/blog";
 
 const CATEGORIES = [
   "All",
@@ -38,7 +36,7 @@ function BlogCard({ post }: { post: BlogCardData }) {
           </div>
         </div>
         <div className="p-5 flex flex-col flex-1">
-          <h3 className="font-['Cormorant_Garamond'] text-xl text-white line-clamp-2 group-hover:text-(--color-gold-light) transition-colors">
+          <h3 className="font-['Cormorant_Garamond'] text-xl text-(--color-white) line-clamp-2 group-hover:text-(--color-gold-light) transition-colors">
             {post.title}
           </h3>
           <p className="font-sans text-sm mt-2 line-clamp-3 text-(--color-white-muted) flex-1">
@@ -88,7 +86,7 @@ export function BlogList({ posts }: { posts: BlogCardData[] }) {
         <p className="font-sans text-sm tracking-widest uppercase text-(--color-gold) mb-2">
           From the Journal
         </p>
-        <h1 className="font-['Cormorant_Garamond'] text-5xl md:text-6xl text-white font-light">
+        <h1 className="font-['Cormorant_Garamond'] text-5xl md:text-6xl text-(--color-white) font-light">
           Travel Stories &amp; Guides
         </h1>
       </div>
@@ -121,7 +119,7 @@ export function BlogList({ posts }: { posts: BlogCardData[] }) {
                     {featured.category}
                   </Badge>
                 </div>
-                <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white leading-snug group-hover:text-(--color-gold-light) transition-colors">
+                <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-(--color-white) leading-snug group-hover:text-(--color-gold-light) transition-colors">
                   {featured.title}
                 </h2>
                 <p className="font-sans text-(--color-white-muted) text-sm leading-relaxed line-clamp-3">
@@ -159,7 +157,7 @@ export function BlogList({ posts }: { posts: BlogCardData[] }) {
                   <TabsTrigger
                     key={cat}
                     value={cat}
-                    className="font-sans text-sm data-[state=active]:bg-(--color-gold) data-[state=active]:text-(--color-navy) text-(--color-text-secondary)"
+                    className="font-sans text-sm data-[state=active]:bg-(--color-gold) data-[state=active]:text-[#0B0F1A] text-(--color-text-secondary)"
                   >
                     {cat}
                   </TabsTrigger>

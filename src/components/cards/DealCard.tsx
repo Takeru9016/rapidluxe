@@ -65,7 +65,7 @@ export function DealCard({ deal, className }: DealCardProps) {
           <span className="bg-(--color-coral)/90 text-white text-xs font-medium px-3 py-1 rounded-full">
             {TYPE_LABEL[deal.type]}
           </span>
-          <span className="bg-(--color-gold) text-(--color-navy) font-mono text-sm font-bold px-3 py-1 rounded-full">
+          <span className="bg-(--color-gold) text-[#0B0F1A] font-mono text-sm font-bold px-3 py-1 rounded-full">
             {discountPercent}% OFF
           </span>
           {isEndingSoon && (
@@ -82,7 +82,7 @@ export function DealCard({ deal, className }: DealCardProps) {
           {pkg.destination.name}, {pkg.destination.country}
         </span>
 
-        <h3 className="font-['Cormorant_Garamond'] text-xl text-white">
+        <h3 className="font-['Cormorant_Garamond'] text-xl text-(--color-white)">
           {pkg.title}
         </h3>
 

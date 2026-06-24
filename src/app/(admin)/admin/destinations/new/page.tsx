@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Plus, X } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -50,8 +50,8 @@ interface DestinationFormValues {
   country: string;
   continent: Continent;
   imageUrl: string;
-  bestTimeFrom: string;
-  bestTimeTo: string;
+  images: { url: string }[];
+  bestMonths: string[];
   visaType: VisaType | "";
   currency: string;
   language: string;
@@ -212,8 +212,8 @@ export default function NewDestinationPage() {
       country: "",
       continent: "ASIA",
       imageUrl: "",
-      bestTimeFrom: "",
-      bestTimeTo: "",
+      images: [{ url: "" }],
+      bestMonths: [],
       visaType: "",
       currency: "",
       language: "",
@@ -236,6 +236,7 @@ export default function NewDestinationPage() {
   });
 
   const transport = useFieldArray({ control, name: "howToGetThere" });
+  const images = useFieldArray({ control, name: "images" });
 
   // Auto-slug from name
   const name = watch("name");
@@ -257,8 +258,8 @@ export default function NewDestinationPage() {
           country: data.country,
           continent: data.continent,
           imageUrl: data.imageUrl || undefined,
-          bestTimeFrom: data.bestTimeFrom || undefined,
-          bestTimeTo: data.bestTimeTo || undefined,
+          images: data.images.map((i) => i.url).filter(Boolean),
+          bestMonths: data.bestMonths,
           visaType: data.visaType || undefined,
           currency: data.currency || undefined,
           language: data.language || undefined,
@@ -388,30 +389,83 @@ export default function NewDestinationPage() {
           </div>
         </SectionCard>
 
-        {/* ── Postgres: Best Time ── */}
-        <SectionCard title="Best Time to Visit" subtitle="Saved to Postgres">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="From Month">
-              <select {...register("bestTimeFrom")} className={selectCls}>
-                <option value="">Select month</option>
-                {MONTHS.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="To Month">
-              <select {...register("bestTimeTo")} className={selectCls}>
-                <option value="">Select month</option>
-                {MONTHS.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </Field>
+        {/* ── Gallery ── */}
+        <SectionCard
+          title="Gallery"
+          subtitle="Additional photos shown on the destination page"
+        >
+          <div className="space-y-4">
+            {images.fields.map((field, i) => (
+              <div key={field.id} className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="font-['JetBrains_Mono'] text-xs text-(--color-text-secondary)">
+                    Image {i + 1}
+                  </span>
+                  {images.fields.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => images.remove(i)}
+                      className="p-1 text-(--color-coral) hover:bg-(--color-coral)/10 rounded transition-colors"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
+                </div>
+                <CloudinaryUpload
+                  folder="rapidluxe/destinations"
+                  currentUrl={field.url}
+                  onUpload={(url) => setValue(`images.${i}.url`, url)}
+                  onRemove={() => setValue(`images.${i}.url`, "")}
+                />
+              </div>
+            ))}
           </div>
+          <button
+            type="button"
+            onClick={() => images.append({ url: "" })}
+            className="mt-3 inline-flex items-center gap-2 text-sm font-['DM_Sans'] text-(--color-gold) hover:text-(--color-gold)/80 transition-colors"
+          >
+            <Plus size={14} />
+            Add Image
+          </button>
+        </SectionCard>
+
+        {/* ── Postgres: Best Time ── */}
+        <SectionCard
+          title="Best Time to Visit"
+          subtitle="Select all months that are ideal for visiting"
+        >
+          <Controller
+            control={control}
+            name="bestMonths"
+            render={({ field }) => (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                {MONTHS.map((m) => {
+                  const checked = field.value.includes(m);
+                  return (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() =>
+                        field.onChange(
+                          checked
+                            ? field.value.filter((v) => v !== m)
+                            : [...field.value, m],
+                        )
+                      }
+                      className={`px-3 py-2 rounded-lg text-xs font-['DM_Sans'] font-medium border transition-colors ${
+                        checked
+                          ? "bg-(--color-gold) text-(--color-navy) border-(--color-gold)"
+                          : "border-(--color-navy-border) text-(--color-text-secondary) hover:border-(--color-gold)/40"
+                      }`}
+                    >
+                      {m}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          />
         </SectionCard>
 
         {/* ── Coordinates ── */}

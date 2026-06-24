@@ -1,17 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { MapPin, Calendar, Users, Search, Minus, Plus } from "lucide-react";
 import { format } from "date-fns";
-
-import { cn } from "@/lib/utils";
+import { Calendar, MapPin, Minus, Plus, Search, Users } from "lucide-react";
+import { useState } from "react";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 
 interface SearchBarProps {
   variant?: "hero" | "inline";
@@ -146,7 +145,9 @@ export function SearchBar({ variant = "hero", className }: SearchBarProps) {
               <p
                 className={cn(
                   "text-sm font-sans",
-                  date ? "text-white" : "text-(--color-text-secondary)",
+                  date
+                    ? "text-white"
+                    : "text-(--color-text-secondary)",
                 )}
               >
                 {date ? format(date, "dd MMM yyyy") : "Select date"}

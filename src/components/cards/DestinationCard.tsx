@@ -1,8 +1,8 @@
-import Link from "next/link";
-import Image from "next/image";
 import { Globe } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
-import { Destination } from "@/types/destination";
+import type { Destination } from "@/types/destination";
 
 interface DestinationCardProps {
   destination: Destination;
@@ -44,7 +44,7 @@ export function DestinationCard({
         <div className="absolute inset-0 bg-linear-to-t from-[#0B0F1A]/90 via-[#0B0F1A]/20 to-transparent" />
 
         <div className="absolute bottom-0 left-0 right-0 p-5">
-          <p className="text-sm text-(--color-white-muted) font-sans">
+          <p className="text-sm text-white/70 font-sans">
             {destination.country}
           </p>
           <h3 className="font-['Cormorant_Garamond'] text-2xl text-white leading-tight">

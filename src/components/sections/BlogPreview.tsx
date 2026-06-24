@@ -1,11 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
-
-import { useBlogPosts, type BlogPostPreview } from "@/hooks/api/useBlogPosts";
-import { formatDate } from "@/lib/utils";
+import Link from "next/link";
 import { Badge } from "@/components/shared/Badge";
+import { type BlogPostPreview, useBlogPosts } from "@/hooks/api/useBlogPosts";
+import { formatDate } from "@/lib/utils";
 
 const FALLBACK_AVATAR =
   "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=100&auto=format&fit=crop&q=80";

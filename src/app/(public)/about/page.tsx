@@ -1,9 +1,9 @@
+import type { PortableTextBlock } from "@portabletext/react";
+import { PortableText } from "@portabletext/react";
+import { ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import type { PortableTextBlock } from "@portabletext/react";
-import { PortableText } from "@portabletext/react";
 
 import { sanityReadClient } from "@/lib/sanity";
 
@@ -147,7 +147,7 @@ export default async function AboutPage() {
           <p className="font-sans text-xs tracking-[0.3em] uppercase text-(--color-gold) mb-4">
             Who We Are
           </p>
-          <h1 className="font-['Cormorant_Garamond'] text-5xl md:text-7xl text-white font-light leading-none max-w-3xl">
+          <h1 className="font-['Cormorant_Garamond'] text-5xl md:text-7xl text-(--color-white) font-light leading-none max-w-3xl">
             {sanity?.headline ?? "Designed to Restore. Built to Inspire."}
           </h1>
           {(sanity?.subheadline ?? true) && (
@@ -168,7 +168,7 @@ export default async function AboutPage() {
               className="w-12 h-px mb-6"
               style={{ backgroundColor: "var(--color-gold)" }}
             />
-            <p className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white font-light italic leading-snug">
+            <p className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-(--color-white) font-light italic leading-snug">
               &ldquo;We don&apos;t sell holidays. We design experiences that
               heal, inspire, and stay with you forever.&rdquo;
             </p>
@@ -248,7 +248,7 @@ export default async function AboutPage() {
               <p className="font-sans text-xs tracking-[0.3em] uppercase text-(--color-gold) mb-4">
                 Our Philosophy
               </p>
-              <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-white font-light mb-6">
+              <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-(--color-white) font-light mb-6">
                 What is a Therapycation?
               </h2>
               {sanity?.missionBody?.length ? (
@@ -278,7 +278,7 @@ export default async function AboutPage() {
                 className="absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full"
                 style={{ backgroundColor: "var(--color-gold)" }}
               />
-              <p className="font-['Cormorant_Garamond'] text-xl italic font-light text-white leading-relaxed">
+              <p className="font-['Cormorant_Garamond'] text-xl italic font-light text-(--color-white) leading-relaxed">
                 &ldquo;In the world of high-end travel, there is often too much
                 noise and not enough intent.&rdquo;
               </p>
@@ -300,7 +300,7 @@ export default async function AboutPage() {
             <p className="font-sans text-xs tracking-[0.3em] uppercase text-(--color-gold) mb-3">
               The People Behind the Magic
             </p>
-            <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-white font-light">
+            <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-(--color-white) font-light">
               Meet the Team
             </h2>
           </div>
@@ -344,7 +344,7 @@ export default async function AboutPage() {
                     className="w-12 h-px mb-4"
                     style={{ backgroundColor: "var(--color-gold)" }}
                   />
-                  <h3 className="font-['Cormorant_Garamond'] text-2xl text-white">
+                  <h3 className="font-['Cormorant_Garamond'] text-2xl text-(--color-white)">
                     {member.name}
                   </h3>
                   <p
@@ -370,7 +370,7 @@ export default async function AboutPage() {
             <p className="font-sans text-xs tracking-[0.3em] uppercase text-(--color-gold) mb-3">
               How We Work
             </p>
-            <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-white font-light">
+            <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-(--color-white) font-light">
               From First Message to Final Memory
             </h2>
           </div>
@@ -402,7 +402,7 @@ export default async function AboutPage() {
                       {step.number}
                     </span>
                   </div>
-                  <h3 className="font-['Cormorant_Garamond'] text-lg text-white mb-2">
+                  <h3 className="font-['Cormorant_Garamond'] text-lg text-(--color-white) mb-2">
                     {step.title}
                   </h3>
                   <p className="font-sans text-xs text-(--color-white-muted) leading-relaxed">

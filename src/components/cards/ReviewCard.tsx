@@ -1,14 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-
-import { Review } from "@/types/review";
-
-import { formatDate } from "@/lib/utils";
-
-import { Rating } from "@/components/shared/Rating";
+import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/shared/Badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Rating } from "@/components/shared/Rating";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { formatDate } from "@/lib/utils";
+import type { Review } from "@/types/review";
 
 interface ReviewCardProps {
   review: Review & { user: { name: string; avatarUrl?: string } };

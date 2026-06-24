@@ -38,8 +38,8 @@ model Destination {
   continent     String
   description   String?
   imageUrl      String?
-  bestTimeFrom  String?
-  bestTimeTo    String?
+  images        String[] // Cloudinary URLs (gallery)
+  bestMonths    String[] // e.g. ["November", "December", "January"]
   visaType      String?
   currency      String?
   language      String?
@@ -85,8 +85,6 @@ model Package {
   tags               String[] // ["Luxury", "Honeymoon", "Beach"]
   cancellationPolicy Json? // [{ daysBeforeDeparture, refundPercent }]
   attributes         Json? // PackageAttribute[]
-  platformRatings    Json? // PlatformRating[]
-  reviewSummary      Json? // ReviewSummary
   isFeatured         Boolean       @default(false)
   includesFlights    Boolean       @default(false)
   status             PackageStatus @default(DRAFT)

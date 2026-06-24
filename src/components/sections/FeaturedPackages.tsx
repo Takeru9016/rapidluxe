@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-import { usePackages } from "@/hooks/api/usePackages";
-import type { ApiPackage } from "@/hooks/api/usePackages";
-
+import Link from "next/link";
+import { useEffect, useRef } from "react";
 import { PackageCard } from "@/components/cards/PackageCard";
 import { PackageCardSkeleton } from "@/components/shared/Skeletons";
+import type { ApiPackage } from "@/hooks/api/usePackages";
+import { usePackages } from "@/hooks/api/usePackages";
 
 gsap.registerPlugin(ScrollTrigger);
 

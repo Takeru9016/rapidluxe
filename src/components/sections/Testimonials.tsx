@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { TestimonialItem } from "@/app/api/content/testimonials/route";
 

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { destinationFiltersSchema } from "@/lib/validations/destination";
@@ -30,8 +30,7 @@ export async function GET(req: NextRequest) {
       country: true,
       continent: true,
       imageUrl: true,
-      bestTimeFrom: true,
-      bestTimeTo: true,
+      bestMonths: true,
       _count: { select: { packages: true } },
     },
     orderBy: { name: "asc" },

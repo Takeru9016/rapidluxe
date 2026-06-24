@@ -1,13 +1,12 @@
 "use client";
 
+import { Clock, Mail, MapPin, MessageCircle, Phone, Send } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Phone, Mail, MessageCircle, Clock, MapPin, Send } from "lucide-react";
 
 import { MapboxMap } from "@/components/shared/MapboxMap";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -15,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 interface FormData {
   name: string;
@@ -94,7 +94,7 @@ export default function ContactPageClient() {
         <p className="font-sans text-sm tracking-widest uppercase text-(--color-gold) mb-3">
           We&apos;d Love to Hear from You
         </p>
-        <h1 className="font-['Cormorant_Garamond'] text-5xl md:text-6xl text-white font-light">
+        <h1 className="font-['Cormorant_Garamond'] text-5xl md:text-6xl text-(--color-white) font-light">
           Get in Touch
         </h1>
         <p className="font-sans text-(--color-text-secondary) text-sm mt-4 max-w-md mx-auto leading-relaxed">
@@ -108,7 +108,7 @@ export default function ContactPageClient() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
           {/* ── Form ─────────────────────────────────────────── */}
           <div className="lg:col-span-3">
-            <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white mb-8">
+            <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-(--color-white) mb-8">
               Send us a message
             </h2>
 
@@ -136,7 +136,7 @@ export default function ContactPageClient() {
                       minLength: { value: 2, message: "Name is required" },
                     })}
                     placeholder="Priya Sharma"
-                    className="bg-(--color-navy-surface) border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
+                    className="bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
                   />
                   {errors.name && (
                     <p className="font-sans text-xs text-(--color-coral)">
@@ -158,7 +158,7 @@ export default function ContactPageClient() {
                     })}
                     type="email"
                     placeholder="priya@example.com"
-                    className="bg-(--color-navy-surface) border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
+                    className="bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
                   />
                   {errors.email && (
                     <p className="font-sans text-xs text-(--color-coral)">
@@ -181,7 +181,7 @@ export default function ContactPageClient() {
                     {...register("phone")}
                     type="tel"
                     placeholder="+91 98765 43210"
-                    className="bg-(--color-navy-surface) border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
+                    className="bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -213,7 +213,7 @@ export default function ContactPageClient() {
                         <SelectItem
                           key={s}
                           value={s}
-                          className="font-sans text-sm text-(--color-white-muted) focus:bg-(--color-navy-border) focus:text-white"
+                          className="font-sans text-sm text-(--color-white-muted) focus:bg-(--color-navy-border) focus:text-(--color-white)"
                         >
                           {s}
                         </SelectItem>
@@ -243,7 +243,7 @@ export default function ContactPageClient() {
                   })}
                   rows={5}
                   placeholder="Tell us about your dream trip or any questions you have..."
-                  className="bg-(--color-navy-surface) border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60 resize-none"
+                  className="bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60 resize-none"
                 />
                 {errors.message && (
                   <p className="font-sans text-xs text-(--color-coral)">
@@ -265,7 +265,7 @@ export default function ContactPageClient() {
 
           {/* ── Contact Info ──────────────────────────────────── */}
           <div className="lg:col-span-2">
-            <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white mb-8">
+            <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-(--color-white) mb-8">
               Reach Us Directly
             </h2>
 
@@ -282,7 +282,7 @@ export default function ContactPageClient() {
                     {href ? (
                       <a
                         href={href}
-                        className="font-sans text-sm text-(--color-white-muted) hover:text-white transition-colors"
+                        className="font-sans text-sm text-(--color-white-muted) hover:text-(--color-white) transition-colors"
                       >
                         {detail}
                       </a>

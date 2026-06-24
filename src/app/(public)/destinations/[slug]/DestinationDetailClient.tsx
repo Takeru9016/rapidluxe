@@ -164,7 +164,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
   if (!dest) {
     return (
       <main className="flex flex-col items-center justify-center py-32 text-center">
-        <p className="font-display text-2xl text-white mb-2">
+        <p className="font-display text-2xl text-(--color-white) mb-2">
           Destination not found
         </p>
         <p className="font-sans text-sm text-(--color-text-secondary)">
@@ -195,9 +195,13 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
               <p className="font-sans text-xs text-(--color-text-secondary) uppercase tracking-wider mb-1">
                 Best Time
               </p>
-              <p className="font-['Cormorant_Garamond'] text-lg text-white">
-                {dest.bestTimeFrom && dest.bestTimeTo
-                  ? `${dest.bestTimeFrom} – ${dest.bestTimeTo}`
+              <p className="font-['Cormorant_Garamond'] text-lg text-(--color-white)">
+                {dest.bestMonths && dest.bestMonths.length > 0
+                  ? dest.bestMonths.length > 4
+                    ? `${dest.bestMonths.slice(0, 3).join(", ")} +${
+                        dest.bestMonths.length - 3
+                      } more`
+                    : dest.bestMonths.join(", ")
                   : "Year-round"}
               </p>
             </div>
@@ -210,7 +214,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
               <p className="font-sans text-xs text-(--color-text-secondary) uppercase tracking-wider mb-1">
                 Currency
               </p>
-              <p className="font-['Cormorant_Garamond'] text-lg text-white">
+              <p className="font-['Cormorant_Garamond'] text-lg text-(--color-white)">
                 {dest.currency ?? "—"}
               </p>
             </div>
@@ -223,7 +227,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
               <p className="font-sans text-xs text-(--color-text-secondary) uppercase tracking-wider mb-1">
                 Language
               </p>
-              <p className="font-['Cormorant_Garamond'] text-lg text-white leading-tight">
+              <p className="font-['Cormorant_Garamond'] text-lg text-(--color-white) leading-tight">
                 {dest.language ?? "—"}
               </p>
             </div>
@@ -233,7 +237,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
               <p className="font-sans text-xs text-(--color-text-secondary) uppercase tracking-wider mb-1">
                 Visa for Indians
               </p>
-              <p className="font-['Cormorant_Garamond'] text-lg text-white">
+              <p className="font-['Cormorant_Garamond'] text-lg text-(--color-white)">
                 {dest.visaType ? VISA_LABELS[dest.visaType as VisaType] : "—"}
               </p>
             </div>
@@ -242,7 +246,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
 
         {/* ── 3. ABOUT ──────────────────────────────────────────────────────── */}
         <section className="py-12 border-t border-(--color-navy-border)">
-          <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white mb-8">
+          <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-(--color-white) mb-8">
             About {dest.name}
           </h2>
           {editorial?.about?.length ? (
@@ -266,7 +270,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
 
         {/* ── 4. PACKAGES ───────────────────────────────────────────────────── */}
         <section className="py-12 border-t border-(--color-navy-border)">
-          <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white mb-8">
+          <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-(--color-white) mb-8">
             Packages to {dest.name}
           </h2>
           {pkgsLoading ? (
@@ -287,7 +291,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
         {/* ── 5. THINGS TO DO ───────────────────────────────────────────────── */}
         {(liveActivities.length > 0 || fallbackActivities.length > 0) && (
           <section className="py-12 border-t border-(--color-navy-border)">
-            <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white mb-8">
+            <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-(--color-white) mb-8">
               Things To Do in {dest.name}
             </h2>
             {liveActivities.length > 0 ? (
@@ -308,7 +312,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
                       </div>
                     )}
                     <div className="p-4">
-                      <p className="font-sans font-medium text-white mb-1 line-clamp-2">
+                      <p className="font-sans font-medium text-(--color-white) mb-1 line-clamp-2">
                         {act.name}
                       </p>
                       <div className="flex items-center justify-between mt-2">
@@ -338,7 +342,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
         {/* ── 6. WHEN TO VISIT TABLE ────────────────────────────────────────── */}
         {allMonths.length > 0 && (
           <section className="py-12 border-t border-(--color-navy-border)">
-            <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white mb-2">
+            <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-(--color-white) mb-2">
               When to visit
             </h2>
             <p className="font-sans text-sm text-(--color-text-secondary) mb-8">
@@ -377,7 +381,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
                       key={row.month}
                       className="border-b border-(--color-navy-border) hover:bg-white/5 transition-colors"
                     >
-                      <td className="font-sans font-medium text-white px-4 py-4 whitespace-nowrap">
+                      <td className="font-sans font-medium text-(--color-white) px-4 py-4 whitespace-nowrap">
                         {row.month}
                       </td>
                       <td className="px-4 py-4">
@@ -458,7 +462,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
         {/* ── 7. HOW TO GET THERE ───────────────────────────────────────────── */}
         {dest.howToGetThere && dest.howToGetThere.length > 0 && (
           <section className="py-12 border-t border-(--color-navy-border)">
-            <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white mb-8">
+            <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-(--color-white) mb-8">
               How to get there
             </h2>
             <div className="max-w-3xl space-y-0">
@@ -476,7 +480,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="font-sans font-medium text-white">
+                        <span className="font-sans font-medium text-(--color-white)">
                           {option.name}
                         </span>
                         {option.isRecommended && (
@@ -498,7 +502,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
 
         {/* ── 8. TRAVEL TIPS ────────────────────────────────────────────────── */}
         <section className="py-12 border-t border-(--color-navy-border)">
-          <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white mb-8">
+          <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-(--color-white) mb-8">
             Travel Tips
           </h2>
           {editorial?.travelTips?.length ? (

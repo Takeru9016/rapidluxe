@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 const EXCLUDED_PREFIXES = [
   "/admin",

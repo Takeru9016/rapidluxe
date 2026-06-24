@@ -1,21 +1,19 @@
+import { ArrowRight, CalendarDays, Clock } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Clock, CalendarDays, ArrowRight } from "lucide-react";
-
-import { sanityReadClient } from "@/lib/sanity";
-import { POST_BY_SLUG_QUERY, RELATED_POSTS_QUERY } from "@/lib/queries/blog";
-import {
-  toBlogCard,
-  BLOG_FALLBACK_IMAGE,
-  BLOG_FALLBACK_AVATAR,
-} from "@/lib/blog";
-import { formatDate } from "@/lib/utils";
-import type { PostDetail, PostListItem, BlogCardData } from "@/types/blog";
-
 import { Badge } from "@/components/shared/Badge";
 import { PortableTextBody } from "@/components/shared/PortableTextBody";
+import {
+  BLOG_FALLBACK_AVATAR,
+  BLOG_FALLBACK_IMAGE,
+  toBlogCard,
+} from "@/lib/blog";
+import { POST_BY_SLUG_QUERY, RELATED_POSTS_QUERY } from "@/lib/queries/blog";
+import { sanityReadClient } from "@/lib/sanity";
+import { formatDate } from "@/lib/utils";
+import type { BlogCardData, PostDetail, PostListItem } from "@/types/blog";
 
 export const revalidate = 60;
 
@@ -64,7 +62,7 @@ function RelatedCard({ post }: { post: BlogCardData }) {
           </div>
         </div>
         <div className="p-5">
-          <h3 className="font-['Cormorant_Garamond'] text-lg text-white line-clamp-2 group-hover:text-(--color-gold-light) transition-colors">
+          <h3 className="font-['Cormorant_Garamond'] text-lg text-(--color-white) line-clamp-2 group-hover:text-(--color-gold-light) transition-colors">
             {post.title}
           </h3>
           <div className="mt-3 flex items-center gap-2 text-xs font-sans text-(--color-text-secondary)">
@@ -127,7 +125,7 @@ export default async function BlogPostPage({
             </Badge>
           ))}
         </div>
-        <h1 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-white font-light leading-tight">
+        <h1 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-(--color-white) font-light leading-tight">
           {post.title}
         </h1>
         <div className="mt-6 flex flex-wrap items-center gap-4 text-sm font-sans text-(--color-text-secondary)">
@@ -189,7 +187,7 @@ export default async function BlogPostPage({
             />
           </div>
           <div>
-            <p className="font-['Cormorant_Garamond'] text-xl text-white">
+            <p className="font-['Cormorant_Garamond'] text-xl text-(--color-white)">
               {authorName}
             </p>
             <p className="font-sans text-xs text-(--color-gold) uppercase tracking-widest mt-0.5">
@@ -206,7 +204,7 @@ export default async function BlogPostPage({
       {/* Related articles */}
       {related.length > 0 && (
         <div className="max-w-7xl mx-auto px-4 md:px-8 mt-16 pb-8">
-          <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white mb-8">
+          <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-(--color-white) mb-8">
             Related Articles
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -220,7 +218,7 @@ export default async function BlogPostPage({
       {/* CTA banner */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 mt-12 pb-20">
         <div className="bg-(--color-gold)/10 border border-(--color-gold)/20 rounded-xl p-8 text-center">
-          <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white mb-3">
+          <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-(--color-white) mb-3">
             Ready to travel?
           </h2>
           <p className="font-sans text-(--color-white-muted) text-sm mb-6">

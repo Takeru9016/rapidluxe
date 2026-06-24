@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { dummyTravelers } from "@/lib/dummy/travelers";
 
@@ -87,7 +87,10 @@ export function TravelerCarousel() {
                 </p>
                 <p
                   className="text-sm mt-1"
-                  style={{ fontFamily: "var(--font-body)", color: "var(--color-gold)" }}
+                  style={{
+                    fontFamily: "var(--font-body)",
+                    color: "var(--color-gold)",
+                  }}
                 >
                   📍 {traveler.destination}
                 </p>
@@ -105,8 +108,12 @@ export function TravelerCarousel() {
             backgroundColor: "var(--color-navy-surface)",
             borderColor: "var(--color-navy-border)",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--color-gold)")}
-          onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--color-navy-border)")}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.borderColor = "var(--color-gold)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.borderColor = "var(--color-navy-border)")
+          }
         >
           <ChevronLeft size={18} className="text-white" />
         </button>
@@ -120,8 +127,12 @@ export function TravelerCarousel() {
             backgroundColor: "var(--color-navy-surface)",
             borderColor: "var(--color-navy-border)",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--color-gold)")}
-          onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--color-navy-border)")}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.borderColor = "var(--color-gold)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.borderColor = "var(--color-navy-border)")
+          }
         >
           <ChevronRight size={18} className="text-white" />
         </button>
@@ -139,7 +150,9 @@ export function TravelerCarousel() {
               width: i === activeIndex ? "24px" : "8px",
               height: "8px",
               backgroundColor:
-                i === activeIndex ? "var(--color-gold)" : "var(--color-navy-border)",
+                i === activeIndex
+                  ? "var(--color-gold)"
+                  : "var(--color-navy-border)",
             }}
           />
         ))}

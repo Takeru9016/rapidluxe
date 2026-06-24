@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-import { useDestinations } from "@/hooks/api/useDestinations";
-
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { DestinationCard } from "@/components/cards/DestinationCard";
 import { DestinationCardSkeleton } from "@/components/shared/Skeletons";
+import { useDestinations } from "@/hooks/api/useDestinations";
 
 import type { Destination } from "@/types/destination";
 

@@ -1,16 +1,14 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
+import { Lock, Star, Upload } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useQueryClient } from "@tanstack/react-query";
-import { z } from "zod";
-import { Lock, Star, Upload } from "lucide-react";
 import { toast } from "sonner";
-
-import { cn } from "@/lib/utils";
-
+import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 const reviewSchema = z.object({
   rating: z.number().min(1).max(5),
@@ -75,7 +73,9 @@ export function ReviewForm({ packageId, isEligible }: ReviewFormProps) {
 
   return (
     <div className="bg-(--color-navy-surface) rounded-xl p-6 border border-(--color-navy-border)">
-      <h2 className="font-serif text-2xl text-white">Share Your Experience</h2>
+      <h2 className="font-serif text-2xl text-white">
+        Share Your Experience
+      </h2>
 
       {!isEligible ? (
         <div className="mt-4 bg-(--color-navy-border)/30 rounded-lg p-4 flex items-center gap-3">

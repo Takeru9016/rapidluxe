@@ -22,8 +22,8 @@ export async function POST(req: NextRequest) {
     country: string;
     continent: string;
     imageUrl?: string;
-    bestTimeFrom?: string;
-    bestTimeTo?: string;
+    images?: string[];
+    bestMonths?: string[];
     visaType?: string;
     currency?: string;
     language?: string;
@@ -60,8 +60,8 @@ export async function POST(req: NextRequest) {
       country: body.country,
       continent: body.continent,
       imageUrl: body.imageUrl ?? null,
-      bestTimeFrom: body.bestTimeFrom ?? null,
-      bestTimeTo: body.bestTimeTo ?? null,
+      images: body.images ?? [],
+      bestMonths: body.bestMonths ?? [],
       visaType: body.visaType ?? null,
       currency: body.currency ?? null,
       language: body.language ?? null,

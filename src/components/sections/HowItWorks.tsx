@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { Search, MessageSquare, Plane, LucideIcon } from "lucide-react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { type LucideIcon, MessageSquare, Plane, Search } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 import { useSiteContent } from "@/hooks/api/useSiteContent";
 

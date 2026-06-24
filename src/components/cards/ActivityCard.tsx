@@ -1,11 +1,9 @@
+import { Clock, Compass } from "lucide-react";
 import Image from "next/image";
-import { Compass, Clock } from "lucide-react";
-
-import { Activity } from "@/types/package";
+import { Badge } from "@/components/shared/Badge";
 
 import { formatPrice } from "@/lib/utils";
-
-import { Badge } from "@/components/shared/Badge";
+import type { Activity } from "@/types/package";
 
 interface ActivityCardProps {
   activity: Activity;
@@ -48,12 +46,17 @@ export function ActivityCard({ activity, className }: ActivityCardProps) {
           {activity.name}
         </p>
 
-        <div className="mt-0.5 flex items-center gap-2">
-          <Clock size={12} className="text-(--color-text-secondary) shrink-0" />
-          <span className="font-['JetBrains_Mono'] text-xs text-(--color-text-secondary)">
-            {activity.duration}
-          </span>
-        </div>
+        {activity.duration && (
+          <div className="mt-0.5 flex items-center gap-2">
+            <Clock
+              size={12}
+              className="text-(--color-text-secondary) shrink-0"
+            />
+            <span className="font-['JetBrains_Mono'] text-xs text-(--color-text-secondary)">
+              {activity.duration}
+            </span>
+          </div>
+        )}
 
         <div className="mt-1.5 flex flex-wrap items-center gap-1">
           {activity.included ? (

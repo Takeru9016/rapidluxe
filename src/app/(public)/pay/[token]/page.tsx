@@ -1,11 +1,11 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
+import { use, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 
 import { Separator } from "@/components/ui/separator";
 

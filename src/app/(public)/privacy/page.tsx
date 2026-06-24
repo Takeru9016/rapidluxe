@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { sanityReadClient } from "@/lib/sanity";
-import { STATIC_PAGE_QUERY } from "@/lib/queries/pages";
-import type { StaticPageData } from "@/types/staticPage";
-import { formatDate } from "@/lib/utils";
 import { PortableTextBody } from "@/components/shared/PortableTextBody";
+import { STATIC_PAGE_QUERY } from "@/lib/queries/pages";
+import { sanityReadClient } from "@/lib/sanity";
+import { formatDate } from "@/lib/utils";
+import type { StaticPageData } from "@/types/staticPage";
 
 export const revalidate = 3600;
 

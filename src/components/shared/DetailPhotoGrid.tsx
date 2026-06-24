@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { createPortal } from "react-dom";
+import { ChevronLeft, ChevronRight, Grid2x2, X } from "lucide-react";
 import Image from "next/image";
-import { Grid2x2, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface DetailPhotoGridProps {
   images: string[];
@@ -20,26 +20,15 @@ export function DetailPhotoGrid({
   const [activeIndex, setActiveIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
 
-  const all =
-    images.length >= 5
-      ? images
-      : [
-          ...images,
-          ...Array.from(
-            { length: 5 - images.length },
-            (_, i) => images[i % images.length],
-          ),
-        ];
-
-  const thumbs = all.slice(1, 5);
+  const thumbs = images.slice(1, 5);
 
   const prev = useCallback(() => {
-    setActiveIndex((i) => (i - 1 + all.length) % all.length);
-  }, [all.length]);
+    setActiveIndex((i) => (i - 1 + images.length) % images.length);
+  }, [images.length]);
 
   const next = useCallback(() => {
-    setActiveIndex((i) => (i + 1) % all.length);
-  }, [all.length]);
+    setActiveIndex((i) => (i + 1) % images.length);
+  }, [images.length]);
 
   const close = useCallback(() => setGalleryOpen(false), []);
 
@@ -67,14 +56,16 @@ export function DetailPhotoGrid({
       {/* ── Desktop ── */}
       <div className="hidden md:flex gap-2 h-[480px]">
         <div
-          className="relative flex-3 overflow-hidden rounded-l-xl cursor-pointer"
+          className={`relative overflow-hidden cursor-pointer ${
+            thumbs.length > 0 ? "flex-3 rounded-l-xl" : "flex-1 rounded-xl"
+          }`}
           onClick={() => {
             setActiveIndex(0);
             setGalleryOpen(true);
           }}
         >
           <Image
-            src={all[0]}
+            src={images[0]}
             alt={`${alt} — main`}
             fill
             className="object-cover hover:brightness-110 transition-all duration-300"
@@ -82,40 +73,42 @@ export function DetailPhotoGrid({
           />
         </div>
 
-        <div className="flex-2 grid grid-cols-2 gap-2">
-          {thumbs.map((url, i) => (
-            <div
-              key={i}
-              className={`relative overflow-hidden cursor-pointer${i === 0 ? " rounded-tr-xl" : ""}${i === 3 ? " rounded-br-xl" : ""}`}
-              onClick={() => {
-                setActiveIndex(i + 1);
-                setGalleryOpen(true);
-              }}
-            >
-              <Image
-                src={url}
-                alt={`${alt} — photo ${i + 2}`}
-                fill
-                className="object-cover hover:brightness-110 transition-all duration-300"
-              />
-              {i === 3 && (
-                <div className="absolute bottom-3 right-3">
-                  <button
-                    className="flex items-center gap-1.5 bg-(--color-navy-surface)/90 backdrop-blur-sm border border-(--color-navy-border) text-white text-sm px-3 py-1.5 rounded-lg hover:bg-(--color-navy-surface) transition-colors font-sans"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveIndex(0);
-                      setGalleryOpen(true);
-                    }}
-                  >
-                    <Grid2x2 size={14} />
-                    View gallery
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        {thumbs.length > 0 && (
+          <div className="flex-2 grid grid-cols-2 gap-2">
+            {thumbs.map((url, i) => (
+              <div
+                key={i}
+                className={`relative overflow-hidden cursor-pointer${i === 0 ? " rounded-tr-xl" : ""}${i === thumbs.length - 1 ? " rounded-br-xl" : ""}`}
+                onClick={() => {
+                  setActiveIndex(i + 1);
+                  setGalleryOpen(true);
+                }}
+              >
+                <Image
+                  src={url}
+                  alt={`${alt} — photo ${i + 2}`}
+                  fill
+                  className="object-cover hover:brightness-110 transition-all duration-300"
+                />
+                {i === thumbs.length - 1 && (
+                  <div className="absolute bottom-3 right-3">
+                    <button
+                      className="flex items-center gap-1.5 bg-(--color-navy-surface)/90 backdrop-blur-sm border border-(--color-navy-border) text-white text-sm px-3 py-1.5 rounded-lg hover:bg-(--color-navy-surface) transition-colors font-sans"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveIndex(0);
+                        setGalleryOpen(true);
+                      }}
+                    >
+                      <Grid2x2 size={14} />
+                      View gallery
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── Mobile ── */}
@@ -128,7 +121,7 @@ export function DetailPhotoGrid({
           }}
         >
           <Image
-            src={all[0]}
+            src={images[0]}
             alt={`${alt} — main`}
             fill
             className="object-cover"
@@ -136,7 +129,7 @@ export function DetailPhotoGrid({
           />
         </div>
         <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
-          {all.slice(1).map((url, i) => (
+          {images.slice(1).map((url, i) => (
             <div
               key={i}
               className="relative w-20 h-20 rounded-lg overflow-hidden shrink-0 cursor-pointer"
@@ -179,7 +172,7 @@ export function DetailPhotoGrid({
             {/* Close + counter — top right */}
             <div className="absolute top-4 right-4 z-10 flex items-center gap-3">
               <span className="font-mono text-sm text-white/60">
-                {activeIndex + 1} / {all.length}
+                {activeIndex + 1} / {images.length}
               </span>
               <button
                 onClick={close}
@@ -200,7 +193,7 @@ export function DetailPhotoGrid({
                 onClick={(e) => e.stopPropagation()}
               >
                 <Image
-                  src={all[activeIndex]}
+                  src={images[activeIndex]}
                   alt={`${alt} — photo ${activeIndex + 1}`}
                   width={1400}
                   height={900}
@@ -237,7 +230,7 @@ export function DetailPhotoGrid({
             {/* Thumbnails row */}
             <div className="pb-6 flex justify-center">
               <div className="flex gap-2 overflow-x-auto px-4">
-                {all.map((url, i) => (
+                {images.map((url, i) => (
                   <button
                     key={i}
                     onClick={() => setActiveIndex(i)}

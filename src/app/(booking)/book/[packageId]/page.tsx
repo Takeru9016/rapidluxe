@@ -762,7 +762,7 @@ function Step2() {
         <div className="relative bg-(--color-gold)/10 border border-(--color-gold)/30 rounded-xl p-4 mb-6 flex items-start gap-3">
           <UserCheck className="text-(--color-gold) w-5 h-5 mt-0.5 shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="font-['DM_Sans'] font-medium text-(--color-white)">
+            <p className="font-['DM_Sans'] font-medium text-white">
               Pre-fill with your saved details?
             </p>
             <p className="font-['DM_Sans'] text-sm text-(--color-white-muted) mt-0.5">

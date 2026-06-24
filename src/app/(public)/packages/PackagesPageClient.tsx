@@ -44,7 +44,6 @@ const SORT_OPTIONS = [
   { value: "popular", label: "Most Popular" },
   { value: "price-asc", label: "Price: Low to High" },
   { value: "price-desc", label: "Price: High to Low" },
-  { value: "rating", label: "Rating" },
   { value: "duration", label: "Duration" },
 ] as const;
 
@@ -54,19 +53,7 @@ const SORT_TO_API: Record<SortValue, PackagesQuery["sort"]> = {
   popular: "featured",
   "price-asc": "price_asc",
   "price-desc": "price_desc",
-  rating: "featured",
   duration: "duration_asc",
-};
-
-const DUMMY_RATINGS: Record<string, number> = {
-  "pkg-bali": 4.8,
-  "pkg-maldives": 4.9,
-  "pkg-kerala": 4.6,
-  "pkg-switzerland": 4.7,
-  "pkg-santorini": 4.8,
-  "pkg-dubai": 4.5,
-  "pkg-rajasthan": 4.7,
-  "pkg-singapore": 4.6,
 };
 
 const FALLBACK_PRICE_RANGE = { min: 0, max: 500000 };
@@ -361,14 +348,6 @@ function PackagesContent() {
     [allPackages],
   );
 
-  // The API has no rating field — fall back to client-side resort for this option only.
-  const displayedPackages = useMemo(() => {
-    if (sort !== "rating") return allPackages;
-    return [...allPackages].sort(
-      (a, b) => (DUMMY_RATINGS[b.id] ?? 4.5) - (DUMMY_RATINGS[a.id] ?? 4.5),
-    );
-  }, [allPackages, sort]);
-
   function toggle<T>(arr: T[], item: T): T[] {
     return arr.includes(item) ? arr.filter((x) => x !== item) : [...arr, item];
   }
@@ -467,7 +446,7 @@ function PackagesContent() {
                 <span className="text-sm font-body text-(--color-text-secondary)">
                   {packagesLoading
                     ? "Loading…"
-                    : `${displayedPackages.length} packages found`}
+                    : `${allPackages.length} packages found`}
                 </span>
               </div>
 
@@ -496,7 +475,7 @@ function PackagesContent() {
                   <PackageCardSkeleton key={i} />
                 ))}
               </div>
-            ) : displayedPackages.length === 0 ? (
+            ) : allPackages.length === 0 ? (
               <EmptyState
                 icon={PackageSearch}
                 title="No packages found"
@@ -515,7 +494,7 @@ function PackagesContent() {
               />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {displayedPackages.map((pkg) => (
+                {allPackages.map((pkg) => (
                   <PackageCard key={pkg.id} package={pkg} variant="default" />
                 ))}
               </div>

@@ -1,9 +1,9 @@
-import Image from "next/image";
 import {
   PortableText,
   type PortableTextBlock,
   type PortableTextComponents,
 } from "@portabletext/react";
+import Image from "next/image";
 
 import { urlFor } from "@/lib/sanity";
 

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { CheckCircle, X } from "lucide-react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { X, CheckCircle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const EXCLUDED_PREFIXES = [

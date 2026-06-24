@@ -1,14 +1,13 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-import { useDestinations } from "@/hooks/api/useDestinations";
 import { DestinationCard } from "@/components";
 import { DestinationCardSkeleton } from "@/components/shared/Skeletons";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useDestinations } from "@/hooks/api/useDestinations";
 
 import type { Continent, Destination } from "@/types/destination";
 
@@ -65,7 +64,7 @@ function DestinationsContent() {
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
-                className="rounded-full border border-(--color-gold)/30 px-5 py-2 text-sm font-sans font-medium text-(--color-white-muted) transition-all duration-200 cursor-pointer data-[state=active]:bg-(--color-gold) data-[state=active]:text-(--color-navy) data-[state=active]:border-(--color-gold) data-[state=inactive]:hover:border-(--color-gold)/60 data-[state=inactive]:hover:text-white"
+                className="rounded-full border border-(--color-gold)/30 px-5 py-2 text-sm font-sans font-medium text-(--color-white-muted) transition-all duration-200 cursor-pointer data-[state=active]:bg-(--color-gold) data-[state=active]:text-[#0B0F1A] data-[state=active]:border-(--color-gold) data-[state=inactive]:hover:border-(--color-gold)/60 data-[state=inactive]:hover:text-white"
               >
                 {tab.label}
               </TabsTrigger>

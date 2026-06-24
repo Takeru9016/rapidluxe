@@ -13,8 +13,7 @@ export interface ApiDestination {
   country: string;
   continent: Continent;
   imageUrl: string | null;
-  bestTimeFrom: string | null;
-  bestTimeTo: string | null;
+  bestMonths: string[];
   _count: { packages: number };
 }
 

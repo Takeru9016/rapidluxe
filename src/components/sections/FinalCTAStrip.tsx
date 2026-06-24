@@ -20,7 +20,8 @@ export function FinalCTAStrip() {
     <section
       className="py-20 md:py-24 border-t"
       style={{
-        backgroundColor: "color-mix(in srgb, var(--color-navy-surface) 50%, transparent)",
+        backgroundColor:
+          "color-mix(in srgb, var(--color-navy-surface) 50%, transparent)",
         borderColor: "var(--color-navy-border)",
       }}
     >
@@ -34,9 +35,13 @@ export function FinalCTAStrip() {
         </h2>
         <p
           className="mt-4 text-lg max-w-2xl mx-auto"
-          style={{ fontFamily: "var(--font-body)", color: "var(--color-white-muted)" }}
+          style={{
+            fontFamily: "var(--font-body)",
+            color: "var(--color-white-muted)",
+          }}
         >
-          Get expert guidance, lowest prices, and a custom itinerary — all in one place.
+          Get expert guidance, lowest prices, and a custom itinerary — all in
+          one place.
         </p>
 
         {/* Stats row */}
@@ -51,7 +56,10 @@ export function FinalCTAStrip() {
               </span>
               <span
                 className="text-sm"
-                style={{ fontFamily: "var(--font-body)", color: "var(--color-white-muted)" }}
+                style={{
+                  fontFamily: "var(--font-body)",
+                  color: "var(--color-white-muted)",
+                }}
               >
                 {stat.label}
               </span>
@@ -62,7 +70,10 @@ export function FinalCTAStrip() {
         {/* Photo grid */}
         <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto">
           {photos.map((url, i) => (
-            <div key={i} className="relative aspect-3/2 rounded-xl overflow-hidden">
+            <div
+              key={i}
+              className="relative aspect-3/2 rounded-xl overflow-hidden"
+            >
               <Image
                 src={url}
                 alt={`Travel destination ${i + 1}`}

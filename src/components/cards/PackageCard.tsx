@@ -1,20 +1,15 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import { Globe, Heart } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
+import { Globe, Heart } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-import { cn } from "@/lib/utils";
-
-import type { ApiPackage } from "@/hooks/api/usePackages";
-
-import { useWishlist } from "@/hooks/api/useWishlist";
-
-import { Rating } from "@/components/shared/Rating";
 import { Badge } from "@/components/shared/Badge";
 import { PriceDisplay } from "@/components/shared/PriceDisplay";
+import type { ApiPackage } from "@/hooks/api/usePackages";
+import { useWishlist } from "@/hooks/api/useWishlist";
+import { cn } from "@/lib/utils";
 
 interface PackageCardProps {
   package: ApiPackage;
@@ -128,10 +123,6 @@ export function PackageCard({
             <span className="font-sans">
               {pkg.tags.slice(0, 2).join(" · ")}
             </span>
-          </div>
-
-          <div className="mt-2">
-            <Rating rating={4.5} reviewCount={24} size="sm" />
           </div>
 
           <div className="mt-3 flex items-end justify-between gap-2">

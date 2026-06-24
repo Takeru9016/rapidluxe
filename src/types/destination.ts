@@ -63,8 +63,7 @@ export interface Destination {
   lng?: number | null;
   countryCode?: string | null;
   crowdLevel?: DestinationCrowdLevel | null;
-  bestTimeFrom?: string;
-  bestTimeTo?: string;
+  bestMonths?: string[];
   visaType?: VisaType;
   currency?: string;
   language?: string;

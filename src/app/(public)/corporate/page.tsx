@@ -1,24 +1,22 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import Image from "next/image";
-import { toast } from "sonner";
 import {
-  Receipt,
-  FileText,
-  UserCheck,
-  Tag,
-  Headphones,
-  ShieldCheck,
+  ArrowRight,
   Building2,
   ClipboardList,
+  FileText,
+  Headphones,
   Plane,
-  ArrowRight,
+  Receipt,
+  ShieldCheck,
+  Tag,
+  UserCheck,
 } from "lucide-react";
-
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import Image from "next/image";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -26,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -157,7 +156,7 @@ function CorporateForm() {
           <Input
             {...register("contactName", { required: "Name is required" })}
             placeholder="Vikram Nair"
-            className="bg-(--color-navy) border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
+            className="bg-(--color-navy) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
           />
           {errors.contactName && (
             <p className="font-sans text-xs text-(--color-coral)">
@@ -179,7 +178,7 @@ function CorporateForm() {
             })}
             type="email"
             placeholder="vikram@company.com"
-            className="bg-(--color-navy) border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
+            className="bg-(--color-navy) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
           />
           {errors.email && (
             <p className="font-sans text-xs text-(--color-coral)">
@@ -199,7 +198,7 @@ function CorporateForm() {
               required: "Company name is required",
             })}
             placeholder="Acme Enterprises Pvt. Ltd."
-            className="bg-(--color-navy) border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
+            className="bg-(--color-navy) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
           />
           {errors.companyName && (
             <p className="font-sans text-xs text-(--color-coral)">
@@ -215,7 +214,7 @@ function CorporateForm() {
           <Input
             {...register("gstNumber")}
             placeholder="27AABCU9603R1ZX"
-            className="font-['JetBrains_Mono'] bg-(--color-navy) border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
+            className="font-['JetBrains_Mono'] bg-(--color-navy) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
           />
         </div>
       </div>
@@ -241,7 +240,7 @@ function CorporateForm() {
               <SelectItem
                 key={size}
                 value={size}
-                className="font-sans text-sm text-(--color-white-muted) focus:bg-(--color-navy-border) focus:text-white"
+                className="font-sans text-sm text-(--color-white-muted) focus:bg-(--color-navy-border) focus:text-(--color-white)"
               >
                 {size} employees
               </SelectItem>
@@ -266,7 +265,7 @@ function CorporateForm() {
           })}
           rows={4}
           placeholder="Describe your travel frequency, typical destinations, budget range, and any specific requirements..."
-          className="bg-(--color-navy) border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60 resize-none"
+          className="bg-(--color-navy) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60 resize-none"
         />
         {errors.requirements && (
           <p className="font-sans text-xs text-(--color-coral)">
@@ -306,7 +305,7 @@ export default function CorporatePage() {
           <p className="font-sans text-sm tracking-widest uppercase text-(--color-gold) mb-3">
             For Businesses &amp; Enterprises
           </p>
-          <h1 className="font-['Cormorant_Garamond'] text-5xl md:text-7xl text-white font-light leading-none max-w-3xl">
+          <h1 className="font-['Cormorant_Garamond'] text-5xl md:text-7xl text-(--color-white) font-light leading-none max-w-3xl">
             Corporate Travel Solutions
           </h1>
           <p className="font-sans text-(--color-white-muted) mt-4 max-w-xl text-sm leading-relaxed">
@@ -323,7 +322,7 @@ export default function CorporatePage() {
           <p className="font-sans text-sm tracking-widest uppercase text-(--color-gold) mb-2">
             Everything Your Team Needs
           </p>
-          <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-white font-light">
+          <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-(--color-white) font-light">
             Built for Business Travel
           </h2>
         </div>
@@ -336,7 +335,7 @@ export default function CorporatePage() {
               <div className="w-11 h-11 rounded-lg bg-(--color-gold)/10 border border-(--color-gold)/20 flex items-center justify-center mb-5 group-hover:bg-(--color-gold)/15 transition-colors">
                 <Icon size={20} className="text-(--color-gold)" />
               </div>
-              <h3 className="font-['Cormorant_Garamond'] text-xl text-white mb-2">
+              <h3 className="font-['Cormorant_Garamond'] text-xl text-(--color-white) mb-2">
                 {title}
               </h3>
               <p className="font-sans text-sm text-(--color-text-secondary) leading-relaxed">
@@ -351,7 +350,7 @@ export default function CorporatePage() {
       <section className="py-16 bg-(--color-navy-surface) border-y border-(--color-navy-border)">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="text-center mb-12">
-            <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-white font-light">
+            <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-(--color-white) font-light">
               How It Works
             </h2>
           </div>
@@ -370,7 +369,7 @@ export default function CorporatePage() {
                 <span className="font-['JetBrains_Mono'] text-xs text-(--color-gold-muted) tracking-widest">
                   STEP {number}
                 </span>
-                <h3 className="font-['Cormorant_Garamond'] text-xl text-white">
+                <h3 className="font-['Cormorant_Garamond'] text-xl text-(--color-white)">
                   {title}
                 </h3>
                 <p className="font-sans text-sm text-(--color-text-secondary) leading-relaxed max-w-xs">
@@ -388,7 +387,7 @@ export default function CorporatePage() {
           <p className="font-sans text-sm tracking-widest uppercase text-(--color-gold) mb-2">
             Get Started Today
           </p>
-          <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-white font-light">
+          <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-(--color-white) font-light">
             Request a Corporate Account
           </h2>
           <p className="font-sans text-(--color-text-secondary) text-sm mt-4 max-w-md mx-auto">

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Mail } from "lucide-react";
+import { useState } from "react";
 
 export function Newsletter() {
   const [email, setEmail] = useState("");
@@ -12,7 +12,11 @@ export function Newsletter() {
       <div className="absolute inset-0 bg-linear-to-r from-(--color-gold)/5 via-transparent to-(--color-teal)/5 pointer-events-none" />
 
       <div className="relative max-w-2xl mx-auto px-4 text-center">
-        <Mail size={32} className="mx-auto mb-4" style={{ color: "var(--color-gold)" }} />
+        <Mail
+          size={32}
+          className="mx-auto mb-4"
+          style={{ color: "var(--color-gold)" }}
+        />
 
         <h2 className="font-(family-name:--font-display) text-4xl text-white">
           Travel Inspiration, Direct to Your Inbox

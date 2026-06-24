@@ -71,8 +71,8 @@ export async function PATCH(
     country?: string;
     continent?: string;
     imageUrl?: string;
-    bestTimeFrom?: string;
-    bestTimeTo?: string;
+    images?: string[];
+    bestMonths?: string[];
     visaType?: string;
     currency?: string;
     language?: string;
@@ -101,10 +101,8 @@ export async function PATCH(
       ...(body.country !== undefined && { country: body.country }),
       ...(body.continent !== undefined && { continent: body.continent }),
       ...(body.imageUrl !== undefined && { imageUrl: body.imageUrl }),
-      ...(body.bestTimeFrom !== undefined && {
-        bestTimeFrom: body.bestTimeFrom,
-      }),
-      ...(body.bestTimeTo !== undefined && { bestTimeTo: body.bestTimeTo }),
+      ...(body.images !== undefined && { images: body.images }),
+      ...(body.bestMonths !== undefined && { bestMonths: body.bestMonths }),
       ...(body.visaType !== undefined && { visaType: body.visaType }),
       ...(body.currency !== undefined && { currency: body.currency }),
       ...(body.language !== undefined && { language: body.language }),

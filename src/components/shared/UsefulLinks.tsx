@@ -2,12 +2,12 @@ const LINKS = [
   {
     name: "Niyo Global Card",
     desc: "Zero forex markup card for international travel",
-    url: "https://niyo.co",
+    url: "https://goniyo.com",
   },
   {
     name: "Scapia Credit Card",
     desc: "Travel credit card with zero forex fees",
-    url: "https://scapia.in",
+    url: "https://scapia.cards",
   },
   {
     name: "Visa2Fly",
