@@ -101,6 +101,7 @@ export default function AdminSettingsPage() {
   });
 
   const [savingSocial, setSavingSocial] = useState(false);
+  const [subscriberCount, setSubscriberCount] = useState<number | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/settings")
@@ -114,6 +115,11 @@ export default function AdminSettingsPage() {
           social_whatsapp: data.social_whatsapp ?? "",
         });
       })
+      .catch(() => null);
+
+    fetch("/api/admin/newsletter")
+      .then((r) => r.json())
+      .then((data: { count: number }) => setSubscriberCount(data.count))
       .catch(() => null);
   }, [resetSocial]);
 
@@ -302,6 +308,26 @@ export default function AdminSettingsPage() {
             </button>
           </div>
         </form>
+
+        {/* 6. Newsletter */}
+        <SectionCard title="Newsletter">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <p className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+                Total subscribers
+              </p>
+              <p className="font-['Cormorant_Garamond'] text-3xl text-(--color-gold) mt-1">
+                {subscriberCount === null ? "—" : subscriberCount}
+              </p>
+            </div>
+            <a
+              href="/api/admin/newsletter/export"
+              className="px-6 py-2.5 rounded-lg bg-(--color-gold)/20 border border-(--color-gold)/40 text-(--color-gold) text-sm font-['DM_Sans'] font-medium hover:bg-(--color-gold)/30 transition-colors"
+            >
+              Export CSV
+            </a>
+          </div>
+        </SectionCard>
       </div>
     </div>
   );

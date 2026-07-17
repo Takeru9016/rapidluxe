@@ -26,15 +26,15 @@ import type {
   CrowdLevel,
   DestinationCrowdLevel,
   VisaType,
+  VisitRecommendation,
 } from "@/types/destination";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface WhenToVisitRow {
   crowdLevel: CrowdLevel | "";
-  weather: string;
   availability: AvailabilityStatus | "";
-  recommended: boolean;
+  recommendation: VisitRecommendation | "";
 }
 
 interface TransportRow {
@@ -227,9 +227,8 @@ export default function NewDestinationPage() {
       metaDescription: "",
       whenToVisit: MONTHS.map(() => ({
         crowdLevel: "" as CrowdLevel | "",
-        weather: "",
-        availability: "" as AvailabilityStatus | "",
-        recommended: false,
+        availability: "Open" as AvailabilityStatus | "",
+        recommendation: "" as VisitRecommendation | "",
       })),
       howToGetThere: [],
     },
@@ -586,13 +585,14 @@ export default function NewDestinationPage() {
               When to Visit (Monthly Data)
             </h2>
             <p className="font-['DM_Sans'] text-xs text-(--color-text-secondary) mt-1">
-              Phase 3A: auto-populated from OpenWeatherMap. Fill manually for
-              now.
+              Weather auto-populates from lat/lng after this destination is
+              first saved — set Crowd/Recommendation manually for now, or
+              leave blank and revisit after saving.
             </p>
           </div>
           <div className="space-y-3">
             {/* Header row */}
-            <div className="hidden md:grid md:grid-cols-[100px_1fr_2fr_1fr_80px] gap-3 items-center">
+            <div className="hidden md:grid md:grid-cols-[100px_1fr_90px_110px] gap-3 items-center">
               <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">
                 Month
               </span>
@@ -600,19 +600,16 @@ export default function NewDestinationPage() {
                 Crowd
               </span>
               <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">
-                Weather Note
+                Open
               </span>
               <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">
-                Availability
-              </span>
-              <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) uppercase tracking-wide">
-                Rec.
+                Recommended
               </span>
             </div>
             {MONTHS.map((month, i) => (
               <div
                 key={month}
-                className="grid grid-cols-1 md:grid-cols-[100px_1fr_2fr_1fr_80px] gap-3 items-center border border-(--color-navy-border)/50 rounded-lg p-3 md:border-0 md:p-0"
+                className="grid grid-cols-1 md:grid-cols-[100px_1fr_90px_110px] gap-3 items-center border border-(--color-navy-border)/50 rounded-lg p-3 md:border-0 md:p-0"
               >
                 <span className="font-['DM_Sans'] text-sm text-white font-medium">
                   {month}
@@ -633,38 +630,38 @@ export default function NewDestinationPage() {
                     </Select>
                   )}
                 />
-                <input
-                  {...register(`whenToVisit.${i}.weather`)}
-                  placeholder="e.g. 28–34°C, expect rain"
-                  className={inputCls}
-                />
-                <Controller
-                  control={control}
-                  name={`whenToVisit.${i}.availability`}
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="bg-(--color-navy) border-(--color-navy-border) text-sm font-['DM_Sans'] text-white focus:ring-(--color-gold)/40">
-                        <SelectValue placeholder="Avail..." />
-                      </SelectTrigger>
-                      <SelectContent className="bg-(--color-navy-surface) border-(--color-navy-border)">
-                        <SelectItem value="Open">Open</SelectItem>
-                        <SelectItem value="Limited">Limited</SelectItem>
-                        <SelectItem value="Closed">Closed</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
+                <div className="flex items-center gap-2 md:justify-center">
+                  <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) md:hidden">
+                    Open
+                  </span>
+                  <Controller
+                    control={control}
+                    name={`whenToVisit.${i}.availability`}
+                    render={({ field }) => (
+                      <ToggleSwitch
+                        checked={field.value === "Open"}
+                        onChange={(checked) =>
+                          field.onChange(checked ? "Open" : "Closed")
+                        }
+                      />
+                    )}
+                  />
+                </div>
                 <div className="flex items-center gap-2 md:justify-center">
                   <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) md:hidden">
                     Recommended
                   </span>
                   <Controller
                     control={control}
-                    name={`whenToVisit.${i}.recommended`}
+                    name={`whenToVisit.${i}.recommendation`}
                     render={({ field }) => (
                       <ToggleSwitch
-                        checked={field.value}
-                        onChange={field.onChange}
+                        checked={field.value === "Recommended"}
+                        onChange={(checked) =>
+                          field.onChange(
+                            checked ? "Recommended" : "Not recommended",
+                          )
+                        }
                       />
                     )}
                   />

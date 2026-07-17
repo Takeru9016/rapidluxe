@@ -35,16 +35,37 @@ import {
   useDestinationWeather,
 } from "@/hooks/api/useDestinations";
 import { usePackages } from "@/hooks/api/usePackages";
+import {
+  deriveCrowdLevel,
+  deriveRecommendation,
+  describeWeather,
+} from "@/lib/whenToVisit";
 import type {
   AvailabilityStatus,
   CrowdLevel,
   TransportType,
   VisaType,
   VisitRecommendation,
+  WhenToVisitMonth,
 } from "@/types/destination";
 import type { Activity } from "@/types/package";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
+
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 const VISA_LABELS: Record<VisaType, string> = {
   VISA_FREE: "Visa Free",
@@ -138,7 +159,24 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
         : dest?.imageUrl
           ? [dest.imageUrl]
           : [];
-  const allMonths = dest?.whenToVisit ?? [];
+  const hasWhenToVisitData =
+    monthlyWeather.length > 0 || (dest?.whenToVisit?.length ?? 0) > 0;
+  const allMonths: WhenToVisitMonth[] = hasWhenToVisitData
+    ? MONTHS.map((month) => {
+        const stored = dest?.whenToVisit?.find((m) => m.month === month);
+        const w = monthlyWeather.find((m) => m.month === month);
+        const crowdLevel =
+          stored?.crowdLevel || (w ? deriveCrowdLevel(w.rating) : "MEDIUM");
+        return {
+          month,
+          crowdLevel,
+          availability: stored?.availability || "Open",
+          recommendation:
+            stored?.recommendation ||
+            (w ? deriveRecommendation(crowdLevel, w.rating) : "Recommended"),
+        };
+      })
+    : [];
   const visibleMonths = showAllMonths ? allMonths : allMonths.slice(0, 6);
 
   if (destLoading) {
@@ -405,7 +443,12 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
                         </span>
                       </td>
                       <td className="font-sans text-sm text-(--color-white-muted) px-4 py-4 hidden md:table-cell max-w-xs">
-                        {row.weather}
+                        {(() => {
+                          const w = monthlyWeather.find(
+                            (m) => m.month === row.month,
+                          );
+                          return w ? describeWeather(w.temp, w.rainfall) : "—";
+                        })()}
                       </td>
                       {monthlyWeather.length > 0 &&
                         (() => {

@@ -30,7 +30,6 @@ export type TransportType =
 export interface WhenToVisitMonth {
   month: string;
   crowdLevel: CrowdLevel;
-  weather: string;
   availability: AvailabilityStatus;
   recommendation: VisitRecommendation;
 }

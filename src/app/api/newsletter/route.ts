@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
   checkRateLimit,
@@ -26,24 +27,21 @@ export async function POST(req: NextRequest) {
 
   const { email } = parsed.data;
 
-  const row = await prisma.siteSettings.findUnique({
-    where: { key: "newsletter_subscribers" },
+  const existing = await prisma.newsletterSubscriber.findUnique({
+    where: { email },
   });
-
-  const subscribers: string[] = row ? (JSON.parse(row.value) as string[]) : [];
-  if (subscribers.includes(email)) {
+  if (existing) {
     return NextResponse.json({ success: true });
   }
 
-  subscribers.push(email);
-  await prisma.siteSettings.upsert({
-    where: { key: "newsletter_subscribers" },
-    create: {
-      key: "newsletter_subscribers",
-      value: JSON.stringify(subscribers),
-    },
-    update: { value: JSON.stringify(subscribers) },
-  });
+  try {
+    await prisma.newsletterSubscriber.create({ data: { email } });
+  } catch (error) {
+    const isDuplicate =
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002";
+    if (!isDuplicate) throw error;
+  }
 
   const resend = getResend();
   await Promise.allSettled([

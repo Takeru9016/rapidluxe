@@ -4,6 +4,7 @@ import { BadgeCheck, Crown, Tag, Timer } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { DealCard } from "@/components/cards/DealCard";
 import { CountdownTimer } from "@/components/shared/CountdownTimer";
 import { DealCardSkeleton } from "@/components/shared/Skeletons";
@@ -45,7 +46,10 @@ function NewsletterStrip() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-      if (res.ok) setSubmitted(true);
+      if (!res.ok) throw new Error("Failed");
+      setSubmitted(true);
+    } catch {
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -57,7 +61,7 @@ function NewsletterStrip() {
         <p className="font-sans text-xs uppercase tracking-widest text-(--color-gold)">
           NEVER MISS A DEAL
         </p>
-        <h2 className="font-['Cormorant_Garamond'] text-4xl text-(--color-white) mt-2">
+        <h2 className="font-['Cormorant_Garamond'] text-4xl text-white mt-2">
           Be First. Get Exclusive Access.
         </h2>
         <p className="font-sans text-(--color-white-muted) mt-4">
@@ -80,7 +84,7 @@ function NewsletterStrip() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
-              className="bg-(--color-navy) border border-(--color-navy-border) focus:border-(--color-gold) text-(--color-white) placeholder:text-(--color-text-secondary) rounded-lg px-4 h-10 flex-1"
+              className="bg-(--color-navy) border border-(--color-navy-border) focus:border-(--color-gold) text-white placeholder:text-(--color-text-secondary) rounded-lg px-4 h-10 flex-1"
             />
             <button
               type="submit"
@@ -125,7 +129,7 @@ export default function DealsPageClient() {
           <p className="font-sans text-xs uppercase tracking-widest text-(--color-gold)">
             LIMITED TIME OFFERS
           </p>
-          <h1 className="font-['Cormorant_Garamond'] font-light text-5xl md:text-7xl text-(--color-white) mt-3">
+          <h1 className="font-['Cormorant_Garamond'] font-light text-5xl md:text-7xl text-white mt-3">
             Exclusive Deals.
             <br />
             Extraordinary Journeys.
@@ -160,7 +164,7 @@ export default function DealsPageClient() {
         ) : deals.length === 0 ? (
           <div className="text-center py-20">
             <Tag className="w-16 h-16 text-(--color-gold)/30 mx-auto mb-6" />
-            <h2 className="font-['Cormorant_Garamond'] text-3xl text-(--color-white)">
+            <h2 className="font-['Cormorant_Garamond'] text-3xl text-white">
               No Active Deals Right Now
             </h2>
             <p className="font-sans text-(--color-white-muted) mt-4">
@@ -187,7 +191,7 @@ export default function DealsPageClient() {
 
       {/* Why book deals */}
       <section className="max-w-7xl mx-auto px-4 md:px-8 py-20">
-        <h2 className="font-['Cormorant_Garamond'] text-3xl text-center text-(--color-white) mb-12">
+        <h2 className="font-['Cormorant_Garamond'] text-3xl text-center text-white mb-12">
           Why Book Deals With Us
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -197,7 +201,7 @@ export default function DealsPageClient() {
               className="p-8 rounded-2xl bg-(--color-navy-surface) border border-(--color-navy-border) border-t-2 border-t-(--color-gold)"
             >
               <Icon className="text-(--color-gold) w-8 h-8" />
-              <h3 className="font-['Cormorant_Garamond'] text-xl text-(--color-white) mt-4">
+              <h3 className="font-['Cormorant_Garamond'] text-xl text-white mt-4">
                 {title}
               </h3>
               <p className="font-sans text-sm text-(--color-white-muted) mt-2">
