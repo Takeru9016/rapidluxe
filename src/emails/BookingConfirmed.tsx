@@ -20,7 +20,7 @@ interface Props {
 export function BookingConfirmed({ booking }: Props) {
   const whatsapp = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? "";
   const supportEmail =
-    process.env.RESEND_FROM_EMAIL ?? "bookings@rapidluxe.com";
+    process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "info@rapidluxe.com";
 
   return (
     <Html>
@@ -138,7 +138,7 @@ function Row({
 function Footer() {
   const whatsapp = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? "";
   const supportEmail =
-    process.env.RESEND_FROM_EMAIL ?? "bookings@rapidluxe.com";
+    process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "info@rapidluxe.com";
 
   return (
     <Text style={footer}>

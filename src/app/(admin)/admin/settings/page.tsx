@@ -78,7 +78,7 @@ const DEFAULT_VALUES: SettingsForm = {
   hsnCode: "998551",
   invoicePrefix: "RL-INV",
   contactEmail: "info@rapidluxe.com",
-  whatsappNumber: "+91 98765 00000",
+  whatsappNumber: "+91 91374 56611",
 };
 
 export default function AdminSettingsPage() {

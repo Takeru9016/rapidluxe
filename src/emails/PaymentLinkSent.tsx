@@ -21,6 +21,9 @@ interface Props {
 
 export function PaymentLinkSent({ booking, paymentUrl }: Props) {
   const totalDue = (booking.quotedAmount ?? booking.totalAmount) * 1.05;
+  const whatsapp = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? "";
+  const supportEmail =
+    process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "info@rapidluxe.com";
 
   return (
     <Html>
@@ -108,6 +111,11 @@ export function PaymentLinkSent({ booking, paymentUrl }: Props) {
             <span style={{ color: "#C9A84C", wordBreak: "break-all" }}>
               {paymentUrl}
             </span>
+          </Text>
+          <Text style={mutedText}>
+            Questions about this payment? WhatsApp us at{" "}
+            <span style={{ color: "#C9A84C" }}>{whatsapp}</span> or email us at{" "}
+            {supportEmail}.
           </Text>
           <Footer />
         </Container>

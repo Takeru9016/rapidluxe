@@ -1,3 +1,4 @@
+import { useAuth } from "@clerk/nextjs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type { ApiPackage } from "@/hooks/api/usePackages";
@@ -15,6 +16,7 @@ interface WishlistResponse {
 
 export function useWishlist() {
   const queryClient = useQueryClient();
+  const { isLoaded, isSignedIn } = useAuth();
 
   const query = useQuery<WishlistResponse>({
     queryKey: ["wishlist-ids"],
@@ -25,6 +27,7 @@ export function useWishlist() {
       return res.json() as Promise<WishlistResponse>;
     },
     staleTime: 30_000,
+    enabled: isLoaded && isSignedIn === true,
   });
 
   const mutation = useMutation<

@@ -206,7 +206,11 @@ export function LeadCaptureModal() {
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
                 className="w-full bg-(--color-navy-surface) border border-(--color-navy-border) rounded-lg px-4 py-2.5 text-white placeholder-(--color-text-secondary) text-sm focus:outline-none focus:border-(--color-gold) transition-colors"
               />
+              <label htmlFor="travel-interest" className="sr-only">
+                Travel Interest
+              </label>
               <select
+                id="travel-interest"
                 value={form.interest}
                 onChange={(e) =>
                   setForm({
@@ -233,7 +237,7 @@ export function LeadCaptureModal() {
                 type="submit"
                 disabled={loading}
                 className="w-full h-12 bg-(--color-coral) font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-60 mt-1"
-                style={{ color: "#fff" }}
+                style={{ color: "var(--color-navy)" }}
               >
                 {loading ? "Sending…" : "Get a Free Consultation →"}
               </button>

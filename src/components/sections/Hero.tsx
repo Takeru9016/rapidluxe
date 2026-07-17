@@ -4,11 +4,23 @@ import { useEffect, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 import { gsap } from "gsap";
 
+function toMp4CloudinaryUrl(url: string | undefined): string | undefined {
+  if (!url) return url;
+  const marker = "cloudinary.com/video/upload/";
+  const markerIndex = url.indexOf(marker);
+  if (markerIndex === -1) return url;
+  const insertAt = markerIndex + marker.length;
+  return `${url.slice(0, insertAt)}f_mp4,q_auto,vc_auto/${url.slice(insertAt)}`;
+}
+
 export function Hero() {
   const eyebrowRef = useRef<HTMLParagraphElement>(null);
   const h1Ref = useRef<HTMLHeadingElement>(null);
   const subRef = useRef<HTMLParagraphElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const videoUrl = toMp4CloudinaryUrl(process.env.NEXT_PUBLIC_HERO_VIDEO_URL);
+  const posterUrl = process.env.NEXT_PUBLIC_HERO_POSTER_URL;
 
   useEffect(() => {
     const prefersReduced = window.matchMedia(
@@ -56,12 +68,9 @@ export function Hero() {
           aria-hidden="true"
           preload="metadata"
           className="absolute inset-0 w-full h-full object-fill"
-          poster="/hero-poster.jpg"
+          {...(posterUrl ? { poster: posterUrl } : {})}
         >
-          <source
-            src={process.env.NEXT_PUBLIC_HERO_VIDEO_URL}
-            type="video/mp4"
-          />
+          <source src={videoUrl} type="video/mp4" />
         </video>
         {/* Base layer — consistent darkening over any video frame or theme */}
         <div className="absolute inset-0 bg-[#0B0F1A]/50" />

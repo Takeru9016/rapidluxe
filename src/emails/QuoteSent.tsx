@@ -18,6 +18,10 @@ interface Props {
 }
 
 export function QuoteSent({ booking }: Props) {
+  const whatsapp = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? "";
+  const supportEmail =
+    process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "info@rapidluxe.com";
+
   return (
     <Html>
       <Head />
@@ -87,8 +91,10 @@ export function QuoteSent({ booking }: Props) {
 
           <Hr style={hr} />
           <Text style={mutedText}>
-            Reply to this email or WhatsApp us if you have any questions. Your
-            payment link will arrive separately.
+            Reply to this email or WhatsApp us at{" "}
+            <span style={{ color: "#C9A84C" }}>{whatsapp}</span> (or email{" "}
+            {supportEmail}) if you have any questions. Your payment link will
+            arrive separately.
           </Text>
           <Footer />
         </Container>

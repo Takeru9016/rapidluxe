@@ -89,10 +89,11 @@ export function FinalCTAStrip() {
         <div className="mt-12">
           <Link
             href="/packages"
-            className="inline-block font-semibold px-10 py-4 rounded-lg text-base text-white transition-opacity duration-200 hover:opacity-90"
+            className="inline-block font-semibold px-10 py-4 rounded-lg text-base transition-opacity duration-200 hover:opacity-90"
             style={{
               fontFamily: "var(--font-body)",
               backgroundColor: "var(--color-coral)",
+              color: "var(--color-navy)",
             }}
           >
             Plan My Trip →

@@ -19,6 +19,9 @@ interface Props {
 
 export function PaymentConfirmation({ booking }: Props) {
   const amountPaid = (booking.quotedAmount ?? booking.totalAmount) * 1.05;
+  const whatsapp = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? "";
+  const supportEmail =
+    process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "info@rapidluxe.com";
 
   return (
     <Html>
@@ -61,6 +64,9 @@ export function PaymentConfirmation({ booking }: Props) {
           <Text style={mutedText}>
             Keep this email as your payment receipt. A booking confirmation with
             full trip details will follow once our team reviews your booking.
+            For any questions, WhatsApp us at{" "}
+            <span style={{ color: "#C9A84C" }}>{whatsapp}</span> or email us at{" "}
+            {supportEmail}.
           </Text>
           <Footer />
         </Container>
