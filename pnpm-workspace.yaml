@@ -21,3 +21,4 @@ minimumReleaseAgeExclude:
   - '@prisma/fetch-engine@7.10.0'
   - '@prisma/get-platform@7.10.0'
   - prisma@7.10.0
+  - svix@2.1.0
