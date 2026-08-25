@@ -76,6 +76,6 @@
     "prisma": "^7.10.0",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.12",
-    "typescript": "^5"
+    "typescript": "^7.0.2"
   }
 }
