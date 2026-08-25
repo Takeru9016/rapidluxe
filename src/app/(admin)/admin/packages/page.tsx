@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 
-import { DataTable } from "@/components/admin/DataTable";
+import { DataTable, type AppTableFeatures } from "@/components/admin/DataTable";
 import { Badge } from "@/components/shared/Badge";
 import { formatPrice } from "@/lib/utils";
 import type { ApiPackage } from "@/hooks/api/usePackages";
@@ -50,7 +50,7 @@ const TABS: { value: TabValue; label: string }[] = [
 
 function buildColumns(
   onDelete: (pkg: ApiPackage) => void,
-): ColumnDef<ApiPackage>[] {
+): ColumnDef<AppTableFeatures, ApiPackage>[] {
   return [
     {
       id: "image",

@@ -6,7 +6,7 @@ import { Trash2, Plus } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 
-import { DataTable } from "@/components/admin/DataTable";
+import { DataTable, type AppTableFeatures } from "@/components/admin/DataTable";
 import { Badge } from "@/components/shared/Badge";
 import { formatPrice, formatDate } from "@/lib/utils";
 import type { Coupon, CouponDiscountType } from "@/types/coupon";
@@ -21,7 +21,7 @@ const INPUT_CLASS =
 function buildColumns(
   onToggle: (id: string) => void,
   onDelete: (id: string) => void,
-): ColumnDef<Coupon>[] {
+): ColumnDef<AppTableFeatures, Coupon>[] {
   return [
     {
       accessorKey: "code",

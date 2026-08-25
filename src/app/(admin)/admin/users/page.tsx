@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 
-import { DataTable } from "@/components/admin/DataTable";
+import { DataTable, type AppTableFeatures } from "@/components/admin/DataTable";
 import { Badge } from "@/components/shared/Badge";
 import {
   Dialog,
@@ -91,7 +91,7 @@ export default function AdminUsersPage() {
     onSettled: () => setPending(null),
   });
 
-  const columns: ColumnDef<AdminUser>[] = [
+  const columns: ColumnDef<AppTableFeatures, AdminUser>[] = [
     {
       id: "nameAvatar",
       header: "User",

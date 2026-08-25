@@ -6,7 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { type ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
 
-import { DataTable } from "@/components/admin/DataTable";
+import { DataTable, type AppTableFeatures } from "@/components/admin/DataTable";
 import { Badge } from "@/components/shared/Badge";
 import { formatDate } from "@/lib/utils";
 
@@ -61,7 +61,7 @@ export default function AdminBlogPage() {
     }
   };
 
-  const columns: ColumnDef<AdminPost>[] = [
+  const columns: ColumnDef<AppTableFeatures, AdminPost>[] = [
     {
       accessorKey: "title",
       header: "Title",

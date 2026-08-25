@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
 
-import { DataTable } from "@/components/admin/DataTable";
+import { DataTable, type AppTableFeatures } from "@/components/admin/DataTable";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -36,7 +36,7 @@ const CONTINENT_LABEL: Record<string, string> = {
 
 function buildColumns(
   onDelete: (destination: AdminDestination) => void,
-): ColumnDef<AdminDestination>[] {
+): ColumnDef<AppTableFeatures, AdminDestination>[] {
   return [
     {
       id: "image",

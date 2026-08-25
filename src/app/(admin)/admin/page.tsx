@@ -17,7 +17,7 @@ import {
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { StatsCard } from "@/components/admin/StatsCard";
-import { DataTable } from "@/components/admin/DataTable";
+import { DataTable, type AppTableFeatures } from "@/components/admin/DataTable";
 import { Badge } from "@/components/shared/Badge";
 import { formatPrice, formatDate } from "@/lib/utils";
 
@@ -80,7 +80,7 @@ const PIE_COLORS = ["#C9A84C", "#4ECDC4", "#A78BFA", "#F87171", "#60A5FA"];
 
 // ── Table Columns ─────────────────────────────────────────────────────────────
 
-const columns: ColumnDef<RecentBooking>[] = [
+const columns: ColumnDef<AppTableFeatures, RecentBooking>[] = [
   {
     accessorKey: "bookingRef",
     header: "Ref",

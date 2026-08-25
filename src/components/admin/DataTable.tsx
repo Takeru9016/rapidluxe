@@ -1,17 +1,22 @@
 "use client";
 
 import {
-  useReactTable,
-  getCoreRowModel,
-  flexRender,
   type ColumnDef,
+  flexRender,
+  type RowData,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import { Database } from "lucide-react";
 
 import { EmptyState } from "@/components/shared/EmptyState";
 
-interface DataTableProps<TData> {
-  columns: ColumnDef<TData>[];
+const features = tableFeatures({});
+
+export type AppTableFeatures = typeof features;
+
+interface DataTableProps<TData extends RowData> {
+  columns: ColumnDef<AppTableFeatures, TData>[];
   data: TData[];
   isLoading?: boolean;
 }
@@ -28,15 +33,15 @@ function SkeletonRow({ cols }: { cols: number }) {
   );
 }
 
-export function DataTable<TData>({
+export function DataTable<TData extends RowData>({
   columns,
   data,
   isLoading = false,
 }: DataTableProps<TData>) {
-  const table = useReactTable({
+  const table = useTable({
+    features,
     data,
     columns,
-    getCoreRowModel: getCoreRowModel(),
   });
 
   const colCount = columns.length;
@@ -84,7 +89,7 @@ export function DataTable<TData>({
                 key={row.id}
                 className="border-b border-(--color-navy-border) hover:bg-white/5 transition-colors"
               >
-                {row.getVisibleCells().map((cell) => (
+                {row.getAllCells().map((cell) => (
                   <td
                     key={cell.id}
                     className="px-4 py-3 font-['DM_Sans'] text-sm text-white"

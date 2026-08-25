@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 
-import { DataTable } from "@/components/admin/DataTable";
+import { DataTable, type AppTableFeatures } from "@/components/admin/DataTable";
 import { Badge } from "@/components/shared/Badge";
 import { formatDate } from "@/lib/utils";
 import type { Review } from "@/types/review";
@@ -34,7 +34,7 @@ function StarRating({ rating }: { rating: number }) {
 function buildColumns(
   onApprove: (id: string) => void,
   onHide: (id: string) => void,
-): ColumnDef<ReviewWithUser>[] {
+): ColumnDef<AppTableFeatures, ReviewWithUser>[] {
   return [
     {
       id: "reviewer",

@@ -6,7 +6,7 @@ import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { DataTable } from "@/components/admin/DataTable";
+import { DataTable, type AppTableFeatures } from "@/components/admin/DataTable";
 import { Badge } from "@/components/shared/Badge";
 import type { ApiDeal } from "@/hooks/api/useDeals";
 import { formatDate, formatPrice } from "@/lib/utils";
@@ -78,7 +78,7 @@ function buildColumns(
   onToggle: (id: string) => void,
   onEdit: (deal: ApiDeal) => void,
   onDelete: (id: string) => void,
-): ColumnDef<ApiDeal>[] {
+): ColumnDef<AppTableFeatures, ApiDeal>[] {
   return [
     {
       id: "package",
