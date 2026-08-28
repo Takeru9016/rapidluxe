@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { type NextRequest, NextResponse } from "next/server";
 
+import type { Prisma } from "@/generated/prisma/client";
 import { sendEnquiryReceivedEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import {
@@ -137,6 +138,15 @@ export async function POST(req: NextRequest) {
 
     const { gst, total } = calculateGST(baseAmount - discountAmount);
 
+    // PAN card is mandatory above ₹2,00,000 (FEMA) — validated at creation
+    // time since traveler/PAN capture now happens in this same request.
+    if (total > 200000 && !data.panCard) {
+      return NextResponse.json(
+        { error: "PAN card is required for bookings above ₹2,00,000" },
+        { status: 400 },
+      );
+    }
+
     // User must exist via Clerk webhook sync
     const dbUser = await prisma.user.findUnique({
       where: { clerkId: userId },
@@ -158,7 +168,8 @@ export async function POST(req: NextRequest) {
         occasion: data.occasion ?? null,
         dietaryRequirements: data.dietaryRequirements ?? [],
         specialRequests: data.specialRequests ?? "",
-        travelers: [],
+        travelers: data.travelers as Prisma.InputJsonValue,
+        panCard: data.panCard ?? null,
         baseAmount,
         gstAmount: gst,
         discountAmount,
@@ -170,12 +181,9 @@ export async function POST(req: NextRequest) {
       include: { user: true, package: { include: { destination: true } } },
     });
 
-    if (data.couponCode && discountAmount > 0) {
-      await prisma.coupon.update({
-        where: { code: data.couponCode },
-        data: { usedCount: { increment: 1 } },
-      });
-    }
+    // Coupon usedCount is consumed on successful payment (see
+    // /api/payments/verify and /api/webhooks/razorpay), not here — an
+    // abandoned enquiry must not permanently burn a limited-use coupon.
 
     await sendEnquiryReceivedEmail(booking);
 

@@ -1,6 +1,6 @@
-import { createElement } from "react";
 import { auth } from "@clerk/nextjs/server";
 import { renderToBuffer } from "@react-pdf/renderer";
+import { createElement } from "react";
 
 import { prisma } from "@/lib/prisma";
 
@@ -10,7 +10,7 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ bookingId: string }> },
 ) {
-  const { userId } = await auth();
+  const { userId, sessionClaims } = await auth();
   if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
   const { bookingId } = await params;
@@ -31,7 +31,7 @@ export async function GET(
     return Response.json({ error: "Booking not found" }, { status: 404 });
 
   const isOwner = booking.userId === dbUser.id;
-  const isAdmin = dbUser.role === "ADMIN";
+  const isAdmin = sessionClaims?.metadata?.role === "admin";
 
   if (!isOwner && !isAdmin) {
     return Response.json({ error: "Forbidden" }, { status: 403 });

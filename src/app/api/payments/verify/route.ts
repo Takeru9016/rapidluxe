@@ -51,16 +51,33 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const booking = await prisma.booking.update({
-      where: { id: bookingId },
+    // Conditional transition: only a call that actually flips the status
+    // away from PAID/CONFIRMED may send the confirmation email or consume
+    // the coupon. This keeps a client retry and the razorpay webhook from
+    // racing each other into double side effects.
+    const { count } = await prisma.booking.updateMany({
+      where: { id: bookingId, status: { notIn: ["PAID", "CONFIRMED"] } },
       data: { status: "PAID", razorpayPaymentId: razorpay_payment_id },
-      include: { package: true, user: true },
     });
 
-    await sendPaymentConfirmationEmail(booking);
+    if (count === 1) {
+      const booking = await prisma.booking.findUniqueOrThrow({
+        where: { id: bookingId },
+        include: { package: true, user: true },
+      });
+
+      if (booking.couponCode) {
+        await prisma.coupon.update({
+          where: { code: booking.couponCode },
+          data: { usedCount: { increment: 1 } },
+        });
+      }
+
+      await sendPaymentConfirmationEmail(booking);
+    }
 
     return NextResponse.json({
-      data: { bookingRef: booking.bookingRef, bookingId: booking.id },
+      data: { bookingRef: existing.bookingRef, bookingId: existing.id },
     });
   } catch {
     return NextResponse.json(

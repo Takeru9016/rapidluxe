@@ -2,6 +2,7 @@ import crypto from "crypto";
 
 import { NextResponse } from "next/server";
 
+import { sendPaymentConfirmationEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import type { RazorpayWebhookEvent } from "@/types/razorpay";
 
@@ -33,10 +34,37 @@ export async function POST(request: Request) {
 
     if (event.event === "payment.captured") {
       const { order_id, id } = event.payload.payment.entity;
-      await prisma.booking.updateMany({
-        where: { razorpayOrderId: order_id },
+
+      // Conditional transition: only a call that actually flips the status
+      // away from PAID/CONFIRMED may send the confirmation email or
+      // consume the coupon. This is the backup path to /api/payments/verify
+      // — either can run first, or both can run for the same payment, so
+      // whichever one wins the transition is the only one allowed to act.
+      const { count } = await prisma.booking.updateMany({
+        where: {
+          razorpayOrderId: order_id,
+          status: { notIn: ["PAID", "CONFIRMED"] },
+        },
         data: { status: "PAID", razorpayPaymentId: id },
       });
+
+      if (count === 1) {
+        const booking = await prisma.booking.findFirst({
+          where: { razorpayOrderId: order_id },
+          include: { package: true, user: true },
+        });
+
+        if (booking) {
+          if (booking.couponCode) {
+            await prisma.coupon.update({
+              where: { code: booking.couponCode },
+              data: { usedCount: { increment: 1 } },
+            });
+          }
+
+          await sendPaymentConfirmationEmail(booking);
+        }
+      }
     }
 
     if (event.event === "payment.failed") {

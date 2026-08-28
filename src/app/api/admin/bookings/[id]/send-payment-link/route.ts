@@ -20,6 +20,15 @@ export async function POST(
   if (!booking) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+  if (
+    booking.status !== "QUOTE_SENT" &&
+    booking.status !== "AWAITING_PAYMENT"
+  ) {
+    return NextResponse.json(
+      { error: `Cannot send a payment link from status ${booking.status}` },
+      { status: 409 },
+    );
+  }
   if (!booking.quotedAmount) {
     return NextResponse.json({ error: "No quote set" }, { status: 400 });
   }

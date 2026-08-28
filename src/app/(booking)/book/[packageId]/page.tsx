@@ -130,7 +130,7 @@ function StepIndicator({ current }: { current: 1 | 2 | 3 | 4 }) {
               </div>
               {i < STEP_LABELS.length - 1 && (
                 <div
-                  className="flex-1 h-px mt-[18px] mx-2"
+                  className="flex-1 h-px mt-4.5 mx-2"
                   style={{
                     background: done
                       ? "var(--color-gold)"
@@ -1062,6 +1062,8 @@ function Step3({ pkg }: { pkg: Package }) {
           dietaryRequirements: store.dietaryRequirements,
           specialRequests: store.specialRequests || undefined,
           couponCode: store.couponCode ?? undefined,
+          travelers: store.travelerDetails,
+          panCard: store.panCard ?? undefined,
         }),
       });
       const json = (await res.json()) as {

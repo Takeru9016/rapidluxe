@@ -34,8 +34,14 @@ export async function POST(request: Request) {
 
   try {
     if (event.type === "user.created" || event.type === "user.updated") {
-      const { id, email_addresses, first_name, last_name, phone_numbers } =
-        event.data;
+      const {
+        id,
+        email_addresses,
+        first_name,
+        last_name,
+        phone_numbers,
+        public_metadata,
+      } = event.data;
       const email = email_addresses[0]?.email_address;
       if (!email) {
         // phone-only signups have no email; User.email is required + unique
@@ -45,12 +51,19 @@ export async function POST(request: Request) {
       const name = [first_name, last_name].filter(Boolean).join(" ") || null;
       const phone = phone_numbers?.[0]?.phone_number ?? null;
 
+      // Clerk publicMetadata.role is authoritative for authorization; DB
+      // role is a synchronized mirror, kept in sync here so a role change
+      // made directly in the Clerk dashboard doesn't silently diverge from
+      // the DB (used only for display, e.g. the admin users table).
+      const metadataRole = (public_metadata as { role?: string } | null)?.role;
+      const role = metadataRole === "admin" ? "ADMIN" : "USER";
+
       // upsert keeps this idempotent across svix redeliveries and syncs
       // Clerk users who existed before this webhook was set up
       await prisma.user.upsert({
         where: { clerkId: id },
-        update: { email, name, phone },
-        create: { clerkId: id, email, name, phone, role: "USER" },
+        update: { email, name, phone, role },
+        create: { clerkId: id, email, name, phone, role },
       });
     }
 

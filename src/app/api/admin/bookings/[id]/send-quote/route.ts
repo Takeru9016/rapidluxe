@@ -29,6 +29,12 @@ export async function POST(
   if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+  if (existing.status !== "ENQUIRY" && existing.status !== "QUOTE_SENT") {
+    return NextResponse.json(
+      { error: `Cannot send a quote from status ${existing.status}` },
+      { status: 409 },
+    );
+  }
 
   const booking = await prisma.booking.update({
     where: { id },

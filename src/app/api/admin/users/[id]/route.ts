@@ -35,6 +35,14 @@ export async function PATCH(
   const client = await clerkClient();
 
   if (parsed.data.action === "role") {
+    // Clerk publicMetadata.role is authoritative for every route guard
+    // (proxy.ts + all /api/admin/* routes read sessionClaims.metadata.role).
+    // DB role is a synchronized mirror only, updated here for immediate
+    // display consistency in the admin users table.
+    await client.users.updateUserMetadata(user.clerkId, {
+      publicMetadata: { role: parsed.data.role.toLowerCase() },
+    });
+
     const updated = await prisma.user.update({
       where: { id },
       data: { role: parsed.data.role },

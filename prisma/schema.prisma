@@ -132,7 +132,7 @@ model Booking {
   paymentDueDate      DateTime?
   paymentToken        String?       @unique
   paymentTokenExpiry  DateTime?
-  razorpayOrderId     String?
+  razorpayOrderId     String?       @unique
   razorpayPaymentId   String?
   panCard             String? // Required when totalAmount > ₹2,00,000 (FEMA)
   bookingRef          String?       @unique
