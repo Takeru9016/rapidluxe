@@ -19,6 +19,13 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
+        gold: "bg-(--color-accent-gold) text-(--color-accent-coral-ink) hover:bg-(--color-accent-gold-light)",
+        "outline-gold":
+          "border-(--color-accent-gold) text-(--color-accent-gold) bg-transparent hover:bg-(--color-accent-gold)/10",
+        coral:
+          "bg-(--color-accent-coral) text-(--color-accent-coral-ink) hover:bg-(--color-accent-coral)/90",
+        "ghost-brand":
+          "text-(--color-text-muted) hover:text-(--color-text) hover:bg-(--color-bg-border)/50",
       },
       size: {
         default:

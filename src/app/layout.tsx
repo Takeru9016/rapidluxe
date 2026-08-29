@@ -1,10 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import {
-  Cormorant_Garamond,
-  DM_Sans,
-  JetBrains_Mono,
-  Geist,
-} from "next/font/google";
+import { Cormorant_Garamond, DM_Sans, JetBrains_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 
@@ -18,8 +13,6 @@ import { cn } from "@/lib/utils";
 import { ThemeProvider, SiteChrome } from "@/components";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { PostHogProvider } from "@/components/providers/PostHogProvider";
-
-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -69,7 +62,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0B0F1A",
+  themeColor: "#1B2A41",
 };
 
 export default function RootLayout({
@@ -84,7 +77,6 @@ export default function RootLayout({
         dmSans.variable,
         jetbrainsMono.variable,
         "font-sans",
-        geist.variable,
       )}
     >
       <body className={dmSans.className}>

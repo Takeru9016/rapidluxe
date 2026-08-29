@@ -1,5 +1,4 @@
-/* Section 1: Google Fonts & Third-party CSS */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400&display=swap');
+/* Section 1: (fonts loaded via next/font/google in src/app/layout.tsx) */
 
 /* Section 2: Tailwind v4 CSS-first import */
 @import "tailwindcss";
@@ -10,45 +9,67 @@
 
 /* Section 3: Design Tokens */
 :root {
-  /* Backgrounds — Light mode (warm luxury cream) */
-  --color-navy: #FAF9F6;
-  --color-navy-surface: #F3EFE8;
-  --color-navy-border: #E5DDD0;
+  /* ── RapidLuxe 2.0 canonical palette (5 mandated colors) ──
+     #1B2A41 Rich Clean Azure · #324A5F Rich Soft Azure ·
+     #F9A826 Light Vermilion · #FFE8D6 Icy Vermilion · #FFFFFF Icy Crimson
+     Every value below is one of these 5 literals or a color-mix() derived
+     from them — no additional hues introduced. */
 
-  /* Brand Accents — identical in both modes */
-  --color-gold: #C9A84C;
-  --color-gold-light: #E2C47A;
-  --color-gold-muted: #A07C30;
-  --color-teal: #0D9488;
-  --color-coral: #E07A5F;
+  /* Backgrounds — Light mode */
+  --color-bg: #FFE8D6;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-border: color-mix(in srgb, #FFE8D6 80%, #1B2A41 20%);
 
   /* Text — Light mode */
-  --color-white: #1A1410;
-  --color-white-muted: #4A3F35;
-  --color-text-secondary: #7A6E65;
+  --color-text: #1B2A41;
+  --color-text-muted: #324A5F;
+  --color-text-secondary: color-mix(in srgb, #324A5F 60%, #FFE8D6 40%);
 
-  /* Typography */
-  --font-display: 'Cormorant Garamond', Georgia, serif;
-  --font-body: 'DM Sans', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  /* Brand accents — identical in both modes */
+  --color-accent-gold: #F9A826;
+  --color-accent-gold-light: color-mix(in srgb, #F9A826 75%, white 25%);
+  --color-accent-gold-muted: color-mix(in srgb, #F9A826 70%, black 30%);
+  /* Teal and coral are pre-existing status/CTA accents outside the 5-color
+     submission (which covers background/text/gold only) — preserved
+     unchanged rather than invented. coral-ink reuses the canonical Rich
+     Clean Azure for WCAG-AA-safe text on coral/gold backgrounds. */
+  --color-accent-teal: #0D9488;
+  --color-accent-coral: #E07A5F;
+  --color-accent-coral-ink: #1B2A41;
+
+  /* Legacy token aliases — kept so existing components (cards, nav,
+     footer, admin, booking flow) render unchanged this phase. New code
+     should use the --color-bg/-text/-accent-* names above. Declared once
+     here; var() indirection re-resolves under .dark automatically. */
+  --color-navy: var(--color-bg);
+  --color-navy-surface: var(--color-bg-surface);
+  --color-navy-border: var(--color-bg-border);
+  --color-white: var(--color-text);
+  --color-white-muted: var(--color-text-muted);
+  --color-gold: var(--color-accent-gold);
+  --color-gold-light: var(--color-accent-gold-light);
+  --color-gold-muted: var(--color-accent-gold-muted);
+  --color-teal: var(--color-accent-teal);
+  --color-coral: var(--color-accent-coral);
+
+  --background: var(--color-bg);
+  --foreground: var(--color-text);
+  --card: var(--color-bg-surface);
+  --card-foreground: var(--color-text);
+  --popover: var(--color-bg-surface);
+  --popover-foreground: var(--color-text);
+  --primary: var(--color-accent-gold);
+  --primary-foreground: var(--color-accent-coral-ink);
+  --secondary: var(--color-bg-surface);
+  --secondary-foreground: var(--color-text);
+  --muted: var(--color-bg-border);
+  --muted-foreground: var(--color-text-secondary);
+  --accent: var(--color-bg-border);
+  --accent-foreground: var(--color-text);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: var(--color-bg-border);
+  --input: var(--color-bg-border);
+  --ring: var(--color-accent-gold);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -155,8 +176,9 @@
 }
 
 @theme inline {
-  --font-heading: var(--font-sans);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-display);
+  --font-mono: var(--font-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -198,34 +220,34 @@
 }
 
 .dark {
-  /* Backgrounds — Dark mode */
-  --color-navy: #0B0F1A;
-  --color-navy-surface: #111827;
-  --color-navy-border: #1F2937;
+  /* Backgrounds — Dark mode (default theme) */
+  --color-bg: #1B2A41;
+  --color-bg-surface: #324A5F;
+  --color-bg-border: color-mix(in srgb, #324A5F 80%, white 20%);
 
   /* Text — Dark mode */
-  --color-white: #FAF9F6;
-  --color-white-muted: #D1CBC0;
-  --color-text-secondary: #9CA3AF;
+  --color-text: #FFFFFF;
+  --color-text-muted: #FFE8D6;
+  --color-text-secondary: color-mix(in srgb, #FFE8D6 55%, #1B2A41 45%);
 
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: var(--color-bg);
+  --foreground: var(--color-text);
+  --card: var(--color-bg-surface);
+  --card-foreground: var(--color-text);
+  --popover: var(--color-bg-surface);
+  --popover-foreground: var(--color-text);
+  --primary: var(--color-accent-gold);
+  --primary-foreground: var(--color-accent-coral-ink);
+  --secondary: var(--color-bg-surface);
+  --secondary-foreground: var(--color-text);
+  --muted: var(--color-bg-border);
+  --muted-foreground: var(--color-text-secondary);
+  --accent: var(--color-bg-border);
+  --accent-foreground: var(--color-text);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --border: var(--color-bg-border);
+  --input: var(--color-bg-border);
+  --ring: var(--color-accent-gold);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
