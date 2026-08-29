@@ -9,6 +9,7 @@ import gsap from "gsap";
 import { useUIStore } from "@/store/uiStore";
 import { useSiteSettings } from "@/hooks/api/useSiteSettings";
 
+import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
 const navItems = [
@@ -129,20 +130,24 @@ export function MobileMenu() {
 
       {/* Bottom CTA */}
       <div className="mobile-nav-link mt-8 flex flex-col gap-3 shrink-0">
-        <Link
-          href="/packages"
-          onClick={close}
-          className="w-full flex items-center justify-center py-4 rounded-full bg-(--color-coral) text-white font-sans font-medium text-base hover:bg-(--color-coral)/90 transition-colors"
+        <Button
+          variant="coral"
+          className="w-full h-auto py-4 rounded-full font-sans text-base"
+          asChild
         >
-          Book Now
-        </Link>
-        <Link
-          href="/sign-in"
-          onClick={close}
-          className="w-full flex items-center justify-center py-4 rounded-full border border-(--color-navy-border) text-(--color-white-muted) font-sans font-medium text-base hover:border-(--color-gold)/50 hover:text-(--color-gold) transition-colors"
+          <Link href="/packages" onClick={close}>
+            Book Now
+          </Link>
+        </Button>
+        <Button
+          variant="ghost-brand"
+          className="w-full h-auto py-4 rounded-full border border-(--color-navy-border) font-sans text-base"
+          asChild
         >
-          Sign In
-        </Link>
+          <Link href="/sign-in" onClick={close}>
+            Sign In
+          </Link>
+        </Button>
       </div>
 
       {/* Social */}

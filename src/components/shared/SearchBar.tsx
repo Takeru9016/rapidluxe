@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import { Calendar, MapPin, Minus, Plus, Search, Users } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
 import {
@@ -100,10 +101,10 @@ export function SearchBar({ variant = "hero", className }: SearchBarProps) {
           placeholder="Search destinations..."
           className="flex-1 bg-transparent text-sm font-sans text-white placeholder:text-(--color-text-secondary) outline-none min-w-0"
         />
-        <button className="bg-(--color-coral) text-white rounded-full px-4 py-1.5 text-sm font-sans font-medium flex items-center gap-1.5 shrink-0">
+        <Button variant="coral" className="h-auto rounded-full px-4 py-1.5 gap-1.5 font-sans shrink-0">
           <Search size={14} />
           Search
-        </button>
+        </Button>
       </div>
     );
   }
@@ -222,10 +223,10 @@ export function SearchBar({ variant = "hero", className }: SearchBarProps) {
 
       {/* Search button */}
       <div className="flex items-stretch p-3 md:p-2">
-        <button className="w-full md:w-auto bg-(--color-coral) text-white rounded-xl px-6 py-3 font-sans font-medium text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+        <Button variant="coral" className="w-full md:w-auto h-auto rounded-xl px-6 py-3 gap-2 font-sans">
           <Search size={16} />
           Search
-        </button>
+        </Button>
       </div>
     </div>
   );

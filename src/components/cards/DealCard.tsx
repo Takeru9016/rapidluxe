@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { CountdownTimer } from "@/components/shared/CountdownTimer";
 import type { ApiDeal } from "@/hooks/api/useDeals";
 import { formatPrice } from "@/lib/utils";
@@ -112,13 +113,13 @@ export function DealCard({ deal, className }: DealCardProps) {
           <CountdownTimer expiresAt={expiresAt} variant="inline" />
         </div>
 
-        <button
-          type="button"
+        <Button
+          variant="coral"
+          className="mt-4 w-full font-sans"
           onClick={() => router.push(`/packages/${pkg.slug}?deal=${deal.id}`)}
-          className="mt-4 w-full bg-(--color-coral) text-white h-10 rounded-lg font-sans font-medium hover:bg-(--color-coral)/90 transition-colors duration-200"
         >
           Book This Deal →
-        </button>
+        </Button>
       </div>
     </article>
   );

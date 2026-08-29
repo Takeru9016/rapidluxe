@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 const EXCLUDED_PREFIXES = [
   "/admin",
@@ -233,14 +234,14 @@ export function LeadCaptureModal() {
                 onChange={(e) => setForm({ ...form, message: e.target.value })}
                 className="w-full bg-(--color-navy-surface) border border-(--color-navy-border) rounded-lg px-4 py-2.5 text-white placeholder-(--color-text-secondary) text-sm focus:outline-none focus:border-(--color-gold) transition-colors resize-none"
               />
-              <button
+              <Button
                 type="submit"
+                variant="coral"
                 disabled={loading}
-                className="w-full h-12 bg-(--color-coral) font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-60 mt-1"
-                style={{ color: "var(--color-navy)" }}
+                className="w-full h-12 font-semibold mt-1"
               >
                 {loading ? "Sending…" : "Get a Free Consultation →"}
-              </button>
+              </Button>
               <p className="text-center text-(--color-text-secondary) text-xs">
                 No spam. We&apos;ll contact you within 24 hours.
               </p>

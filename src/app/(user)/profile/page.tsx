@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Heart, Calendar, User, Pencil, MapPin } from "lucide-react";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/shared/Badge";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -205,13 +206,14 @@ export default function ProfilePage() {
               {user?.primaryEmailAddress?.emailAddress}
             </p>
           </div>
-          <button
+          <Button
+            variant="outline-gold"
             onClick={() => setActiveTab("details")}
-            className="flex items-center gap-2 px-4 py-2 rounded-full border border-(--color-gold) text-(--color-gold) text-sm font-['DM_Sans'] hover:bg-(--color-gold)/10 transition-colors"
+            className="h-auto gap-2 px-4 py-2 rounded-full font-sans"
           >
             <Pencil size={14} />
             Edit Profile
-          </button>
+          </Button>
         </div>
 
         {/* ── Tabs ── */}
@@ -396,13 +398,14 @@ export default function ProfilePage() {
                   />
                 </div>
               </div>
-              <button
+              <Button
+                variant="outline-gold"
                 onClick={() => saveMutation.mutate()}
                 disabled={saveMutation.isPending}
-                className="mt-8 px-6 py-2.5 rounded-full border border-(--color-gold) text-(--color-gold) text-sm font-['DM_Sans'] font-medium hover:bg-(--color-gold)/10 transition-colors disabled:opacity-50"
+                className="h-auto mt-8 px-6 py-2.5 rounded-full font-sans font-medium"
               >
                 {saveMutation.isPending ? "Saving…" : "Save Changes"}
-              </button>
+              </Button>
             </div>
           </TabsContent>
         </Tabs>

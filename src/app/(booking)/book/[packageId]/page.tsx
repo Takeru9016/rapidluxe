@@ -18,6 +18,7 @@ import type { DateRange } from "react-day-picker";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Separator } from "@/components/ui/separator";
 import { usePackage } from "@/hooks/api/usePackages";
@@ -605,14 +606,15 @@ function Step1({ pkg }: { pkg: Package }) {
           placeholder="Promo code"
           className="flex-1 bg-(--color-navy-surface) border border-(--color-navy-border) rounded-lg px-3 py-2.5 text-sm font-['JetBrains_Mono'] text-white placeholder:text-(--color-text-secondary) focus:outline-none focus:border-(--color-gold) transition-colors"
         />
-        <button
+        <Button
           type="button"
+          variant="outline-gold"
           onClick={handleApplyCoupon}
           disabled={isApplyingCoupon}
-          className="px-4 py-2.5 rounded-lg border border-(--color-gold)/60 text-(--color-gold) text-sm font-['DM_Sans'] font-medium hover:bg-(--color-gold)/10 transition-colors whitespace-nowrap disabled:opacity-50"
+          className="px-4 h-auto py-2.5 font-sans whitespace-nowrap"
         >
           {isApplyingCoupon ? "Applying…" : "Apply"}
-        </button>
+        </Button>
       </div>
 
       {appliedCoupon && (
@@ -621,13 +623,14 @@ function Step1({ pkg }: { pkg: Package }) {
         </p>
       )}
 
-      <button
+      <Button
         type="button"
+        variant="coral"
         onClick={() => setStep(2)}
-        className="w-full py-3 rounded-xl bg-(--color-coral) text-white font-['DM_Sans'] font-semibold text-sm hover:opacity-90 transition-opacity mt-6"
+        className="w-full h-auto py-3 rounded-xl font-sans font-semibold mt-6"
       >
         Continue →
-      </button>
+      </Button>
     </div>
   );
 }
@@ -770,13 +773,15 @@ function Step2() {
               automatically.
             </p>
             <div className="flex gap-3 mt-3">
-              <button
+              <Button
                 type="button"
+                variant="outline-gold"
+                size="sm"
                 onClick={handleAutofill}
-                className="h-8 px-3 rounded-lg border border-(--color-gold)/60 text-(--color-gold) text-sm font-['DM_Sans'] font-medium hover:bg-(--color-gold)/10 transition-colors"
+                className="h-8 px-3 font-sans"
               >
                 Yes, pre-fill
-              </button>
+              </Button>
               <button
                 type="button"
                 onClick={() => setAutofillDismissed(true)}
@@ -1009,12 +1014,13 @@ function Step2() {
         >
           ← Back
         </button>
-        <button
+        <Button
           type="submit"
-          className="flex-1 py-3 rounded-xl bg-(--color-coral) text-white font-['DM_Sans'] font-semibold text-sm hover:opacity-90 transition-opacity"
+          variant="coral"
+          className="flex-1 h-auto py-3 rounded-xl font-sans font-semibold"
         >
           Continue →
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -1208,14 +1214,15 @@ function Step3({ pkg }: { pkg: Package }) {
         ← Back
       </button>
 
-      <button
+      <Button
         type="button"
+        variant="coral"
         onClick={handleSubmit}
         disabled={submitting}
-        className="w-full h-12 rounded-xl bg-(--color-coral) text-white font-['DM_Sans'] font-semibold text-sm hover:opacity-90 transition-opacity mt-6 disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full h-12 rounded-xl font-sans font-semibold mt-6"
       >
         {submitting ? "Submitting…" : "Submit Booking Request"}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -1267,12 +1274,9 @@ function Step4() {
       </div>
 
       <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-        <Link
-          href="/bookings"
-          className="px-6 py-3 rounded-xl border border-(--color-gold) text-(--color-gold) font-['DM_Sans'] text-sm hover:bg-(--color-gold)/10 transition-colors"
-        >
-          View My Bookings
-        </Link>
+        <Button variant="outline-gold" className="h-auto px-6 py-3 rounded-xl font-sans" asChild>
+          <Link href="/bookings">View My Bookings</Link>
+        </Button>
         <Link
           href="/packages"
           className="px-6 py-3 rounded-xl border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm hover:border-(--color-gold)/40 hover:text-white transition-colors"

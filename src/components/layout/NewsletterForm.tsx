@@ -48,9 +48,10 @@ export function NewsletterForm() {
         className="bg-white/5 border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold) focus-visible:border-(--color-gold)"
       />
       <Button
+        variant="gold"
         onClick={handleSubscribe}
         disabled={loading}
-        className="w-full mt-2 bg-(--color-gold) text-[#0B0F1A] font-sans font-medium hover:bg-(--color-gold)/90 disabled:opacity-50"
+        className="w-full mt-2 font-sans font-medium"
       >
         {loading ? "Subscribing…" : "Subscribe"}
       </Button>

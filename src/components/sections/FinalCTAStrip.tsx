@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const stats = [
   { number: "1,000+", label: "Vacations Planned" },
@@ -87,17 +88,14 @@ export function FinalCTAStrip() {
 
         {/* CTA */}
         <div className="mt-12">
-          <Link
-            href="/packages"
-            className="inline-block font-semibold px-10 py-4 rounded-lg text-base transition-opacity duration-200 hover:opacity-90"
-            style={{
-              fontFamily: "var(--font-body)",
-              backgroundColor: "var(--color-coral)",
-              color: "var(--color-navy)",
-            }}
+          <Button
+            variant="coral"
+            size="lg"
+            className="h-auto px-10 py-4 rounded-lg text-base font-sans"
+            asChild
           >
-            Plan My Trip →
-          </Link>
+            <Link href="/packages">Plan My Trip →</Link>
+          </Button>
         </div>
       </div>
     </section>

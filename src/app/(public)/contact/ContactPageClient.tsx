@@ -254,8 +254,9 @@ export default function ContactPageClient() {
 
               <Button
                 type="submit"
+                variant="coral"
                 disabled={isSubmitting}
-                className="bg-(--color-coral) hover:bg-(--color-coral)/90 text-white font-sans font-medium px-8 h-11 gap-2 disabled:opacity-60"
+                className="font-sans font-medium px-8 h-11 gap-2"
               >
                 <Send size={14} />
                 {isSubmitting ? "Sending..." : "Send Message →"}

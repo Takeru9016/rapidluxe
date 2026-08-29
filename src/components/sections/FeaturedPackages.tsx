@@ -4,6 +4,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
 import { PackageCard } from "@/components/cards/PackageCard";
 import { PackageCardSkeleton } from "@/components/shared/Skeletons";
 import type { ApiPackage } from "@/hooks/api/usePackages";
@@ -92,25 +93,9 @@ export function FeaturedPackages() {
 
       {/* CTA */}
       <div className="mt-12 text-center">
-        <Link href="/packages">
-          <button
-            className="font-(family-name:--font-body) font-medium text-sm px-8 py-3 rounded-lg transition-colors cursor-pointer"
-            style={{
-              border: "1px solid var(--color-gold)",
-              color: "var(--color-gold)",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                "color-mix(in srgb, var(--color-gold) 10%, transparent)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                "transparent";
-            }}
-          >
-            View All Packages →
-          </button>
-        </Link>
+        <Button variant="outline-gold" className="font-sans" asChild>
+          <Link href="/packages">View All Packages →</Link>
+        </Button>
       </div>
     </section>
   );

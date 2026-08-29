@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/shared/Badge";
+import { Button } from "@/components/ui/button";
 import { formatPrice, formatDate, calculateGST } from "@/lib/utils";
 import { useBooking } from "@/hooks/api/useBookings";
 import type { DisplayStatus } from "@/types/booking";
@@ -288,15 +289,16 @@ export default function BookingDetailPage({
         <div className="flex flex-wrap gap-3">
           {booking.displayStatus === "upcoming" ||
           booking.displayStatus === "completed" ? (
-            <a
-              href={`/api/invoices/${booking.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-(--color-gold)/60 text-(--color-gold) text-sm font-['DM_Sans'] hover:bg-(--color-gold)/10 transition-colors"
-            >
-              <Download size={14} />
-              Download Invoice
-            </a>
+            <Button variant="outline-gold" className="h-auto gap-2 px-4 py-2.5 font-sans" asChild>
+              <a
+                href={`/api/invoices/${booking.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Download size={14} />
+                Download Invoice
+              </a>
+            </Button>
           ) : (
             <button
               disabled
@@ -308,13 +310,12 @@ export default function BookingDetailPage({
             </button>
           )}
 
-          <Link
-            href="/contact"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-(--color-gold)/40 text-(--color-gold) text-sm font-['DM_Sans'] hover:bg-(--color-gold)/10 transition-colors"
-          >
-            <HelpCircle size={14} />
-            Need Help?
-          </Link>
+          <Button variant="outline-gold" className="h-auto gap-2 px-4 py-2.5 font-sans" asChild>
+            <Link href="/contact">
+              <HelpCircle size={14} />
+              Need Help?
+            </Link>
+          </Button>
 
           {booking.displayStatus === "upcoming" && (
             <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-(--color-coral)/60 text-(--color-coral) text-sm font-['DM_Sans'] hover:bg-(--color-coral)/10 transition-colors">

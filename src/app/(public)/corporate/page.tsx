@@ -276,7 +276,8 @@ function CorporateForm() {
 
       <Button
         type="submit"
-        className="bg-(--color-coral) hover:bg-(--color-coral)/90 text-white font-sans font-medium px-8 h-11 gap-2"
+        variant="coral"
+        className="font-sans font-medium px-8 h-11 gap-2"
       >
         <ArrowRight size={14} />
         Request a Corporate Account

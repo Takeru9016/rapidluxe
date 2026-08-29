@@ -118,8 +118,9 @@ export function Navbar() {
                   userProfileUrl="/profile"
                 />
                 <Button
+                  variant="coral"
                   size="sm"
-                  className="bg-(--color-coral) text-white px-4 h-9 rounded-full text-sm font-medium hover:bg-(--color-coral)/90 transition-colors"
+                  className="px-4 h-9 rounded-full"
                   asChild
                 >
                   <Link href="/packages">Book Now</Link>
@@ -128,7 +129,7 @@ export function Navbar() {
             ) : (
               <>
                 <Button
-                  variant="ghost"
+                  variant="ghost-brand"
                   size="sm"
                   className="text-sm rounded-full"
                   asChild
@@ -136,8 +137,9 @@ export function Navbar() {
                   <Link href="/sign-in">Sign In</Link>
                 </Button>
                 <Button
+                  variant="coral"
                   size="sm"
-                  className="bg-(--color-coral) text-white px-4 h-9 rounded-full text-sm font-medium hover:bg-(--color-coral)/90 transition-colors"
+                  className="px-4 h-9 rounded-full"
                   asChild
                 >
                   <Link href="/packages">Book Now</Link>

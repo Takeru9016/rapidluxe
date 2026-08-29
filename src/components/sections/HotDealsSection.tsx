@@ -2,6 +2,7 @@
 
 import { Zap } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { DealCard } from "@/components/cards/DealCard";
 import { CountdownTimer } from "@/components/shared/CountdownTimer";
 import { useDeals } from "@/hooks/api/useDeals";
@@ -76,26 +77,9 @@ export function HotDealsSection() {
 
         {/* CTA */}
         <div className="mt-10 text-center">
-          <Link href="/deals">
-            <button
-              type="button"
-              className="font-(family-name:--font-body) font-medium text-sm px-8 py-3 rounded-lg transition-colors cursor-pointer"
-              style={{
-                border: "1px solid var(--color-gold)",
-                color: "var(--color-gold)",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                  "color-mix(in srgb, var(--color-gold) 10%, transparent)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                  "transparent";
-              }}
-            >
-              See All Deals →
-            </button>
-          </Link>
+          <Button variant="outline-gold" className="font-sans" asChild>
+            <Link href="/deals">See All Deals →</Link>
+          </Button>
         </div>
       </div>
     </section>

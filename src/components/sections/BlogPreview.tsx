@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/shared/Badge";
+import { Button } from "@/components/ui/button";
 import { type BlogPostPreview, useBlogPosts } from "@/hooks/api/useBlogPosts";
 import { formatDate } from "@/lib/utils";
 
@@ -131,17 +132,9 @@ export function BlogPreview() {
       {/* CTA */}
       {!isLoading && (
         <div className="mt-10 text-center">
-          <Link href="/blog">
-            <span
-              className="inline-block font-(family-name:--font-body) font-medium text-sm px-8 py-3 rounded-lg transition-colors"
-              style={{
-                border: "1px solid var(--color-gold)",
-                color: "var(--color-gold)",
-              }}
-            >
-              Read More on the Blog →
-            </span>
-          </Link>
+          <Button variant="outline-gold" className="font-sans" asChild>
+            <Link href="/blog">Read More on the Blog →</Link>
+          </Button>
         </div>
       )}
     </section>
