@@ -1,13 +1,13 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { LeadCaptureModal } from "@/components/shared/LeadCaptureModal";
+import { WhatsAppButton } from "@/components/shared/WhatsAppButton";
 import { Footer } from "./Footer";
 import { MobileMenu } from "./MobileMenu";
 import { Navbar } from "./Navbar";
-import { LeadCaptureModal } from "@/components/shared/LeadCaptureModal";
-import { WhatsAppButton } from "@/components/shared/WhatsAppButton";
 
-const CHROME_FREE_PREFIXES = ["/pay/"];
+const CHROME_FREE_PREFIXES = ["/pay/", "/admin", "/studio"];
 
 export function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

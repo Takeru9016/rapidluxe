@@ -1,14 +1,22 @@
 "use client";
 
+import { AtSign, Camera, Globe, Video } from "lucide-react";
 import Link from "next/link";
-import { Camera, Globe, Video, AtSign } from "lucide-react";
 
 import { NewsletterForm } from "@/components/layout/NewsletterForm";
 import { useSiteSettings } from "@/hooks/api/useSiteSettings";
 
+const exploreLinks = [
+  { label: "Journeys", href: "/packages" },
+  { label: "Destinations", href: "/destinations" },
+  { label: "Deals", href: "/deals" },
+  { label: "Therapycation", href: "/about" },
+];
+
 const companyLinks = [
-  { label: "About", href: "/about" },
-  { label: "Blog", href: "/blog" },
+  { label: "About RapidLuxe", href: "/about" },
+  { label: "Journal", href: "/blog" },
+  { label: "Corporate", href: "/corporate" },
 ];
 
 const supportLinks = [
@@ -27,7 +35,7 @@ const SOCIAL_ICONS = [
 ];
 
 const footerLinkClass =
-  "text-sm font-sans text-[var(--color-white-muted)] hover:text-[var(--color-gold)] py-1 block transition-colors";
+  "text-sm font-sans text-(--color-white-muted) hover:text-(--color-gold) py-1 block transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-gold) rounded-xs";
 
 export function Footer() {
   const { data: settings } = useSiteSettings();
@@ -59,7 +67,7 @@ export function Footer() {
                     aria-label={label}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-(--color-text-secondary) hover:text-(--color-gold) transition-colors"
+                    className="text-(--color-text-secondary) hover:text-(--color-gold) transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-gold) rounded-xs"
                   >
                     <Icon size={20} />
                   </a>
@@ -68,15 +76,15 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Col 2 — Company */}
+          {/* Col 2 — Explore */}
           <div>
             <h3 className="font-sans font-semibold text-white text-sm mb-4">
-              Company
+              Explore
             </h3>
-            <nav className="flex flex-col">
-              {companyLinks.map((link) => (
+            <nav aria-label="Explore" className="flex flex-col">
+              {exploreLinks.map((link) => (
                 <Link
-                  key={link.href}
+                  key={link.label}
                   href={link.href}
                   className={footerLinkClass}
                 >
@@ -86,22 +94,40 @@ export function Footer() {
             </nav>
           </div>
 
-          {/* Col 3 — Support */}
-          <div>
-            <h3 className="font-sans font-semibold text-white text-sm mb-4">
-              Support
-            </h3>
-            <nav className="flex flex-col">
-              {supportLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={footerLinkClass}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
+          {/* Col 3 — Company + Support */}
+          <div className="flex flex-col gap-8">
+            <div>
+              <h3 className="font-sans font-semibold text-white text-sm mb-4">
+                Company
+              </h3>
+              <nav aria-label="Company" className="flex flex-col">
+                {companyLinks.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    className={footerLinkClass}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+            <div>
+              <h3 className="font-sans font-semibold text-white text-sm mb-4">
+                Support
+              </h3>
+              <nav aria-label="Support" className="flex flex-col">
+                {supportLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={footerLinkClass}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+            </div>
           </div>
 
           {/* Col 4 — Newsletter */}
