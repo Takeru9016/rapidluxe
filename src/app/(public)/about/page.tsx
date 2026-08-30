@@ -425,7 +425,7 @@ export default async function AboutPage() {
       >
         <h2
           className="font-['Cormorant_Garamond'] text-4xl md:text-5xl font-light mb-4"
-          style={{ color: "#0B0F1A" }}
+          style={{ color: "#1B2A41" }}
         >
           Ready to travel with us?
         </h2>
@@ -438,7 +438,7 @@ export default async function AboutPage() {
         <Link
           href="/packages"
           className="inline-flex items-center gap-2 font-sans font-medium px-10 py-4 rounded-lg text-sm transition-opacity hover:opacity-90"
-          style={{ backgroundColor: "#0B0F1A", color: "#FFFFFF" }}
+          style={{ backgroundColor: "#1B2A41", color: "#FFFFFF" }}
         >
           Browse Packages <ArrowRight size={16} />
         </Link>

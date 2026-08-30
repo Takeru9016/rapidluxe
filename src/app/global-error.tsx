@@ -19,7 +19,7 @@ export default function GlobalError({
       <body
         style={{
           margin: 0,
-          backgroundColor: "#0B0F1A",
+          backgroundColor: "#1B2A41",
           fontFamily: "sans-serif",
         }}
       >
@@ -59,10 +59,11 @@ export default function GlobalError({
                 padding: "10px 24px",
                 borderRadius: 8,
                 backgroundColor: "#E07A5F",
-                color: "#fff",
+                color: "#1B2A41",
                 border: "none",
                 cursor: "pointer",
                 fontSize: 14,
+                fontWeight: 600,
               }}
             >
               Try again

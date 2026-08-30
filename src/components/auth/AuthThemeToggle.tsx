@@ -58,7 +58,7 @@ export function AuthThemeToggle() {
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className="h-9 w-9 rounded-full flex items-center justify-center transition-all duration-200
         bg-(--color-navy-surface) border border-(--color-navy-border)
-        text-(--color-text-secondary) hover:text-[#C9A84C] hover:border-[#C9A84C]/40"
+        text-(--color-text-secondary) hover:text-[#F9A826] hover:border-[#F9A826]/40"
     >
       {isDark ? <SunIcon /> : <MoonIcon />}
     </button>

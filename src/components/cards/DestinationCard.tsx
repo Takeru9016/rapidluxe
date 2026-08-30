@@ -41,7 +41,7 @@ export function DestinationCard({
           </div>
         )}
 
-        <div className="absolute inset-0 bg-linear-to-t from-[#0B0F1A]/90 via-[#0B0F1A]/20 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-[#1B2A41]/90 via-[#1B2A41]/20 to-transparent" />
 
         <div className="absolute bottom-0 left-0 right-0 p-5">
           <p className="text-sm text-white/70 font-sans">

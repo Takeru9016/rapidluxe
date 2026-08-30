@@ -159,7 +159,7 @@ function FilterPanel({
                 onChange={() => onToggleDuration(bucket.key)}
                 className="w-4 h-4 rounded border border-(--color-navy-border) cursor-pointer accent-(--color-gold) shrink-0"
               />
-              <span className="text-sm text-(--color-white-muted) group-hover:text-white transition-colors font-mono">
+              <span className="text-sm text-(--color-white-muted) group-hover:text-white transition-colors font-sans">
                 {bucket.label}
               </span>
             </label>

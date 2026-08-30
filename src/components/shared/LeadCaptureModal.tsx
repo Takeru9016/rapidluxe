@@ -126,7 +126,7 @@ export function LeadCaptureModal() {
       className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center px-4"
       onClick={handleOverlayClick}
     >
-      <div className="max-w-lg w-full mt-20 bg-(--color-navy-surface) rounded-2xl overflow-hidden border border-(--color-navy-border)">
+      <div className="max-w-lg w-full mt-20 bg-(--color-navy-surface) rounded-xl overflow-hidden border border-(--color-navy-border)">
         {/* image header — text always white, sits on dark gradient */}
         <div className="relative h-48">
           <Image

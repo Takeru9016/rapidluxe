@@ -1,23 +1,23 @@
 "use client";
 
-import { use } from "react";
-import { notFound } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
 import {
   ArrowLeft,
   Calendar,
-  Users,
-  Package,
   CreditCard,
   Download,
   HelpCircle,
+  Package,
+  Users,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { use } from "react";
 
 import { Badge } from "@/components/shared/Badge";
 import { Button } from "@/components/ui/button";
-import { formatPrice, formatDate, calculateGST } from "@/lib/utils";
 import { useBooking } from "@/hooks/api/useBookings";
+import { calculateGST, formatDate, formatPrice } from "@/lib/utils";
 import type { DisplayStatus } from "@/types/booking";
 
 // ── Status Config ─────────────────────────────────────────────────────────────
@@ -289,7 +289,11 @@ export default function BookingDetailPage({
         <div className="flex flex-wrap gap-3">
           {booking.displayStatus === "upcoming" ||
           booking.displayStatus === "completed" ? (
-            <Button variant="outline-gold" className="h-auto gap-2 px-4 py-2.5 font-sans" asChild>
+            <Button
+              variant="outline-gold"
+              className="h-auto gap-2 px-4 py-2.5 font-sans"
+              asChild
+            >
               <a
                 href={`/api/invoices/${booking.id}`}
                 target="_blank"
@@ -310,7 +314,11 @@ export default function BookingDetailPage({
             </button>
           )}
 
-          <Button variant="outline-gold" className="h-auto gap-2 px-4 py-2.5 font-sans" asChild>
+          <Button
+            variant="outline-gold"
+            className="h-auto gap-2 px-4 py-2.5 font-sans"
+            asChild
+          >
             <Link href="/contact">
               <HelpCircle size={14} />
               Need Help?
@@ -318,9 +326,12 @@ export default function BookingDetailPage({
           </Button>
 
           {booking.displayStatus === "upcoming" && (
-            <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-(--color-coral)/60 text-(--color-coral) text-sm font-['DM_Sans'] hover:bg-(--color-coral)/10 transition-colors">
+            <Button
+              variant="destructive"
+              className="h-auto gap-2 px-4 py-2.5 font-sans"
+            >
               Cancel Booking
-            </button>
+            </Button>
           )}
         </div>
       </div>

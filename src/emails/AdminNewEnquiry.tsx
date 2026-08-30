@@ -109,7 +109,7 @@ function Row({
         style={{
           ...rowValue,
           ...(mono ? { fontFamily: "monospace" } : {}),
-          ...(highlight ? { color: "#C9A84C", fontSize: "16px" } : {}),
+          ...(highlight ? { color: "#F9A826", fontSize: "16px" } : {}),
         }}
       >
         {value}
@@ -131,7 +131,7 @@ function Footer() {
 }
 
 const main = {
-  backgroundColor: "#0B0F1A",
+  backgroundColor: "#1B2A41",
   fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
 };
 const container = {
@@ -140,13 +140,13 @@ const container = {
   padding: "40px 20px",
 };
 const heading = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "24px",
   fontWeight: "600" as const,
   margin: "0 0 20px",
 };
 const sectionTitle = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "12px",
   fontWeight: "600" as const,
   textTransform: "uppercase" as const,
@@ -180,8 +180,8 @@ const rowValue = {
 };
 const hr = { borderColor: "#2A2F40", margin: "24px 0" };
 const button = {
-  backgroundColor: "#C9A84C",
-  color: "#0B0F1A",
+  backgroundColor: "#F9A826",
+  color: "#1B2A41",
   padding: "12px 28px",
   borderRadius: "6px",
   fontWeight: "600" as const,
@@ -189,7 +189,7 @@ const button = {
   display: "inline-block",
 };
 const footer = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "12px",
   textAlign: "center" as const,
   lineHeight: "1.8",

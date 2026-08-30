@@ -64,7 +64,7 @@ function DestinationsContent() {
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
-                className="rounded-full border border-(--color-gold)/30 px-5 py-2 text-sm font-sans font-medium text-(--color-white-muted) transition-all duration-200 cursor-pointer data-[state=active]:bg-(--color-gold) data-[state=active]:text-[#0B0F1A] data-[state=active]:border-(--color-gold) data-[state=inactive]:hover:border-(--color-gold)/60 data-[state=inactive]:hover:text-white"
+                className="rounded-full border border-(--color-gold)/30 px-5 py-2 text-sm font-sans font-medium text-(--color-white-muted) transition-all duration-200 cursor-pointer data-[state=active]:bg-(--color-gold) data-[state=active]:text-[#1B2A41] data-[state=active]:border-(--color-gold) data-[state=inactive]:hover:border-(--color-gold)/60 data-[state=inactive]:hover:text-white"
               >
                 {tab.label}
               </TabsTrigger>
@@ -116,7 +116,7 @@ export default function DestinationsPageClient() {
           className="object-cover object-center"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-linear-to-b from-[#0B0F1A]/40 via-[#0B0F1A]/30 to-[#0B0F1A]/80" />
+        <div className="absolute inset-0 bg-linear-to-b from-[#1B2A41]/40 via-[#1B2A41]/30 to-[#1B2A41]/80" />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
           <h1 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl lg:text-6xl text-white font-semibold tracking-wide leading-tight">
             Explore Destinations

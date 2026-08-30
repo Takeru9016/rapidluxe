@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -73,9 +74,7 @@ export function ReviewForm({ packageId, isEligible }: ReviewFormProps) {
 
   return (
     <div className="bg-(--color-navy-surface) rounded-xl p-6 border border-(--color-navy-border)">
-      <h2 className="font-serif text-2xl text-white">
-        Share Your Experience
-      </h2>
+      <h2 className="font-serif text-2xl text-white">Share Your Experience</h2>
 
       {!isEligible ? (
         <div className="mt-4 bg-(--color-navy-border)/30 rounded-lg p-4 flex items-center gap-3">
@@ -172,13 +171,14 @@ export function ReviewForm({ packageId, isEligible }: ReviewFormProps) {
           </div>
 
           {/* Submit */}
-          <button
+          <Button
             type="submit"
+            variant="coral"
             disabled={isSubmitting}
-            className="w-full bg-(--color-coral) text-white font-sans font-medium py-3 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full h-auto py-3 font-sans font-medium"
           >
             {isSubmitting ? "Submitting..." : "Submit Review"}
-          </button>
+          </Button>
         </form>
       )}
     </div>

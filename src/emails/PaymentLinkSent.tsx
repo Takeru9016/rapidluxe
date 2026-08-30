@@ -108,13 +108,13 @@ export function PaymentLinkSent({ booking, paymentUrl }: Props) {
             If the button doesn&apos;t work, copy and paste this link into your
             browser:
             <br />
-            <span style={{ color: "#C9A84C", wordBreak: "break-all" }}>
+            <span style={{ color: "#F9A826", wordBreak: "break-all" }}>
               {paymentUrl}
             </span>
           </Text>
           <Text style={mutedText}>
             Questions about this payment? WhatsApp us at{" "}
-            <span style={{ color: "#C9A84C" }}>{whatsapp}</span> or email us at{" "}
+            <span style={{ color: "#F9A826" }}>{whatsapp}</span> or email us at{" "}
             {supportEmail}.
           </Text>
           <Footer />
@@ -146,7 +146,7 @@ function Footer() {
 }
 
 const main = {
-  backgroundColor: "#0B0F1A",
+  backgroundColor: "#1B2A41",
   fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
 };
 const container = {
@@ -155,7 +155,7 @@ const container = {
   padding: "40px 20px",
 };
 const heading = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "24px",
   fontWeight: "600" as const,
   margin: "0 0 20px",
@@ -180,7 +180,7 @@ const card = {
 };
 const amountCard = {
   backgroundColor: "#0F1520",
-  border: "1px solid #C9A84C40",
+  border: "1px solid #F9A82640",
   borderRadius: "8px",
   padding: "20px 24px",
   margin: "16px 0",
@@ -205,7 +205,7 @@ const amountSecondary = {
   margin: "0 0 4px",
 };
 const totalAmount = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "28px",
   fontWeight: "700" as const,
   fontFamily: "monospace",
@@ -225,8 +225,8 @@ const rowValue = {
   margin: "0 0 4px",
 };
 const payButton = {
-  backgroundColor: "#C9A84C",
-  color: "#0B0F1A",
+  backgroundColor: "#F9A826",
+  color: "#1B2A41",
   padding: "14px 32px",
   borderRadius: "6px",
   fontWeight: "700" as const,
@@ -241,7 +241,7 @@ const expiryWarning = {
 };
 const hr = { borderColor: "#2A2F40", margin: "24px 0" };
 const footer = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "12px",
   textAlign: "center" as const,
   lineHeight: "1.8",

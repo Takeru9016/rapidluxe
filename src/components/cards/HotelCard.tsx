@@ -31,7 +31,7 @@ export function HotelCard({ hotel, className }: HotelCardProps) {
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         ) : (
-          <div className="absolute inset-0 bg-[#0B0F1A]" />
+          <div className="absolute inset-0 bg-[#1B2A41]" />
         )}
 
         <div className="absolute top-3 left-3 bg-black/50 backdrop-blur-sm rounded-lg px-2 py-1 flex items-center gap-1">

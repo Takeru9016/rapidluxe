@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { BookOpen, Calendar, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, Users, BookOpen } from "lucide-react";
+import { useState } from "react";
 
 import { Badge } from "@/components/shared/Badge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { BookingCardSkeleton } from "@/components/shared/Skeletons";
-import { formatPrice, formatDateRange } from "@/lib/utils";
 import { useBookings } from "@/hooks/api/useBookings";
+import { formatDateRange, formatPrice } from "@/lib/utils";
 import type { DisplayStatus, UserBooking } from "@/types/booking";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -44,7 +44,7 @@ function BookingCard({ booking }: { booking: UserBooking }) {
 
   return (
     <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-5 flex gap-4">
-      <div className="relative w-[100px] h-[100px] rounded-lg overflow-hidden shrink-0">
+      <div className="relative w-20 h-20 sm:w-[100px] sm:h-[100px] rounded-lg overflow-hidden shrink-0">
         {coverImage ? (
           <Image
             src={coverImage}

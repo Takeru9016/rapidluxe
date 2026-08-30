@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function Error({
   error,
@@ -13,25 +14,27 @@ export default function Error({
   return (
     <div className="flex flex-col items-center justify-center py-32 px-4 text-center">
       <AlertTriangle size={48} className="text-(--color-coral) mb-6" />
-      <h2 className="font-cormorant text-3xl text-white">
+      <h2 className="font-display text-3xl text-(--color-white)">
         Something went wrong
       </h2>
-      <p className="font-dm-sans text-(--color-white-muted) mt-2 max-w-md">
+      <p className="font-body text-(--color-white-muted) mt-2 max-w-md">
         {error.message || "An unexpected error occurred. Please try again."}
       </p>
       <div className="mt-8 flex gap-4 justify-center">
-        <button
+        <Button
+          variant="coral"
           onClick={reset}
-          className="px-6 py-2.5 rounded-lg bg-(--color-coral) text-white font-dm-sans text-sm font-medium hover:opacity-90 transition-opacity"
+          className="h-auto px-6 py-2.5 font-body text-sm"
         >
           Try again
-        </button>
-        <Link
-          href="/"
-          className="px-6 py-2.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-dm-sans text-sm font-medium hover:text-white transition-colors"
+        </Button>
+        <Button
+          variant="outline-gold"
+          className="h-auto px-6 py-2.5 font-body text-sm"
+          asChild
         >
-          Go Home
-        </Link>
+          <Link href="/">Go Home</Link>
+        </Button>
       </div>
     </div>
   );

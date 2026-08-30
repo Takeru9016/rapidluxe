@@ -14,12 +14,12 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     marginBottom: 24,
     paddingBottom: 14,
-    borderBottom: "1.5pt solid #C9A84C",
+    borderBottom: "1.5pt solid #F9A826",
   },
   companyName: {
     fontSize: 18,
     fontFamily: "Helvetica-Bold",
-    color: "#0B0F1A",
+    color: "#1B2A41",
     letterSpacing: 0.5,
   },
   companyMeta: {
@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   invoiceLabel: {
     fontSize: 22,
     fontFamily: "Helvetica-Bold",
-    color: "#C9A84C",
+    color: "#F9A826",
     textAlign: "right",
   },
   invoiceMeta: {
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
-    color: "#C9A84C",
+    color: "#F9A826",
     textTransform: "uppercase",
     letterSpacing: 1,
     marginBottom: 6,
@@ -84,8 +84,8 @@ const styles = StyleSheet.create({
   },
   statusBadge: {
     alignSelf: "flex-start",
-    backgroundColor: "#C9A84C",
-    color: "#0B0F1A",
+    backgroundColor: "#F9A826",
+    color: "#1B2A41",
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     letterSpacing: 0.5,
@@ -99,13 +99,13 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     flexDirection: "row",
-    backgroundColor: "#0B0F1A",
+    backgroundColor: "#1B2A41",
     padding: "6 8",
     borderRadius: 3,
     marginBottom: 1,
   },
   tableHeaderCell: {
-    color: "#C9A84C",
+    color: "#F9A826",
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
     textTransform: "uppercase",
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   totalRow: {
     flexDirection: "row",
     padding: "7 8",
-    backgroundColor: "#C9A84C",
+    backgroundColor: "#F9A826",
     borderRadius: 3,
     marginTop: 2,
   },
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 11,
     fontFamily: "Helvetica-Bold",
-    color: "#0B0F1A",
+    color: "#1B2A41",
     textAlign: "right",
     paddingRight: 12,
     textTransform: "uppercase",
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     width: 90,
     fontSize: 11,
     fontFamily: "Helvetica-Bold",
-    color: "#0B0F1A",
+    color: "#1B2A41",
     textAlign: "right",
   },
   // Payment confirmation
@@ -200,12 +200,12 @@ const styles = StyleSheet.create({
     padding: "10 12",
     backgroundColor: "#f8f8f8",
     borderRadius: 4,
-    borderLeft: "3pt solid #C9A84C",
+    borderLeft: "3pt solid #F9A826",
   },
   paymentTitle: {
     fontSize: 9,
     fontFamily: "Helvetica-Bold",
-    color: "#C9A84C",
+    color: "#F9A826",
     textTransform: "uppercase",
     letterSpacing: 0.5,
     marginBottom: 6,

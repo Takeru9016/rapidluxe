@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
   return (
@@ -18,7 +19,7 @@ export default function NotFound() {
         {/* Large 404 — decorative underlay */}
         <span
           aria-hidden
-          className="font-cormorant font-light leading-none select-none"
+          className="font-display font-light leading-none select-none"
           style={{
             fontSize: "12rem",
             color: "color-mix(in srgb, var(--color-gold) 20%, transparent)",
@@ -28,27 +29,29 @@ export default function NotFound() {
         </span>
 
         {/* Overlaid heading */}
-        <h1 className="font-cormorant text-4xl text-white -mt-16 relative z-10">
+        <h1 className="font-display text-4xl text-(--color-white) -mt-16 relative z-10">
           Page Not Found
         </h1>
 
-        <p className="font-dm-sans text-(--color-white-muted) mt-4 max-w-sm">
+        <p className="font-body text-(--color-white-muted) mt-4 max-w-sm">
           The page you&apos;re looking for has drifted off the map.
         </p>
 
         <div className="mt-8 flex flex-wrap gap-4 justify-center">
-          <Link
-            href="/"
-            className="px-6 py-2.5 rounded-lg bg-(--color-coral) text-white font-dm-sans text-sm font-medium hover:opacity-90 transition-opacity"
+          <Button
+            variant="coral"
+            className="h-auto px-6 py-2.5 font-body text-sm"
+            asChild
           >
-            Go Home
-          </Link>
-          <Link
-            href="/packages"
-            className="px-6 py-2.5 rounded-lg border border-(--color-gold) text-(--color-gold) font-dm-sans text-sm font-medium hover:bg-(--color-gold)/10 transition-colors"
+            <Link href="/">Go Home</Link>
+          </Button>
+          <Button
+            variant="outline-gold"
+            className="h-auto px-6 py-2.5 font-body text-sm"
+            asChild
           >
-            Browse Packages
-          </Link>
+            <Link href="/packages">Browse Packages</Link>
+          </Button>
         </div>
       </div>
     </div>

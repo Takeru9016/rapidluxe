@@ -59,8 +59,8 @@ export async function POST(req: NextRequest) {
           to: adminEmail,
           subject: `New contact enquiry — ${subject}`,
           html: `
-            <div style="background:#0B0F1A;color:#D4D8E2;font-family:system-ui,sans-serif;padding:40px 20px;max-width:580px;margin:0 auto">
-              <h2 style="color:#C9A84C;margin:0 0 20px">New Contact Enquiry</h2>
+            <div style="background:#1B2A41;color:#D4D8E2;font-family:system-ui,sans-serif;padding:40px 20px;max-width:580px;margin:0 auto">
+              <h2 style="color:#F9A826;margin:0 0 20px">New Contact Enquiry</h2>
               <table style="width:100%;border-collapse:collapse">
                 <tr><td style="color:#8891A4;font-size:11px;text-transform:uppercase;padding:8px 0 2px">Name</td></tr>
                 <tr><td style="color:#D4D8E2;font-size:14px;padding:0 0 12px">${name}</td></tr>

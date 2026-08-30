@@ -214,7 +214,7 @@ function CorporateForm() {
           <Input
             {...register("gstNumber")}
             placeholder="27AABCU9603R1ZX"
-            className="font-['JetBrains_Mono'] bg-(--color-navy) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
+            className="font-mono bg-(--color-navy) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
           />
         </div>
       </div>

@@ -35,7 +35,7 @@ export function EnquiryReceived({ booking }: Props) {
           <Text style={text}>
             Thank you for reaching out to RapidLuxe. Our travel experts will
             review your request and send you a personalised quote within{" "}
-            <strong style={{ color: "#C9A84C" }}>24 hours</strong>.
+            <strong style={{ color: "#F9A826" }}>24 hours</strong>.
           </Text>
 
           <Section style={card}>
@@ -78,7 +78,7 @@ export function EnquiryReceived({ booking }: Props) {
           <Hr style={hr} />
           <Text style={mutedText}>
             For urgent queries, WhatsApp us at{" "}
-            <span style={{ color: "#C9A84C" }}>{whatsapp}</span> or reply to{" "}
+            <span style={{ color: "#F9A826" }}>{whatsapp}</span> or reply to{" "}
             {supportEmail}.
           </Text>
           <Footer />
@@ -106,7 +106,7 @@ function Row({
         style={{
           ...rowValue,
           ...(mono ? { fontFamily: "monospace" } : {}),
-          ...(highlight ? { color: "#C9A84C", fontSize: "18px" } : {}),
+          ...(highlight ? { color: "#F9A826", fontSize: "18px" } : {}),
         }}
       >
         {value}
@@ -128,7 +128,7 @@ function Footer() {
 }
 
 const main = {
-  backgroundColor: "#0B0F1A",
+  backgroundColor: "#1B2A41",
   fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
 };
 const container = {
@@ -137,7 +137,7 @@ const container = {
   padding: "40px 20px",
 };
 const heading = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "24px",
   fontWeight: "600" as const,
   margin: "0 0 20px",
@@ -175,7 +175,7 @@ const rowValue = {
 };
 const hr = { borderColor: "#2A2F40", margin: "24px 0" };
 const footer = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "12px",
   textAlign: "center" as const,
   lineHeight: "1.8",

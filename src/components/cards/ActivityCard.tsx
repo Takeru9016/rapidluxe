@@ -14,7 +14,7 @@ export function ActivityCard({ activity, className }: ActivityCardProps) {
   return (
     <article
       className={[
-        "bg-(--color-navy-surface) rounded-lg p-4",
+        "bg-(--color-navy-surface) rounded-xl p-4",
         "border border-(--color-navy-border)",
         "flex items-start gap-4",
         "hover:border-(--color-gold)/30 transition-colors duration-200",

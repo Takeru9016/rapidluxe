@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { CountdownTimer } from "@/components/shared/CountdownTimer";
+import { Button } from "@/components/ui/button";
 import type { ApiDeal } from "@/hooks/api/useDeals";
 import { formatPrice } from "@/lib/utils";
 
@@ -36,7 +36,7 @@ export function DealCard({ deal, className }: DealCardProps) {
   return (
     <article
       className={[
-        "group relative rounded-2xl overflow-hidden",
+        "group relative rounded-xl overflow-hidden",
         "border border-(--color-navy-border)",
         "hover:border-(--color-gold)/50",
         "transition-all duration-300",
@@ -66,7 +66,7 @@ export function DealCard({ deal, className }: DealCardProps) {
           <span className="bg-(--color-coral)/90 text-white text-xs font-medium px-3 py-1 rounded-full">
             {TYPE_LABEL[deal.type]}
           </span>
-          <span className="bg-(--color-gold) text-[#0B0F1A] font-mono text-sm font-bold px-3 py-1 rounded-full">
+          <span className="bg-(--color-gold) text-[#1B2A41] font-mono text-sm font-bold px-3 py-1 rounded-full">
             {discountPercent}% OFF
           </span>
           {isEndingSoon && (

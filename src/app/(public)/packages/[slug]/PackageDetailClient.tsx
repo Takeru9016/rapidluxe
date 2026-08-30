@@ -154,7 +154,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
   if (!pkg) {
     return (
       <div className="flex flex-col items-center justify-center py-32 text-center">
-        <p className="font-display text-2xl text-white mb-2">
+        <p className="font-display text-2xl text-(--color-white) mb-2">
           Package not found
         </p>
         <p className="font-sans text-sm text-(--color-text-secondary) mb-6">
@@ -162,12 +162,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
           removed.
         </p>
         <Link href="/packages">
-          <Button
-            variant="outline"
-            className="border-(--color-gold) text-(--color-gold)"
-          >
-            View all packages
-          </Button>
+          <Button variant="outline-gold">View all packages</Button>
         </Link>
       </div>
     );
@@ -212,14 +207,14 @@ export function PackageDetailClient({ slug }: { slug: string }) {
           <nav className="flex items-center gap-2 text-xs font-sans text-(--color-text-secondary)">
             <Link
               href="/"
-              className="hover:text-white transition-colors"
+              className="hover:text-(--color-white) transition-colors"
             >
               Home
             </Link>
             <ChevronRight size={12} className="shrink-0" />
             <Link
               href="/packages"
-              className="hover:text-white transition-colors"
+              className="hover:text-(--color-white) transition-colors"
             >
               Packages
             </Link>
@@ -249,7 +244,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                 </div>
               )}
 
-              <h1 className="font-display text-3xl md:text-4xl font-light text-white mb-4">
+              <h1 className="font-display text-3xl md:text-4xl font-light text-(--color-white) mb-4">
                 {pkg.title}
               </h1>
 
@@ -288,7 +283,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                 )}
                 <button
                   onClick={() => toggle(pkg.id)}
-                  className="flex items-center gap-1.5 text-sm text-(--color-text-secondary) hover:text-white transition-colors"
+                  className="flex items-center gap-1.5 text-sm text-(--color-text-secondary) hover:text-(--color-white) transition-colors"
                 >
                   <Heart
                     size={18}
@@ -329,7 +324,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                   <TabsTrigger
                     key={tab}
                     value={tab}
-                    className="capitalize flex-1 px-3 py-3 rounded-none border-b-2 border-transparent bg-transparent text-(--color-text-secondary) hover:text-white transition-colors data-active:border-(--color-gold) data-active:text-(--color-gold) data-active:bg-transparent text-xs md:text-sm"
+                    className="capitalize flex-1 px-3 py-3 rounded-none border-b-2 border-transparent bg-transparent text-(--color-text-secondary) hover:text-(--color-white) transition-colors data-active:border-(--color-gold) data-active:text-(--color-gold) data-active:bg-transparent text-xs md:text-sm"
                   >
                     {tab}
                   </TabsTrigger>
@@ -344,7 +339,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                 {/* Highlights grid */}
                 {highlights.length > 0 && (
                   <div>
-                    <h3 className="font-display text-lg text-white mb-3 flex items-center gap-2">
+                    <h3 className="font-display text-lg text-(--color-white) mb-3 flex items-center gap-2">
                       <Sparkles size={16} className="text-(--color-gold)" />
                       Trip Highlights
                     </h3>
@@ -372,7 +367,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-5">
-                    <h3 className="font-display text-lg text-white mb-4">
+                    <h3 className="font-display text-lg text-(--color-white) mb-4">
                       What&apos;s Included
                     </h3>
                     <ul className="flex flex-col gap-2.5">
@@ -392,7 +387,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                   </div>
 
                   <div className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-5">
-                    <h3 className="font-display text-lg text-white mb-4">
+                    <h3 className="font-display text-lg text-(--color-white) mb-4">
                       Not Included
                     </h3>
                     <ul className="flex flex-col gap-2.5">
@@ -415,7 +410,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                 {pkg.cancellationPolicy &&
                   pkg.cancellationPolicy.length > 0 && (
                     <div className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-5">
-                      <h3 className="font-display text-lg text-white mb-4">
+                      <h3 className="font-display text-lg text-(--color-white) mb-4">
                         Cancellation Policy
                       </h3>
                       <ul className="flex flex-col gap-3">
@@ -464,12 +459,12 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                       value={`day-${day.day}`}
                       className="border-(--color-navy-border) px-5"
                     >
-                      <AccordionTrigger className="py-4 hover:no-underline text-white">
+                      <AccordionTrigger className="py-4 hover:no-underline text-(--color-white)">
                         <div className="flex items-center gap-3">
                           <span className="font-mono text-xs text-(--color-gold) bg-(--color-gold)/10 px-2 py-1 rounded-md w-14 text-center shrink-0">
                             Day {day.day}
                           </span>
-                          <span className="font-display text-base font-normal text-white text-left">
+                          <span className="font-display text-base font-normal text-(--color-white) text-left">
                             {day.title}
                           </span>
                         </div>
@@ -483,7 +478,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                             {day.meals.map((meal) => (
                               <span
                                 key={meal}
-                                className="text-xs font-mono bg-(--color-navy-border) text-(--color-white-muted) px-2 py-0.5 rounded"
+                                className="text-xs font-sans bg-(--color-navy-border) text-(--color-white-muted) px-2 py-0.5 rounded"
                               >
                                 {meal}
                               </span>
@@ -517,7 +512,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                         )}
                         <div className="p-4">
                           <div className="flex items-start justify-between gap-2 mb-1">
-                            <p className="font-sans font-medium text-white leading-snug">
+                            <p className="font-sans font-medium text-(--color-white) leading-snug">
                               {hotel.name}
                             </p>
                             <span className="font-mono text-xs text-(--color-gold) shrink-0">
@@ -557,7 +552,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
               >
                 {includedActivities.length > 0 && (
                   <div>
-                    <h3 className="font-display text-lg text-white mb-4">
+                    <h3 className="font-display text-lg text-(--color-white) mb-4">
                       Included Activities
                     </h3>
                     <div className="flex flex-col gap-3">
@@ -570,7 +565,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
 
                 {optionalActivities.length > 0 && (
                   <div>
-                    <h3 className="font-display text-lg text-white mb-4">
+                    <h3 className="font-display text-lg text-(--color-white) mb-4">
                       Optional Add-Ons
                     </h3>
                     <div className="flex flex-col gap-3">
@@ -638,7 +633,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
             {/* Similar packages */}
             {similarPackages.length > 0 && (
               <section className="mt-16">
-                <h2 className="font-display text-2xl font-light text-white mb-6">
+                <h2 className="font-display text-2xl font-light text-(--color-white) mb-6">
                   You May Also Like
                 </h2>
                 <div className="flex gap-5 overflow-x-auto pb-2">
@@ -657,7 +652,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
             {/* Price Guide card */}
             <div className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-6 flex flex-col gap-5">
               <div>
-                <h3 className="font-display text-2xl text-white leading-tight">
+                <h3 className="font-display text-2xl text-(--color-white) leading-tight">
                   Price Guide
                 </h3>
                 <div className="h-px bg-(--color-gold) mt-3" />
@@ -682,7 +677,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                   <p className="font-sans text-xs uppercase tracking-wider text-(--color-text-secondary)">
                     Children (Age 2–11)
                   </p>
-                  <p className="font-mono text-xl text-white mt-1">
+                  <p className="font-mono text-xl text-(--color-white) mt-1">
                     {formatPrice(pkg.childPrice)}
                   </p>
                   <p className="font-sans text-xs text-(--color-text-secondary) mt-0.5">
@@ -699,7 +694,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                   </p>
                   {pkg.infantPrice === 0 ? (
                     <div className="flex items-center gap-2 mt-1">
-                      <p className="font-sans text-sm text-white">
+                      <p className="font-sans text-sm text-(--color-white)">
                         Infants (under 2) travel free
                       </p>
                       <span className="font-sans text-xs font-medium uppercase tracking-wide text-(--color-teal) bg-(--color-teal)/10 px-2 py-0.5 rounded">
@@ -707,7 +702,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                       </span>
                     </div>
                   ) : (
-                    <p className="font-mono text-xl text-white mt-1">
+                    <p className="font-mono text-xl text-(--color-white) mt-1">
                       {formatPrice(pkg.infantPrice)}{" "}
                       <span className="font-sans text-xs text-(--color-text-secondary)">
                         per infant
@@ -746,7 +741,10 @@ export function PackageDetailClient({ slug }: { slug: string }) {
               {/* CTA */}
               <div>
                 <Link href={`/book/${pkg.slug}`}>
-                  <Button className="w-full bg-(--color-coral) hover:bg-(--color-coral)/90 text-white font-sans font-medium h-11">
+                  <Button
+                    variant="coral"
+                    className="w-full font-sans font-medium h-11"
+                  >
                     Submit Booking Request
                   </Button>
                 </Link>
@@ -760,14 +758,15 @@ export function PackageDetailClient({ slug }: { slug: string }) {
             {/* Quote card */}
             <div className="border border-(--color-navy-border) rounded-xl p-4 flex flex-col gap-3">
               <div>
-                <p className="font-sans text-sm font-medium text-white">
+                <p className="font-sans text-sm font-medium text-(--color-white)">
                   Need a custom itinerary?
                 </p>
                 <p className="font-sans text-xs text-(--color-text-secondary) mt-0.5">
                   Personalise this trip for your dates and group.
                 </p>
               </div>
-              <button
+              <Button
+                variant="outline-gold"
                 onClick={() => {
                   const phone =
                     process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP?.replace(
@@ -782,11 +781,11 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                     "_blank",
                   );
                 }}
-                className="flex items-center justify-center gap-1.5 w-full border border-(--color-gold)/40 text-(--color-gold) hover:bg-(--color-gold)/10 hover:border-(--color-gold) font-sans text-sm font-medium h-9 rounded-lg transition-colors"
+                className="w-full gap-1.5 font-sans text-sm h-9"
               >
                 <MessageSquare size={14} />
                 Get Custom Quote →
-              </button>
+              </Button>
             </div>
           </aside>
         </div>
@@ -803,7 +802,10 @@ export function PackageDetailClient({ slug }: { slug: string }) {
           showDiscount={!!activeDeal}
         />
         <Link href={`/book/${pkg.slug}`} className="shrink-0">
-          <Button className="bg-(--color-coral) hover:bg-(--color-coral)/90 text-white font-sans font-medium text-sm h-10 px-4">
+          <Button
+            variant="coral"
+            className="font-sans font-medium text-sm h-10 px-4"
+          >
             Submit Booking Request
           </Button>
         </Link>

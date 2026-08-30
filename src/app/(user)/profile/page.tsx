@@ -1,25 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Calendar, Heart, MapPin, Pencil, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Heart, Calendar, User, Pencil, MapPin } from "lucide-react";
-
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/shared/Badge";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { useBookings } from "@/hooks/api/useBookings";
 import { useWishlist } from "@/hooks/api/useWishlist";
 
-import { formatPrice, formatDate } from "@/lib/utils";
-import type { UserProfile } from "@/types/user";
+import { formatDate, formatPrice } from "@/lib/utils";
 import type { DisplayStatus, UserBooking } from "@/types/booking";
+import type { UserProfile } from "@/types/user";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -173,10 +172,10 @@ export default function ProfilePage() {
     useWishlist();
 
   const inputClass =
-    "bg-[var(--color-navy-surface)] border-[var(--color-navy-border)] text-white placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-gold)] focus:ring-1 focus:ring-[var(--color-gold)]/30 rounded-xl h-11 font-['DM_Sans'] text-sm";
+    "bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus:border-(--color-gold) focus:ring-1 focus:ring-(--color-gold)/30 rounded-xl h-11 font-['DM_Sans'] text-sm";
 
   const labelClass =
-    "block text-xs font-medium uppercase tracking-wide text-[var(--color-white-muted)] mb-1.5 font-['DM_Sans']";
+    "block text-xs font-medium uppercase tracking-wide text-(--color-white-muted) mb-1.5 font-['DM_Sans']";
 
   return (
     <main className="min-h-screen bg-(--color-navy) pt-24">

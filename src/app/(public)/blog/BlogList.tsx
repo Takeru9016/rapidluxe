@@ -157,7 +157,7 @@ export function BlogList({ posts }: { posts: BlogCardData[] }) {
                   <TabsTrigger
                     key={cat}
                     value={cat}
-                    className="font-sans text-sm data-[state=active]:bg-(--color-gold) data-[state=active]:text-[#0B0F1A] text-(--color-text-secondary)"
+                    className="font-sans text-sm data-[state=active]:bg-(--color-gold) data-[state=active]:text-[#1B2A41] text-(--color-text-secondary)"
                   >
                     {cat}
                   </TabsTrigger>

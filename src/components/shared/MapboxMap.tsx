@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { useTheme } from "next-themes";
 import { Map } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -66,7 +66,7 @@ export function MapboxMap({
         "bottom-right",
       );
 
-      new mapboxgl.default.Marker({ color: "#C9A84C" })
+      new mapboxgl.default.Marker({ color: "#F9A826" })
         .setLngLat([lng, lat])
         .addTo(map);
 
@@ -74,7 +74,7 @@ export function MapboxMap({
         markers.forEach(({ lat: mLat, lng: mLng, label }) => {
           const el = document.createElement("div");
           el.className =
-            "w-3 h-3 rounded-full bg-[#C9A84C] border-2 border-white shadow";
+            "w-3 h-3 rounded-full bg-[#F9A826] border-2 border-white shadow";
           const m = new mapboxgl.default.Marker({ element: el }).setLngLat([
             mLng,
             mLat,

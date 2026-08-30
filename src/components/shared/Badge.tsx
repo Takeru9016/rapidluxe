@@ -19,7 +19,7 @@ const variantStyles: Record<BadgeProps["variant"], string> = {
 
 const sizeStyles: Record<NonNullable<BadgeProps["size"]>, string> = {
   md: "px-3 py-1 text-sm font-medium font-sans",
-  sm: "px-2 py-0.5 text-xs font-mono",
+  sm: "px-2 py-0.5 text-xs font-sans",
 };
 
 export function Badge({

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { ChevronDown } from "lucide-react";
 import { gsap } from "gsap";
+import { ChevronDown } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 function toMp4CloudinaryUrl(url: string | undefined): string | undefined {
   if (!url) return url;
@@ -73,12 +73,12 @@ export function Hero() {
           <source src={videoUrl} type="video/mp4" />
         </video>
         {/* Base layer — consistent darkening over any video frame or theme */}
-        <div className="absolute inset-0 bg-[#0B0F1A]/50" />
+        <div className="absolute inset-0 bg-[#1B2A41]/50" />
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(to bottom, #0B0F1A80 0%, rgba(11,15,26,0.2) 45%, rgba(11,15,26,0.2) 55%, #0B0F1AE0 100%)",
+              "linear-gradient(to bottom, #1B2A4180 0%, rgba(11,15,26,0.2) 45%, rgba(11,15,26,0.2) 55%, #1B2A41E0 100%)",
           }}
         />
       </div>

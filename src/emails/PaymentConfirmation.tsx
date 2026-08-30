@@ -65,7 +65,7 @@ export function PaymentConfirmation({ booking }: Props) {
             Keep this email as your payment receipt. A booking confirmation with
             full trip details will follow once our team reviews your booking.
             For any questions, WhatsApp us at{" "}
-            <span style={{ color: "#C9A84C" }}>{whatsapp}</span> or email us at{" "}
+            <span style={{ color: "#F9A826" }}>{whatsapp}</span> or email us at{" "}
             {supportEmail}.
           </Text>
           <Footer />
@@ -109,7 +109,7 @@ function Footer() {
 }
 
 const main = {
-  backgroundColor: "#0B0F1A",
+  backgroundColor: "#1B2A41",
   fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
 };
 const container = {
@@ -118,7 +118,7 @@ const container = {
   padding: "40px 20px",
 };
 const heading = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "24px",
   fontWeight: "600" as const,
   margin: "0 0 20px",
@@ -156,7 +156,7 @@ const confirmLabel = {
   margin: "0 0 4px",
 };
 const confirmAmount = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "32px",
   fontWeight: "700" as const,
   fontFamily: "monospace",
@@ -183,7 +183,7 @@ const rowValue = {
 };
 const hr = { borderColor: "#2A2F40", margin: "24px 0" };
 const footer = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "12px",
   textAlign: "center" as const,
   lineHeight: "1.8",

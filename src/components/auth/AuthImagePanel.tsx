@@ -16,15 +16,17 @@ export function AuthImagePanel({
   blobTagline,
 }: AuthImagePanelProps) {
   const blobRadius =
-    side === "right" ? "2rem 0.75rem 2rem 0.75rem" : "0.75rem 2rem 0.75rem 2rem";
+    side === "right"
+      ? "2rem 0.75rem 2rem 0.75rem"
+      : "0.75rem 2rem 0.75rem 2rem";
   const blobPosition =
     side === "right"
       ? "absolute top-10 right-8 max-w-[280px] p-6 text-right"
       : "absolute top-10 left-8 max-w-[280px] p-6";
   const gradient =
     side === "right"
-      ? "absolute inset-0 bg-linear-to-br from-[#0B0F1A]/75 via-[#0B0F1A]/30 to-[#0B0F1A]/65"
-      : "absolute inset-0 bg-linear-to-bl from-[#0B0F1A]/75 via-[#0B0F1A]/30 to-[#0B0F1A]/65";
+      ? "absolute inset-0 bg-linear-to-br from-[#1B2A41]/75 via-[#1B2A41]/30 to-[#1B2A41]/65"
+      : "absolute inset-0 bg-linear-to-bl from-[#1B2A41]/75 via-[#1B2A41]/30 to-[#1B2A41]/65";
 
   return (
     <div className="relative hidden lg:block overflow-hidden">
@@ -73,13 +75,13 @@ export function AuthImagePanel({
             border: "1px solid rgba(201,168,76,0.12)",
           }}
         >
-          <p className="font-(--font-display) text-[#C9A84C] text-lg italic">
+          <p className="font-(--font-display) text-[#F9A826] text-lg italic">
             {tagline}
           </p>
           <div className="flex items-center gap-6">
             {stats.map(({ label, sub }) => (
               <div key={sub} className="flex flex-col">
-                <span className="font-(--font-mono) text-[#C9A84C] text-base">
+                <span className="font-(--font-mono) text-[#F9A826] text-base">
                   {label}
                 </span>
                 <span className="font-(--font-body) text-[#9CA3AF] text-xs">

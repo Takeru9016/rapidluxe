@@ -11,7 +11,7 @@ export default function SSOCallbackPage() {
     <div className="min-h-screen flex items-center justify-center bg-(--color-navy)">
       <div className="text-center space-y-4">
         <span className="font-(--font-display) text-2xl tracking-wider">
-          <span className="text-[#C9A84C]">Rapid</span>
+          <span className="text-[#F9A826]">Rapid</span>
           <span className="text-white">Luxe</span>
         </span>
         <p className="text-sm text-(--color-text-secondary)">

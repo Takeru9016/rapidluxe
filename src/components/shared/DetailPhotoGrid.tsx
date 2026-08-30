@@ -236,7 +236,7 @@ export function DetailPhotoGrid({
                     onClick={() => setActiveIndex(i)}
                     className={`relative w-16 h-12 rounded-lg overflow-hidden shrink-0 transition-all ${
                       i === activeIndex
-                        ? "ring-2 ring-[#C9A84C]"
+                        ? "ring-2 ring-[#F9A826]"
                         : "opacity-60 hover:opacity-100"
                     }`}
                   >

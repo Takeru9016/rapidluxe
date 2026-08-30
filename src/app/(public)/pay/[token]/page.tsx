@@ -7,6 +7,7 @@ import Script from "next/script";
 import { use, useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 import { formatDate, formatPrice } from "@/lib/utils";
@@ -36,7 +37,7 @@ function ErrorShell({
   return (
     <div className="flex flex-col items-center text-center py-20 px-6">
       {icon}
-      <h1 className="font-['Cormorant_Garamond'] text-3xl text-white mt-6">
+      <h1 className="font-['Cormorant_Garamond'] text-3xl text-(--color-white) mt-6">
         {title}
       </h1>
       <p className="font-['DM_Sans'] text-(--color-white-muted) mt-3 max-w-md">
@@ -130,7 +131,7 @@ export default function PayPage({
           name: data.userName ?? undefined,
           email: data.userEmail ?? undefined,
         },
-        theme: { color: "#C9A84C" },
+        theme: { color: "#F9A826" },
         handler: async (response: RazorpayCheckoutResponse) => {
           try {
             const verifyRes = await fetch("/api/payments/verify", {
@@ -178,7 +179,7 @@ export default function PayPage({
 
       <div className="max-w-lg mx-auto px-4 py-12">
         {/* Logo */}
-        <p className="font-['Cormorant_Garamond'] text-3xl text-center text-white mb-10">
+        <p className="font-['Cormorant_Garamond'] text-3xl text-center text-(--color-white) mb-10">
           Rapid<span className="text-(--color-gold)">Luxe</span>
         </p>
 
@@ -202,12 +203,13 @@ export default function PayPage({
             title="Already Paid"
             message={`This booking has already been paid.${state.bookingRef ? ` Ref: ${state.bookingRef}` : ""}`}
           >
-            <Link
-              href="/bookings"
-              className="mt-6 px-6 py-3 rounded-xl border border-(--color-gold) text-(--color-gold) font-['DM_Sans'] text-sm hover:bg-(--color-gold)/10 transition-colors"
+            <Button
+              variant="outline-gold"
+              className="mt-6 h-auto px-6 py-3 font-['DM_Sans'] text-sm"
+              asChild
             >
-              View your booking →
-            </Link>
+              <Link href="/bookings">View your booking →</Link>
+            </Button>
           </ErrorShell>
         )}
 
@@ -231,7 +233,7 @@ export default function PayPage({
         {state.kind === "success" && (
           <div className="flex flex-col items-center text-center py-20 px-6">
             <CheckCircle2 size={64} className="text-(--color-teal)" />
-            <h1 className="font-['Cormorant_Garamond'] text-4xl text-white mt-6">
+            <h1 className="font-['Cormorant_Garamond'] text-4xl text-(--color-white) mt-6">
               Payment Successful
             </h1>
             {state.bookingRef && (
@@ -243,12 +245,13 @@ export default function PayPage({
               Your payment is confirmed. Our team will finalize your trip and be
               in touch shortly.
             </p>
-            <Link
-              href="/bookings"
-              className="mt-8 px-6 py-3 rounded-xl bg-(--color-coral) text-white font-['DM_Sans'] font-semibold text-sm hover:opacity-90 transition-opacity"
+            <Button
+              variant="coral"
+              className="mt-8 h-auto px-6 py-3 font-['DM_Sans'] font-semibold text-sm"
+              asChild
             >
-              View My Bookings
-            </Link>
+              <Link href="/bookings">View My Bookings</Link>
+            </Button>
           </div>
         )}
 
@@ -268,7 +271,7 @@ export default function PayPage({
                 </div>
               )}
               <div className="flex flex-col justify-center gap-1 min-w-0">
-                <p className="font-['Cormorant_Garamond'] text-xl text-white leading-tight">
+                <p className="font-['Cormorant_Garamond'] text-xl text-(--color-white) leading-tight">
                   {state.data.packageName}
                 </p>
                 <p className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
@@ -301,7 +304,7 @@ export default function PayPage({
                 <span className="font-['DM_Sans'] text-(--color-text-secondary)">
                   Quoted Amount
                 </span>
-                <span className="font-['JetBrains_Mono'] text-white">
+                <span className="font-['JetBrains_Mono'] text-(--color-white)">
                   {formatPrice(state.data.quotedAmount ?? 0)}
                 </span>
               </div>
@@ -315,7 +318,7 @@ export default function PayPage({
               </div>
               <Separator className="bg-(--color-navy-border) my-2" />
               <div className="flex justify-between items-center">
-                <span className="font-['DM_Sans'] font-semibold text-white">
+                <span className="font-['DM_Sans'] font-semibold text-(--color-white)">
                   Total Due
                 </span>
                 <span className="font-['JetBrains_Mono'] text-2xl text-(--color-gold) font-bold">
@@ -332,16 +335,17 @@ export default function PayPage({
               </p>
             )}
 
-            <button
+            <Button
               type="button"
+              variant="coral"
               onClick={handlePay}
               disabled={paying}
-              className="w-full h-14 rounded-xl bg-(--color-coral) text-white font-['DM_Sans'] font-semibold text-base hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full h-12 font-['DM_Sans'] font-semibold text-base"
             >
               {paying
                 ? "Opening payment…"
                 : `Pay ${formatPrice(state.data.totalAmount)}`}
-            </button>
+            </Button>
           </div>
         )}
       </div>

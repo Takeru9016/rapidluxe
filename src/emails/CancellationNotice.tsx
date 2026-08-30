@@ -62,7 +62,7 @@ export function CancellationNotice({ booking }: Props) {
           <Text style={mutedText}>
             For any questions about your cancellation or refund, contact us:
             <br />
-            WhatsApp: <span style={{ color: "#C9A84C" }}>{whatsapp}</span>
+            WhatsApp: <span style={{ color: "#F9A826" }}>{whatsapp}</span>
             <br />
             Email: {supportEmail}
           </Text>
@@ -107,7 +107,7 @@ function Footer() {
 }
 
 const main = {
-  backgroundColor: "#0B0F1A",
+  backgroundColor: "#1B2A41",
   fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
 };
 const container = {
@@ -116,7 +116,7 @@ const container = {
   padding: "40px 20px",
 };
 const heading = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "24px",
   fontWeight: "600" as const,
   margin: "0 0 20px",
@@ -173,7 +173,7 @@ const rowValue = {
 };
 const hr = { borderColor: "#2A2F40", margin: "24px 0" };
 const footer = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "12px",
   textAlign: "center" as const,
   lineHeight: "1.8",

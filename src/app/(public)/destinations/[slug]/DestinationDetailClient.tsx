@@ -425,7 +425,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
                       <td className="px-4 py-4">
                         <span
                           className={[
-                            "font-mono text-xs px-2 py-0.5 rounded-full",
+                            "font-sans text-xs px-2 py-0.5 rounded-full",
                             row.crowdLevel === "LOW" &&
                               "bg-(--color-teal)/20 text-(--color-teal) border border-(--color-teal)/30",
                             row.crowdLevel === "MEDIUM" &&

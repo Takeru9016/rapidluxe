@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { DealCard } from "@/components/cards/DealCard";
 import { CountdownTimer } from "@/components/shared/CountdownTimer";
 import { DealCardSkeleton } from "@/components/shared/Skeletons";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDeals } from "@/hooks/api/useDeals";
 
@@ -86,13 +87,14 @@ function NewsletterStrip() {
               placeholder="your@email.com"
               className="bg-(--color-navy) border border-(--color-navy-border) focus:border-(--color-gold) text-white placeholder:text-(--color-text-secondary) rounded-lg px-4 h-10 flex-1"
             />
-            <button
+            <Button
               type="submit"
+              variant="gold"
               disabled={submitting}
-              className="bg-(--color-coral) text-white rounded-lg px-6 h-10 font-sans font-medium hover:bg-(--color-coral)/90 transition-colors disabled:opacity-60"
+              className="h-10 px-6 font-sans font-medium"
             >
               Subscribe →
-            </button>
+            </Button>
           </form>
         )}
       </div>
@@ -171,12 +173,13 @@ export default function DealsPageClient() {
               We regularly add exclusive offers for our travellers. Subscribe
               below to be the first to know.
             </p>
-            <Link
-              href="/packages"
-              className="inline-block mt-6 px-5 py-2.5 rounded-lg border border-(--color-gold) text-(--color-gold) font-sans text-sm font-medium hover:bg-(--color-gold)/10 transition-colors"
+            <Button
+              variant="outline-gold"
+              className="mt-6 h-10 font-sans text-sm"
+              asChild
             >
-              Browse All Packages →
-            </Link>
+              <Link href="/packages">Browse All Packages →</Link>
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">

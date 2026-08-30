@@ -1,16 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, MouseEvent } from "react";
-import Link from "next/link";
+import { UserButton, useUser } from "@clerk/nextjs";
 import { Menu } from "lucide-react";
-import { useUser, UserButton } from "@clerk/nextjs";
-
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { type MouseEvent, useEffect, useRef, useState } from "react";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
-
-import { useUIStore } from "@/store/uiStore";
-
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useUIStore } from "@/store/uiStore";
 
 const plainLinks = [
   { label: "Packages", href: "/packages" },
@@ -60,7 +57,7 @@ export function Navbar() {
         className={cn(
           "flex items-center justify-between transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]",
           scrolled
-            ? "bg-(--color-navy-surface)/80 backdrop-blur-md border border-(--color-navy-border) rounded-full px-4 py-2.5 gap-4 shadow-2xl shadow-black/20"
+            ? "max-w-[calc(100vw-2rem)] bg-(--color-navy-surface)/80 backdrop-blur-md border border-(--color-navy-border) rounded-full px-4 py-2.5 gap-4 shadow-2xl shadow-black/20"
             : "max-w-7xl mx-auto px-4 md:px-6 h-16 gap-6",
         )}
       >

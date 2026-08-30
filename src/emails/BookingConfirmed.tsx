@@ -98,7 +98,7 @@ export function BookingConfirmed({ booking }: Props) {
           <Hr style={hr} />
           <Text style={mutedText}>
             For any questions, WhatsApp us at{" "}
-            <span style={{ color: "#C9A84C" }}>{whatsapp}</span> or email us at{" "}
+            <span style={{ color: "#F9A826" }}>{whatsapp}</span> or email us at{" "}
             {supportEmail}.
           </Text>
           <Footer />
@@ -126,7 +126,7 @@ function Row({
         style={{
           ...rowValue,
           ...(mono ? { fontFamily: "monospace" } : {}),
-          ...(highlight ? { color: "#C9A84C", fontSize: "18px" } : {}),
+          ...(highlight ? { color: "#F9A826", fontSize: "18px" } : {}),
         }}
       >
         {value}
@@ -153,7 +153,7 @@ function Footer() {
 }
 
 const main = {
-  backgroundColor: "#0B0F1A",
+  backgroundColor: "#1B2A41",
   fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
 };
 const container = {
@@ -162,13 +162,13 @@ const container = {
   padding: "40px 20px",
 };
 const heading = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "28px",
   fontWeight: "700" as const,
   margin: "0 0 20px",
 };
 const sectionTitle = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "12px",
   fontWeight: "600" as const,
   textTransform: "uppercase" as const,
@@ -189,14 +189,14 @@ const mutedText = {
 };
 const confirmBanner = {
   backgroundColor: "#0F1520",
-  border: "1px solid #C9A84C",
+  border: "1px solid #F9A826",
   borderRadius: "8px",
   padding: "24px",
   margin: "16px 0",
   textAlign: "center" as const,
 };
 const confirmTitle = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "20px",
   fontWeight: "700" as const,
   margin: "0 0 4px",
@@ -240,7 +240,7 @@ const rowValue = {
 };
 const hr = { borderColor: "#2A2F40", margin: "24px 0" };
 const footer = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "12px",
   textAlign: "center" as const,
   lineHeight: "1.8",

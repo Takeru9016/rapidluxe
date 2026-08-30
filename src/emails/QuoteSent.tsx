@@ -92,7 +92,7 @@ export function QuoteSent({ booking }: Props) {
           <Hr style={hr} />
           <Text style={mutedText}>
             Reply to this email or WhatsApp us at{" "}
-            <span style={{ color: "#C9A84C" }}>{whatsapp}</span> (or email{" "}
+            <span style={{ color: "#F9A826" }}>{whatsapp}</span> (or email{" "}
             {supportEmail}) if you have any questions. Your payment link will
             arrive separately.
           </Text>
@@ -125,7 +125,7 @@ function Footer() {
 }
 
 const main = {
-  backgroundColor: "#0B0F1A",
+  backgroundColor: "#1B2A41",
   fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
 };
 const container = {
@@ -134,13 +134,13 @@ const container = {
   padding: "40px 20px",
 };
 const heading = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "24px",
   fontWeight: "600" as const,
   margin: "0 0 20px",
 };
 const sectionTitle = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "12px",
   fontWeight: "600" as const,
   textTransform: "uppercase" as const,
@@ -167,7 +167,7 @@ const card = {
 };
 const quoteCard = {
   backgroundColor: "#0F1520",
-  border: "1px solid #C9A84C40",
+  border: "1px solid #F9A82640",
   borderRadius: "8px",
   padding: "20px 24px",
   margin: "16px 0",
@@ -180,7 +180,7 @@ const quoteLabel = {
   margin: "12px 0 4px",
 };
 const quoteAmount = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "28px",
   fontWeight: "700" as const,
   fontFamily: "monospace",
@@ -207,7 +207,7 @@ const rowValue = {
 };
 const hr = { borderColor: "#2A2F40", margin: "24px 0" };
 const footer = {
-  color: "#C9A84C",
+  color: "#F9A826",
   fontSize: "12px",
   textAlign: "center" as const,
   lineHeight: "1.8",

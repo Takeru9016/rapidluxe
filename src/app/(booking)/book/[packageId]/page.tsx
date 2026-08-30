@@ -473,7 +473,7 @@ function Step1({ pkg }: { pkg: Package }) {
                 key={occ.value}
                 type="button"
                 onClick={() => setOccasion(occ.value)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-['DM_Sans'] transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-full border text-sm font-['DM_Sans'] transition-colors ${
                   selected
                     ? "border-(--color-gold) text-(--color-gold) bg-(--color-gold)/10"
                     : "border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/50 hover:text-white"
@@ -497,7 +497,7 @@ function Step1({ pkg }: { pkg: Package }) {
           <button
             type="button"
             onClick={() => setDateMode("exact")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-['DM_Sans'] transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-['DM_Sans'] transition-colors ${
               dateMode === "exact"
                 ? "bg-(--color-gold) text-(--color-navy) font-medium"
                 : "border border-(--color-navy-border) text-(--color-white-muted)"
@@ -508,7 +508,7 @@ function Step1({ pkg }: { pkg: Package }) {
           <button
             type="button"
             onClick={() => setDateMode("flexible")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-['DM_Sans'] transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-['DM_Sans'] transition-colors ${
               dateMode === "flexible"
                 ? "bg-(--color-gold) text-(--color-navy) font-medium"
                 : "border border-(--color-navy-border) text-(--color-white-muted)"
@@ -627,7 +627,7 @@ function Step1({ pkg }: { pkg: Package }) {
         type="button"
         variant="coral"
         onClick={() => setStep(2)}
-        className="w-full h-auto py-3 rounded-xl font-sans font-semibold mt-6"
+        className="w-full h-12 rounded-xl font-sans font-semibold mt-6"
       >
         Continue →
       </Button>
@@ -967,7 +967,7 @@ function Step2() {
                 key={option}
                 type="button"
                 onClick={() => toggleDietary(option)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-['DM_Sans'] transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-full border text-sm font-['DM_Sans'] transition-colors ${
                   selected
                     ? "border-(--color-gold) text-(--color-gold) bg-(--color-gold)/10"
                     : "border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/50 hover:text-white"
@@ -1017,7 +1017,7 @@ function Step2() {
         <Button
           type="submit"
           variant="coral"
-          className="flex-1 h-auto py-3 rounded-xl font-sans font-semibold"
+          className="flex-1 h-12 rounded-xl font-sans font-semibold"
         >
           Continue →
         </Button>
@@ -1274,7 +1274,11 @@ function Step4() {
       </div>
 
       <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-        <Button variant="outline-gold" className="h-auto px-6 py-3 rounded-xl font-sans" asChild>
+        <Button
+          variant="outline-gold"
+          className="h-auto px-6 py-3 rounded-xl font-sans"
+          asChild
+        >
           <Link href="/bookings">View My Bookings</Link>
         </Button>
         <Link

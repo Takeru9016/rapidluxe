@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/shared/Badge";
 import { PortableTextBody } from "@/components/shared/PortableTextBody";
+import { Button } from "@/components/ui/button";
 import {
   BLOG_FALLBACK_AVATAR,
   BLOG_FALLBACK_IMAGE,
@@ -225,12 +226,15 @@ export default async function BlogPostPage({
             Explore our curated luxury packages and start planning your next
             journey.
           </p>
-          <Link
-            href="/packages"
-            className="inline-flex items-center gap-2 bg-(--color-coral) text-white font-sans font-medium px-8 py-3 rounded-lg hover:bg-(--color-coral)/90 transition-colors"
+          <Button
+            variant="coral"
+            className="h-auto gap-2 px-8 py-3 font-sans"
+            asChild
           >
-            Browse Packages <ArrowRight size={16} />
-          </Link>
+            <Link href="/packages">
+              Browse Packages <ArrowRight size={16} />
+            </Link>
+          </Button>
         </div>
       </div>
     </main>

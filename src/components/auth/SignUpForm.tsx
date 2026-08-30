@@ -1,7 +1,7 @@
 "use client";
 
-import { useSignUp } from "@clerk/nextjs/legacy";
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
+import { useSignUp } from "@clerk/nextjs/legacy";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod/v3";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 // ── Schemas
@@ -149,17 +150,13 @@ function Field({
 }
 
 const inputBase =
-  "w-full h-12 rounded-xl px-4 text-sm outline-none transition-all duration-200 " +
+  "w-full h-12 rounded-lg px-4 text-sm outline-none transition-all duration-200 " +
   "bg-(--color-navy-surface) border border-(--color-navy-border) " +
   "text-(--color-white) placeholder:text-(--color-text-secondary) " +
-  "focus:border-[#C9A84C] focus:ring-2 focus:ring-[#C9A84C]/20 " +
+  "focus:border-(--color-gold) focus:ring-2 focus:ring-(--color-gold)/20 " +
   "aria-[invalid=true]:border-[#E07A5F] aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-[#E07A5F]/20";
 
-const ctaBase =
-  "w-full h-12 rounded-xl font-semibold text-sm tracking-wide transition-all duration-200 " +
-  "bg-[#E07A5F] text-white hover:bg-[#c9684e] " +
-  "shadow-lg shadow-[#E07A5F]/25 hover:shadow-[#E07A5F]/40 " +
-  "disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2";
+const ctaBase = "w-full h-12 font-semibold text-sm tracking-wide gap-2";
 
 // ── OTP Step ──────────────────────────────────────────────────────────────────
 
@@ -220,7 +217,7 @@ function OtpStep({
       <button
         type="button"
         onClick={onBack}
-        className="flex items-center gap-1.5 text-sm text-(--color-text-secondary) hover:text-[#C9A84C] transition-colors"
+        className="flex items-center gap-1.5 text-sm text-(--color-text-secondary) hover:text-(--color-gold) transition-colors"
       >
         <svg
           className="h-4 w-4"
@@ -266,9 +263,10 @@ function OtpStep({
           />
         </Field>
 
-        <button
+        <Button
           id="sign-up-verify"
           type="submit"
+          variant="coral"
           disabled={isSubmitting}
           className={ctaBase}
         >
@@ -279,7 +277,7 @@ function OtpStep({
           ) : (
             "Verify Email"
           )}
-        </button>
+        </Button>
       </form>
 
       <p className="text-center text-sm text-(--color-text-secondary)">
@@ -292,7 +290,7 @@ function OtpStep({
           <button
             type="button"
             onClick={handleResend}
-            className="text-[#C9A84C] hover:text-[#E2C47A] font-medium transition-colors"
+            className="text-(--color-gold) hover:text-(--color-gold-light) font-medium transition-colors"
           >
             Resend code
           </button>
@@ -412,7 +410,7 @@ export function SignUpForm() {
         className={cn(
           "w-full flex items-center justify-center gap-2.5 h-12 rounded-xl border text-sm font-medium transition-all duration-200",
           "bg-(--color-navy-surface) border-(--color-navy-border) text-white",
-          "hover:border-[#C9A84C]/40 hover:bg-(--color-navy-border)",
+          "hover:border-(--color-gold)/40 hover:bg-(--color-navy-border)",
           "disabled:opacity-50 disabled:cursor-not-allowed",
         )}
       >
@@ -484,7 +482,7 @@ export function SignUpForm() {
               type="button"
               onClick={() => setShowPassword((v) => !v)}
               aria-label={showPassword ? "Hide password" : "Show password"}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-(--color-text-secondary) hover:text-[#C9A84C] transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-(--color-text-secondary) hover:text-(--color-gold) transition-colors"
             >
               {showPassword ? (
                 <EyeOffIcon className="h-4 w-4" />
@@ -511,7 +509,7 @@ export function SignUpForm() {
               type="button"
               onClick={() => setShowConfirm((v) => !v)}
               aria-label={showConfirm ? "Hide password" : "Show password"}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-(--color-text-secondary) hover:text-[#C9A84C] transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-(--color-text-secondary) hover:text-(--color-gold) transition-colors"
             >
               {showConfirm ? (
                 <EyeOffIcon className="h-4 w-4" />
@@ -527,14 +525,14 @@ export function SignUpForm() {
           By creating an account, you agree to our{" "}
           <Link
             href="/terms"
-            className="text-[#C9A84C] hover:text-[#E2C47A] transition-colors"
+            className="text-(--color-gold) hover:text-(--color-gold-light) transition-colors"
           >
             Terms of Service
           </Link>{" "}
           and{" "}
           <Link
             href="/privacy"
-            className="text-[#C9A84C] hover:text-[#E2C47A] transition-colors"
+            className="text-(--color-gold) hover:text-(--color-gold-light) transition-colors"
           >
             Privacy Policy
           </Link>
@@ -542,9 +540,10 @@ export function SignUpForm() {
         </p>
 
         {/* Submit */}
-        <button
+        <Button
           id="sign-up-submit"
           type="submit"
+          variant="coral"
           disabled={busy}
           className={ctaBase}
         >
@@ -555,7 +554,7 @@ export function SignUpForm() {
           ) : (
             "Create Account"
           )}
-        </button>
+        </Button>
       </form>
 
       {/* Footer */}
@@ -563,7 +562,7 @@ export function SignUpForm() {
         Already have an account?{" "}
         <Link
           href="/sign-in"
-          className="text-[#C9A84C] hover:text-[#E2C47A] font-medium transition-colors"
+          className="text-(--color-gold) hover:text-(--color-gold-light) font-medium transition-colors"
         >
           Sign In
         </Link>
