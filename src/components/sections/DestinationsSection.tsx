@@ -3,9 +3,11 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { DestinationCard } from "@/components/cards/DestinationCard";
 import { DestinationCardSkeleton } from "@/components/shared/Skeletons";
+import { Button } from "@/components/ui/button";
 import { useDestinations } from "@/hooks/api/useDestinations";
 
 import type { Destination } from "@/types/destination";
@@ -50,7 +52,7 @@ export function DestinationsSection() {
   }
 
   return (
-    <section className="py-20 md:py-32">
+    <section aria-labelledby="destinations-heading" className="py-20 md:py-32">
       {/* Header */}
       <div
         ref={headerRef}
@@ -58,13 +60,16 @@ export function DestinationsSection() {
       >
         <div>
           <p
-            className="font-(family-name:--font-body) text-sm tracking-widest uppercase"
+            className="font-sans text-sm tracking-widest uppercase"
             style={{ color: "var(--color-gold)" }}
           >
-            Top Destinations
+            Curated Destinations
           </p>
-          <h2 className="font-(family-name:--font-display) text-4xl md:text-5xl text-white mt-2">
-            Explore the World
+          <h2
+            id="destinations-heading"
+            className="font-(family-name:--font-display) text-4xl md:text-5xl text-white mt-2"
+          >
+            Places Worth Restoring In
           </h2>
         </div>
 
@@ -134,6 +139,13 @@ export function DestinationsSection() {
                 />
               </div>
             ))}
+      </div>
+
+      {/* CTA */}
+      <div className="mt-12 text-center">
+        <Button variant="outline-gold" className="font-sans" asChild>
+          <Link href="/destinations">Explore All Destinations →</Link>
+        </Button>
       </div>
     </section>
   );

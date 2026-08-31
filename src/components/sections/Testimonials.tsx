@@ -53,7 +53,10 @@ export function Testimonials() {
   }, [count]);
 
   useEffect(() => {
-    if (isHovered || count < 2) return;
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (isHovered || count < 2 || prefersReduced) return;
     intervalRef.current = setInterval(next, INTERVAL_MS);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -65,22 +68,7 @@ export function Testimonials() {
   const current = testimonials[activeIndex];
 
   return (
-    <section className="py-20 md:py-32">
-      <div className="text-center mb-12 px-4">
-        <p
-          className="text-xs tracking-widest uppercase"
-          style={{ fontFamily: "var(--font-body)", color: "var(--color-gold)" }}
-        >
-          Real Traveler Stories
-        </p>
-        <h2
-          className="text-4xl md:text-5xl text-white mt-2"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          Memories Made With RapidLuxe
-        </h2>
-      </div>
-
+    <>
       <div
         className="max-w-3xl mx-auto px-4 md:px-8"
         onMouseEnter={() => setIsHovered(true)}
@@ -171,6 +159,6 @@ export function Testimonials() {
           </div>
         )}
       </div>
-    </section>
+    </>
   );
 }

@@ -54,7 +54,7 @@ function BlogCard({ post }: { post: BlogPostPreview }) {
             {post.title}
           </h3>
           <p
-            className="font-(family-name:--font-body) text-sm mt-2 line-clamp-3"
+            className="font-sans text-sm mt-2 line-clamp-3"
             style={{ color: "var(--color-white-muted)" }}
           >
             {post.excerpt}
@@ -62,7 +62,7 @@ function BlogCard({ post }: { post: BlogPostPreview }) {
 
           {/* Meta */}
           <div
-            className="mt-4 flex items-center gap-3 text-xs font-(family-name:--font-body)"
+            className="mt-4 flex items-center gap-3 text-xs font-sans"
             style={{ color: "var(--color-text-secondary)" }}
           >
             <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 relative">
@@ -101,7 +101,7 @@ export function BlogPreview() {
       {/* Header */}
       <div className="text-center mb-12 px-4">
         <p
-          className="font-(family-name:--font-body) text-sm tracking-widest uppercase"
+          className="font-sans text-sm tracking-widest uppercase"
           style={{ color: "var(--color-gold)" }}
         >
           From the Journal
@@ -110,7 +110,7 @@ export function BlogPreview() {
           Travel Stories &amp; Guides
         </h2>
         <p
-          className="font-(family-name:--font-body) text-sm mt-3 max-w-md mx-auto"
+          className="font-sans text-sm mt-3 max-w-md mx-auto"
           style={{ color: "var(--color-text-secondary)" }}
         >
           Expert tips, destination guides, and insider stories to inspire your
@@ -133,7 +133,7 @@ export function BlogPreview() {
       {!isLoading && (
         <div className="mt-10 text-center">
           <Button variant="outline-gold" className="font-sans" asChild>
-            <Link href="/blog">Read More on the Blog →</Link>
+            <Link href="/blog">Read the Journal →</Link>
           </Button>
         </div>
       )}

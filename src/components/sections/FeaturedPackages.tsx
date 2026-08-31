@@ -4,9 +4,9 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
 import { PackageCard } from "@/components/cards/PackageCard";
 import { PackageCardSkeleton } from "@/components/shared/Skeletons";
+import { Button } from "@/components/ui/button";
 import type { ApiPackage } from "@/hooks/api/usePackages";
 import { usePackages } from "@/hooks/api/usePackages";
 
@@ -57,18 +57,32 @@ export function FeaturedPackages() {
   }, [packages]);
 
   return (
-    <section ref={sectionRef} className="py-20 md:py-32">
+    <section
+      ref={sectionRef}
+      aria-labelledby="featured-journeys-heading"
+      className="py-20 md:py-32"
+    >
       {/* Header */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 text-center mb-12">
         <p
-          className="font-(family-name:--font-body) text-sm tracking-widest uppercase"
+          className="font-sans text-sm tracking-widest uppercase"
           style={{ color: "var(--color-gold)" }}
         >
-          Featured Packages
+          Featured Journeys
         </p>
-        <h2 className="font-(family-name:--font-display) text-4xl md:text-5xl text-white mt-2">
-          Handpicked Journeys for You
+        <h2
+          id="featured-journeys-heading"
+          className="font-(family-name:--font-display) text-4xl md:text-5xl text-white mt-2"
+        >
+          Curated for Rest, Reconnection &amp; Celebration
         </h2>
+        <p
+          className="font-sans text-sm mt-4 max-w-xl mx-auto"
+          style={{ color: "var(--color-text-secondary)" }}
+        >
+          A handpicked selection, chosen by our travel experts rather than an
+          algorithm.
+        </p>
       </div>
 
       {/* Grid */}
@@ -94,7 +108,7 @@ export function FeaturedPackages() {
       {/* CTA */}
       <div className="mt-12 text-center">
         <Button variant="outline-gold" className="font-sans" asChild>
-          <Link href="/packages">View All Packages →</Link>
+          <Link href="/packages">View All Journeys →</Link>
         </Button>
       </div>
     </section>

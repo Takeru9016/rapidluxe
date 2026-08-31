@@ -47,11 +47,11 @@ export function DestinationCard({
           <p className="text-sm text-white/70 font-sans">
             {destination.country}
           </p>
-          <h3 className="font-['Cormorant_Garamond'] text-2xl text-white leading-tight">
+          <h3 className="font-(family-name:--font-display) text-2xl text-white leading-tight">
             {destination.name}
           </h3>
           {packageCount !== undefined && packageCount > 0 && (
-            <p className="mt-1 text-sm text-(--color-gold) font-['JetBrains_Mono']">
+            <p className="mt-1 text-sm text-(--color-gold) font-mono">
               {packageCount} packages
             </p>
           )}

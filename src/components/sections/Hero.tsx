@@ -2,7 +2,9 @@
 
 import { gsap } from "gsap";
 import { ChevronDown } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
 
 function toMp4CloudinaryUrl(url: string | undefined): string | undefined {
   if (!url) return url;
@@ -17,7 +19,9 @@ export function Hero() {
   const eyebrowRef = useRef<HTMLParagraphElement>(null);
   const h1Ref = useRef<HTMLHeadingElement>(null);
   const subRef = useRef<HTMLParagraphElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const videoUrl = toMp4CloudinaryUrl(process.env.NEXT_PUBLIC_HERO_VIDEO_URL);
   const posterUrl = process.env.NEXT_PUBLIC_HERO_POSTER_URL;
@@ -28,6 +32,8 @@ export function Hero() {
     ).matches;
 
     if (!prefersReduced) {
+      videoRef.current?.play().catch(() => {});
+
       gsap
         .timeline()
         .fromTo(
@@ -48,6 +54,12 @@ export function Hero() {
           "-=0.4",
         )
         .fromTo(
+          ctaRef.current,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.6 },
+          "-=0.3",
+        )
+        .fromTo(
           scrollRef.current,
           { opacity: 0 },
           { opacity: 1, duration: 0.4 },
@@ -61,7 +73,7 @@ export function Hero() {
       {/* Background */}
       <div className="absolute inset-0 -z-10">
         <video
-          autoPlay
+          ref={videoRef}
           muted
           loop
           playsInline
@@ -87,10 +99,10 @@ export function Hero() {
       <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
         <p
           ref={eyebrowRef}
-          className="font-(family-name:--font-body) font-medium text-sm tracking-[0.2em] uppercase"
+          className="font-sans font-medium text-sm tracking-[0.2em] uppercase"
           style={{ color: "var(--color-gold)" }}
         >
-          India&apos;s Premier Luxury Travel Experience
+          India&apos;s Original Therapycation Travel Studio
         </p>
 
         <h1
@@ -98,18 +110,41 @@ export function Hero() {
           className="mt-4 font-(family-name:--font-display) text-5xl md:text-6xl lg:text-7xl font-light text-white leading-[1.05]"
           style={{ textShadow: "0 2px 24px rgba(11,15,26,0.6)" }}
         >
-          Discover the World,
+          Travel That
           <br />
-          In Quiet Luxury
+          Restores You
         </h1>
 
         <p
           ref={subRef}
-          className="mt-6 font-(family-name:--font-body) text-lg max-w-xl mx-auto text-white/80"
+          className="mt-6 font-sans text-lg max-w-xl mx-auto text-white/80"
           style={{ textShadow: "0 1px 12px rgba(11,15,26,0.5)" }}
         >
-          Curated packages. Expert guidance. Memories that last a lifetime.
+          Bespoke journeys, handpicked by experts — designed to rest, reconnect,
+          and restore.
         </p>
+
+        <div
+          ref={ctaRef}
+          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+        >
+          <Button
+            variant="coral"
+            size="lg"
+            className="h-auto px-8 py-4 rounded-lg text-base font-sans w-full sm:w-auto"
+            asChild
+          >
+            <Link href="/packages">Explore Journeys</Link>
+          </Button>
+          <Button
+            variant="outline-gold"
+            size="lg"
+            className="h-auto px-8 py-4 rounded-lg text-base font-sans w-full sm:w-auto"
+            asChild
+          >
+            <Link href="/contact">Bespoke Planning</Link>
+          </Button>
+        </div>
       </div>
 
       {/* Scroll indicator — pinned to bottom of section */}
@@ -118,7 +153,7 @@ export function Hero() {
         className="absolute bottom-24 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2"
       >
         <ChevronDown size={24} className="animate-bounce text-white/60" />
-        <span className="text-xs font-(family-name:--font-body) text-white/50">
+        <span className="text-xs font-sans text-white/50">
           Scroll to explore
         </span>
       </div>
