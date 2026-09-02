@@ -1,12 +1,17 @@
 "use client";
 
-import { PackageSearch, SlidersHorizontal } from "lucide-react";
+import { Check, PackageSearch, SlidersHorizontal } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { PackageCard } from "@/components/cards/PackageCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PackageCardSkeleton } from "@/components/shared/Skeletons";
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -27,7 +32,11 @@ import {
   type PackageFilterDestination,
   usePackageFilters,
 } from "@/hooks/api/usePackageFilters";
-import { type PackagesQuery, usePackages } from "@/hooks/api/usePackages";
+import {
+  type ApiPackage,
+  type PackagesQuery,
+  usePackages,
+} from "@/hooks/api/usePackages";
 import { formatPrice } from "@/lib/utils";
 import { useSearchStore } from "@/store/searchStore";
 
@@ -41,7 +50,7 @@ const DURATION_BUCKETS = [
 ] as const;
 
 const SORT_OPTIONS = [
-  { value: "popular", label: "Most Popular" },
+  { value: "popular", label: "Curated" },
   { value: "price-asc", label: "Price: Low to High" },
   { value: "price-desc", label: "Price: High to Low" },
   { value: "duration", label: "Duration" },
@@ -57,18 +66,68 @@ const SORT_TO_API: Record<SortValue, PackagesQuery["sort"]> = {
 };
 
 const FALLBACK_PRICE_RANGE = { min: 0, max: 500000 };
+const PAGE_SIZE = 12;
 
-// ─── FilterPanel ──────────────────────────────────────────────────────────────
+// ─── DestinationChipRow ───────────────────────────────────────────────────────
+
+interface DestinationChipRowProps {
+  destinations: PackageFilterDestination[];
+  selected: string[];
+  onToggle: (slug: string) => void;
+  onClear: () => void;
+}
+
+function DestinationChipRow({
+  destinations,
+  selected,
+  onToggle,
+  onClear,
+}: DestinationChipRowProps) {
+  if (destinations.length === 0) return null;
+
+  return (
+    <fieldset className="flex min-w-0 gap-2 overflow-x-auto md:flex-wrap md:overflow-visible pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-none [&::-webkit-scrollbar]:hidden border-0 p-0 m-0">
+      <legend className="sr-only">Filter by destination</legend>
+      <Button
+        type="button"
+        variant={selected.length === 0 ? "gold" : "outline-gold"}
+        size="sm"
+        aria-pressed={selected.length === 0}
+        onClick={onClear}
+        className="shrink-0 rounded-full h-auto px-4 py-2 font-sans gap-1.5"
+      >
+        {selected.length === 0 && <Check className="size-3.5" />}
+        All Destinations
+      </Button>
+      {destinations.map((dest) => {
+        const isSelected = selected.includes(dest.slug);
+        return (
+          <Button
+            key={dest.id}
+            type="button"
+            variant={isSelected ? "gold" : "outline-gold"}
+            size="sm"
+            aria-pressed={isSelected}
+            onClick={() => onToggle(dest.slug)}
+            className="shrink-0 rounded-full h-auto px-4 py-2 font-sans gap-1.5"
+          >
+            {isSelected && <Check className="size-3.5" />}
+            {dest.name}
+          </Button>
+        );
+      })}
+    </fieldset>
+  );
+}
+
+// ─── FilterPanel (secondary refinement: duration / budget / tags) ────────────
 
 interface FilterPanelProps {
-  destinations: PackageFilterDestination[];
   allTags: string[];
-  selectedDestinations: string[];
   selectedDuration: string | null;
   priceRange: { min: number; max: number };
   priceValue: [number, number];
   selectedTags: string[];
-  onToggleDestination: (slug: string) => void;
   onToggleDuration: (key: string) => void;
   onPriceChange: (val: [number, number]) => void;
   onToggleTag: (tag: string) => void;
@@ -76,21 +135,17 @@ interface FilterPanelProps {
 }
 
 function FilterPanel({
-  destinations,
   allTags,
-  selectedDestinations,
   selectedDuration,
   priceRange,
   priceValue,
   selectedTags,
-  onToggleDestination,
   onToggleDuration,
   onPriceChange,
   onToggleTag,
   onReset,
 }: FilterPanelProps) {
   const hasActiveFilters =
-    selectedDestinations.length > 0 ||
     selectedDuration !== null ||
     priceValue[0] > priceRange.min ||
     priceValue[1] < priceRange.max ||
@@ -101,7 +156,7 @@ function FilterPanel({
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="font-display text-xl font-semibold text-white">
-          Filters
+          Refine
         </h2>
         {hasActiveFilters && (
           <Button
@@ -114,33 +169,6 @@ function FilterPanel({
           </Button>
         )}
       </div>
-
-      {/* Destination */}
-      <div className="flex flex-col gap-3">
-        <p className="text-sm font-medium text-(--color-white-muted) uppercase tracking-widest font-body">
-          Destination
-        </p>
-        <div className="flex flex-col gap-2">
-          {destinations.map((dest) => (
-            <label
-              key={dest.id}
-              className="flex items-center gap-3 cursor-pointer group"
-            >
-              <input
-                type="checkbox"
-                checked={selectedDestinations.includes(dest.slug)}
-                onChange={() => onToggleDestination(dest.slug)}
-                className="w-4 h-4 rounded border border-(--color-navy-border) cursor-pointer accent-(--color-gold) shrink-0"
-              />
-              <span className="text-sm text-(--color-white-muted) group-hover:text-white transition-colors">
-                {dest.name}
-              </span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <Separator className="bg-(--color-navy-border)" />
 
       {/* Duration */}
       <div className="flex flex-col gap-3">
@@ -234,6 +262,11 @@ function PackagesContent() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [initializedFromUrl, setInitializedFromUrl] = useState(false);
 
+  const [page, setPage] = useState(1);
+  const [loadedPackages, setLoadedPackages] = useState<ApiPackage[]>([]);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+
   const { sort, setSort } = useSearchStore();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -242,6 +275,7 @@ function PackagesContent() {
   const { data: filtersData } = usePackageFilters();
   const destinations = filtersData?.destinations ?? [];
   const priceRange = filtersData?.priceRange ?? FALLBACK_PRICE_RANGE;
+  const catalogueTags = filtersData?.tags ?? [];
 
   // Restore filter state from URL once filter bounds are known.
   useEffect(() => {
@@ -317,6 +351,35 @@ function PackagesContent() {
     (b) => b.key === selectedDuration,
   );
 
+  // Applied price bounds — undefined when they match the full range, so a
+  // fallback-to-real priceRange swap on load isn't mistaken for a user filter change.
+  const priceMinApplied =
+    effectivePriceValue[0] > priceRange.min
+      ? effectivePriceValue[0]
+      : undefined;
+  const priceMaxApplied =
+    effectivePriceValue[1] < priceRange.max
+      ? effectivePriceValue[1]
+      : undefined;
+
+  // Reset pagination whenever the effective filter/sort combination changes.
+  const filterSignature = [
+    selectedDestinations.slice().sort().join(","),
+    selectedDuration,
+    priceMinApplied,
+    priceMaxApplied,
+    selectedTags.slice().sort().join(","),
+    sort,
+  ].join("|");
+  const prevSignatureRef = useRef(filterSignature);
+
+  useEffect(() => {
+    if (prevSignatureRef.current === filterSignature) return;
+    prevSignatureRef.current = filterSignature;
+    setPage(1);
+    setLoadedPackages([]);
+  }, [filterSignature]);
+
   const {
     data: packagesData,
     isLoading: packagesLoading,
@@ -326,27 +389,27 @@ function PackagesContent() {
       selectedDestinations.length > 0
         ? selectedDestinations.join(",")
         : undefined,
-    priceMin:
-      effectivePriceValue[0] > priceRange.min
-        ? effectivePriceValue[0]
-        : undefined,
-    priceMax:
-      effectivePriceValue[1] < priceRange.max
-        ? effectivePriceValue[1]
-        : undefined,
+    priceMin: priceMinApplied,
+    priceMax: priceMaxApplied,
     durationMin: durationBucket?.min,
     durationMax: durationBucket?.max,
     tags: selectedTags.length > 0 ? selectedTags : undefined,
     sort: SORT_TO_API[sort as SortValue] ?? "featured",
-    limit: 50,
+    page,
+    limit: PAGE_SIZE,
   });
 
-  const allPackages = packagesData?.data ?? [];
+  useEffect(() => {
+    if (!packagesData) return;
+    setLoadedPackages((prev) =>
+      page === 1 ? packagesData.data : [...prev, ...packagesData.data],
+    );
+    setTotal(packagesData.pagination.total);
+    setTotalPages(packagesData.pagination.totalPages);
+  }, [packagesData, page]);
 
-  const allTags = useMemo(
-    () => Array.from(new Set(allPackages.flatMap((p) => p.tags))).sort(),
-    [allPackages],
-  );
+  const hasMore = page < totalPages;
+  const isInitialLoad = packagesLoading && loadedPackages.length === 0;
 
   function toggle<T>(arr: T[], item: T): T[] {
     return arr.includes(item) ? arr.filter((x) => x !== item) : [...arr, item];
@@ -359,148 +422,205 @@ function PackagesContent() {
     setSelectedTags([]);
   }
 
+  function handleResetSecondary() {
+    setSelectedDuration(null);
+    setPriceValue([priceRange.min, priceRange.max]);
+    setSelectedTags([]);
+  }
+
+  const activeSecondaryCount =
+    (selectedDuration !== null ? 1 : 0) +
+    (effectivePriceValue[0] > priceRange.min ||
+    effectivePriceValue[1] < priceRange.max
+      ? 1
+      : 0) +
+    (selectedTags.length > 0 ? 1 : 0);
+
   const filterPanelProps: FilterPanelProps = {
-    destinations,
-    allTags,
-    selectedDestinations,
+    allTags: catalogueTags,
     selectedDuration,
     priceRange,
     priceValue: effectivePriceValue,
     selectedTags,
-    onToggleDestination: (slug) =>
-      setSelectedDestinations((prev) => toggle(prev, slug)),
     onToggleDuration: (key) =>
       setSelectedDuration((prev) => (prev === key ? null : key)),
     onPriceChange: setPriceValue,
     onToggleTag: (tag) => setSelectedTags((prev) => toggle(prev, tag)),
-    onReset: handleReset,
+    onReset: handleResetSecondary,
   };
 
   return (
     <>
-      {/* Page Header */}
-      <div className="bg-(--color-navy-surface) border-b border-(--color-navy-border) py-10 md:py-16">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <p className="text-xs font-body font-medium tracking-widest uppercase text-(--color-gold) mb-3">
-            Explore
-          </p>
-          <h1 className="font-display text-4xl md:text-5xl font-light text-white mb-3">
-            All Packages
-          </h1>
-          <p className="text-sm font-body text-(--color-text-secondary) max-w-lg">
-            Curated escapes for every kind of traveller — from beach retreats to
-            mountain epics.
-          </p>
-        </div>
+      {/* Editorial intro */}
+      <div className="py-14 md:py-20 px-4 text-center">
+        <p className="text-xs font-body font-medium tracking-widest uppercase text-(--color-gold) mb-3">
+          Explore
+        </p>
+        <h1
+          id="journeys-heading"
+          className="font-display text-4xl md:text-5xl font-light text-white mb-4"
+        >
+          Journeys
+        </h1>
+        <p className="text-sm md:text-base font-body text-(--color-text-secondary) max-w-xl mx-auto">
+          Bespoke journeys, handpicked by experts — curated for how they make
+          you feel, not just where they take you.
+        </p>
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-12">
-        <div className="flex gap-8 items-start">
-          {/* Desktop Sidebar */}
-          <aside className="hidden lg:block w-72 shrink-0 sticky top-24">
-            <div className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-6">
-              <FilterPanel {...filterPanelProps} />
-            </div>
-          </aside>
+      <div className="max-w-7xl mx-auto px-4 md:px-8 pb-12 md:pb-16">
+        {/* Destination discovery */}
+        <DestinationChipRow
+          destinations={destinations}
+          selected={selectedDestinations}
+          onToggle={(slug) =>
+            setSelectedDestinations((prev) => toggle(prev, slug))
+          }
+          onClear={() => setSelectedDestinations([])}
+        />
 
-          {/* Main content */}
-          <div className="flex-1 min-w-0">
-            {/* Sort bar */}
-            <div className="flex items-center justify-between gap-4 mb-6">
-              <div className="flex items-center gap-3">
-                {/* Mobile filter button */}
-                <Sheet
-                  open={mobileFilterOpen}
-                  onOpenChange={setMobileFilterOpen}
+        {/* Sort + result count + Refine */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mt-8 mb-6">
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Desktop Refine */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hidden lg:inline-flex border-(--color-navy-border) bg-(--color-navy-surface) text-(--color-white-muted) hover:text-white hover:bg-(--color-navy-border) gap-2"
                 >
-                  <SheetTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="lg:hidden border-(--color-navy-border) bg-(--color-navy-surface) text-(--color-white-muted) hover:text-white hover:bg-(--color-navy-border) gap-2"
-                    >
-                      <SlidersHorizontal className="size-4" />
-                      Filters
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent
-                    side="left"
-                    className="w-80 bg-(--color-navy-surface) border-r border-(--color-navy-border) overflow-y-auto"
-                  >
-                    <SheetHeader className="mb-6">
-                      <SheetTitle className="font-display text-xl text-white">
-                        Filters
-                      </SheetTitle>
-                    </SheetHeader>
-                    <FilterPanel
-                      {...filterPanelProps}
-                      onReset={() => {
-                        handleReset();
-                        setMobileFilterOpen(false);
-                      }}
-                    />
-                  </SheetContent>
-                </Sheet>
+                  <SlidersHorizontal className="size-4" />
+                  Refine
+                  {activeSecondaryCount > 0 && (
+                    <span className="inline-flex items-center justify-center size-4 rounded-full bg-(--color-gold) text-(--color-navy) text-[10px] font-bold">
+                      {activeSecondaryCount}
+                    </span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                align="start"
+                className="w-80 max-h-[70vh] overflow-y-auto bg-(--color-navy-surface) border-(--color-navy-border) p-5"
+              >
+                <FilterPanel {...filterPanelProps} />
+              </PopoverContent>
+            </Popover>
 
-                <span className="text-sm font-body text-(--color-text-secondary)">
-                  {packagesLoading
-                    ? "Loading…"
-                    : `${allPackages.length} packages found`}
-                </span>
-              </div>
+            {/* Mobile Refine */}
+            <Sheet open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="lg:hidden border-(--color-navy-border) bg-(--color-navy-surface) text-(--color-white-muted) hover:text-white hover:bg-(--color-navy-border) gap-2"
+                >
+                  <SlidersHorizontal className="size-4" />
+                  Refine
+                  {activeSecondaryCount > 0 && (
+                    <span className="inline-flex items-center justify-center size-4 rounded-full bg-(--color-gold) text-(--color-navy) text-[10px] font-bold">
+                      {activeSecondaryCount}
+                    </span>
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent
+                side="left"
+                className="w-80 max-w-[85vw] bg-(--color-navy-surface) border-r border-(--color-navy-border) overflow-y-auto"
+              >
+                <SheetHeader className="mb-6">
+                  <SheetTitle className="font-display text-xl text-white">
+                    Refine
+                  </SheetTitle>
+                </SheetHeader>
+                <div className="px-4 pb-6">
+                  <FilterPanel
+                    {...filterPanelProps}
+                    onReset={() => {
+                      handleResetSecondary();
+                      setMobileFilterOpen(false);
+                    }}
+                  />
+                </div>
+              </SheetContent>
+            </Sheet>
 
-              <Select value={sort} onValueChange={setSort}>
-                <SelectTrigger className="w-48 bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-white-muted) text-sm focus:ring-0 focus:ring-offset-0">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-(--color-navy-surface) border-(--color-navy-border)">
-                  {SORT_OPTIONS.map((opt) => (
-                    <SelectItem
-                      key={opt.value}
-                      value={opt.value}
-                      className="text-(--color-white-muted) focus:bg-(--color-navy-border) focus:text-white cursor-pointer"
-                    >
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <span
+              aria-live="polite"
+              aria-atomic="true"
+              className="text-sm font-body text-(--color-text-secondary)"
+            >
+              {isInitialLoad
+                ? "Loading Journeys…"
+                : `${total} ${total === 1 ? "Journey" : "Journeys"} found`}
+            </span>
+          </div>
+
+          <Select value={sort} onValueChange={setSort}>
+            <SelectTrigger className="w-full sm:w-48 bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-white-muted) text-sm focus:ring-0 focus:ring-offset-0">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-(--color-navy-surface) border-(--color-navy-border)">
+              {SORT_OPTIONS.map((opt) => (
+                <SelectItem
+                  key={opt.value}
+                  value={opt.value}
+                  className="text-(--color-white-muted) focus:bg-(--color-navy-border) focus:text-white cursor-pointer"
+                >
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Grid */}
+        {isInitialLoad ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <PackageCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : packagesError && loadedPackages.length === 0 ? (
+          <EmptyState
+            icon={PackageSearch}
+            title="Unable to load Journeys"
+            description="We're having trouble fetching Journeys right now. Please try again in a moment."
+            action={{
+              label: "Retry",
+              onClick: () => window.location.reload(),
+            }}
+          />
+        ) : loadedPackages.length === 0 ? (
+          <EmptyState
+            icon={PackageSearch}
+            title="No Journeys found"
+            description="Try adjusting your filters to discover more Journeys."
+            action={{ label: "Reset Filters", onClick: handleReset }}
+          />
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {loadedPackages.map((pkg) => (
+                <PackageCard key={pkg.id} package={pkg} variant="default" />
+              ))}
             </div>
 
-            {/* Grid */}
-            {packagesLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <PackageCardSkeleton key={i} />
-                ))}
-              </div>
-            ) : allPackages.length === 0 ? (
-              <EmptyState
-                icon={PackageSearch}
-                title="No packages found"
-                description="Try adjusting your filters to discover more travel options."
-                action={{ label: "Reset Filters", onClick: handleReset }}
-              />
-            ) : packagesError ? (
-              <EmptyState
-                icon={PackageSearch}
-                title="Unable to load packages"
-                description="We're having trouble fetching packages right now. Please try again in a moment."
-                action={{
-                  label: "Retry",
-                  onClick: () => window.location.reload(),
-                }}
-              />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {allPackages.map((pkg) => (
-                  <PackageCard key={pkg.id} package={pkg} variant="default" />
-                ))}
+            {hasMore && (
+              <div className="mt-10 flex justify-center">
+                <Button
+                  variant="outline-gold"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={packagesLoading}
+                  className="font-sans px-8"
+                >
+                  {packagesLoading ? "Loading…" : "Load More Journeys"}
+                </Button>
               </div>
             )}
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </>
   );

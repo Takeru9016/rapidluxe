@@ -11,6 +11,7 @@ export interface PackageFiltersResponse {
   destinations: PackageFilterDestination[];
   priceRange: { min: number; max: number };
   durations: number[];
+  tags: string[];
 }
 
 export function usePackageFilters() {
