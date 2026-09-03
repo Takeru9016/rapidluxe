@@ -10,7 +10,7 @@ import {
 } from "@/lib/rate-limit";
 import { getResend } from "@/lib/resend";
 
-const FROM = process.env.RESEND_FROM_EMAIL ?? "bookings@rapidluxe.com";
+const FROM = process.env.RESEND_FROM_EMAIL ?? "info@rapidluxe.com";
 const ADMIN = process.env.ADMIN_EMAIL ?? "";
 
 const bodySchema = z.object({ email: z.string().email() });
@@ -53,11 +53,11 @@ export async function POST(req: NextRequest) {
     }),
     ADMIN
       ? resend.emails.send({
-          from: FROM,
-          to: ADMIN,
-          subject: `New newsletter subscriber: ${email}`,
-          html: `<p>${email} subscribed to the newsletter.</p>`,
-        })
+        from: FROM,
+        to: ADMIN,
+        subject: `New newsletter subscriber: ${email}`,
+        html: `<p>${email} subscribed to the newsletter.</p>`,
+      })
       : Promise.resolve(),
   ]);
 

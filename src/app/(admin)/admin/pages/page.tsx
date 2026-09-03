@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { Edit, FileText } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { Edit, FileText } from "lucide-react";
+import Link from "next/link";
 
 import { formatDate } from "@/lib/utils";
 
@@ -18,7 +18,6 @@ interface StaticPageMeta {
 
 // All static pages that should be manageable, with fallback defaults
 const PAGE_MANIFEST = [
-  { slug: "faqs", label: "FAQs" },
   { slug: "cancellation-policy", label: "Cancellation Policy" },
   { slug: "terms", label: "Terms & Conditions" },
   { slug: "privacy", label: "Privacy Policy" },

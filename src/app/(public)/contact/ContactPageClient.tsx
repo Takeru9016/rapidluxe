@@ -1,6 +1,8 @@
 "use client";
 
 import { Clock, Mail, MapPin, MessageCircle, Phone, Send } from "lucide-react";
+import Link from "next/link";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -57,12 +59,15 @@ const CONTACT_BLOCKS = [
 ];
 
 export default function ContactPageClient() {
+  const [submitted, setSubmitted] = useState(false);
+  const subjectTriggerRef = useRef<HTMLButtonElement>(null);
   const {
     register,
     handleSubmit,
     setValue,
-    formState: { errors, isSubmitting, isSubmitSuccessful },
+    formState: { errors, isSubmitting },
     reset,
+    clearErrors,
   } = useForm<FormData>();
 
   const onSubmit = async (data: FormData) => {
@@ -80,10 +85,23 @@ export default function ContactPageClient() {
         }),
       });
       if (!res.ok) throw new Error("Failed");
-      toast.success("Message sent! We'll be in touch within 2 hours.");
       reset();
+      clearErrors();
+      setSubmitted(true);
+      toast.success("We've received your enquiry and will be in touch soon.");
+      // A pending validation from the Subject select's own onValueChange
+      // (shouldValidate: true) can resolve after reset() and re-populate
+      // errors.subject against the now-empty value. Clear it again once
+      // that microtask has had a chance to settle.
+      setTimeout(() => clearErrors(), 0);
     } catch {
       toast.error("Failed to send. Please try WhatsApp or email us directly.");
+    }
+  };
+
+  const onInvalid = (formErrors: typeof errors) => {
+    if (formErrors.subject) {
+      subjectTriggerRef.current?.focus();
     }
   };
 
@@ -112,43 +130,60 @@ export default function ContactPageClient() {
               Send us a message
             </h2>
 
-            {isSubmitSuccessful && (
-              <div className="mb-6 rounded-lg border border-(--color-teal)/40 bg-(--color-teal)/10 px-5 py-4 font-sans text-sm text-(--color-teal)">
-                Your message has been sent. We&apos;ll get back to you within 24
-                hours.
+            {submitted && (
+              <div
+                role="status"
+                className="mb-6 rounded-lg border border-(--color-teal)/40 bg-(--color-teal)/10 px-5 py-4 font-sans text-sm text-(--color-teal)"
+              >
+                We&apos;ve received your enquiry and will be in touch soon.
               </div>
             )}
 
             <form
-              onSubmit={handleSubmit(onSubmit)}
+              onSubmit={handleSubmit(onSubmit, onInvalid)}
               className="space-y-5"
               noValidate
             >
               {/* Name + Email */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-1.5">
-                  <label className="font-sans text-xs font-medium uppercase tracking-widest text-(--color-white-muted)">
+                  <label
+                    htmlFor="contact-name"
+                    className="font-sans text-xs font-medium uppercase tracking-widest text-(--color-white-muted)"
+                  >
                     Full Name <span className="text-(--color-coral)">*</span>
                   </label>
                   <Input
+                    id="contact-name"
                     {...register("name", {
                       required: "Name is required",
                       minLength: { value: 2, message: "Name is required" },
                     })}
                     placeholder="Priya Sharma"
+                    aria-invalid={!!errors.name}
+                    aria-describedby={
+                      errors.name ? "contact-name-error" : undefined
+                    }
                     className="bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
                   />
                   {errors.name && (
-                    <p className="font-sans text-xs text-(--color-coral)">
+                    <p
+                      id="contact-name-error"
+                      className="font-sans text-xs text-(--color-coral)"
+                    >
                       {errors.name.message}
                     </p>
                   )}
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-sans text-xs font-medium uppercase tracking-widest text-(--color-white-muted)">
+                  <label
+                    htmlFor="contact-email"
+                    className="font-sans text-xs font-medium uppercase tracking-widest text-(--color-white-muted)"
+                  >
                     Email <span className="text-(--color-coral)">*</span>
                   </label>
                   <Input
+                    id="contact-email"
                     {...register("email", {
                       required: "Enter a valid email",
                       pattern: {
@@ -158,10 +193,17 @@ export default function ContactPageClient() {
                     })}
                     type="email"
                     placeholder="priya@example.com"
+                    aria-invalid={!!errors.email}
+                    aria-describedby={
+                      errors.email ? "contact-email-error" : undefined
+                    }
                     className="bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
                   />
                   {errors.email && (
-                    <p className="font-sans text-xs text-(--color-coral)">
+                    <p
+                      id="contact-email-error"
+                      className="font-sans text-xs text-(--color-coral)"
+                    >
                       {errors.email.message}
                     </p>
                   )}
@@ -171,13 +213,17 @@ export default function ContactPageClient() {
               {/* Phone + Subject */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-1.5">
-                  <label className="font-sans text-xs font-medium uppercase tracking-widest text-(--color-white-muted)">
+                  <label
+                    htmlFor="contact-phone"
+                    className="font-sans text-xs font-medium uppercase tracking-widest text-(--color-white-muted)"
+                  >
                     Phone{" "}
                     <span className="text-(--color-text-secondary)">
                       (optional)
                     </span>
                   </label>
                   <Input
+                    id="contact-phone"
                     {...register("phone")}
                     type="tel"
                     placeholder="+91 98765 43210"
@@ -185,7 +231,11 @@ export default function ContactPageClient() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-sans text-xs font-medium uppercase tracking-widest text-(--color-white-muted)">
+                  <label
+                    id="contact-subject-label"
+                    htmlFor="contact-subject-trigger"
+                    className="font-sans text-xs font-medium uppercase tracking-widest text-(--color-white-muted)"
+                  >
                     Subject <span className="text-(--color-coral)">*</span>
                   </label>
                   <input
@@ -199,7 +249,16 @@ export default function ContactPageClient() {
                       setValue("subject", val, { shouldValidate: true })
                     }
                   >
-                    <SelectTrigger className="bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-text-secondary) focus:ring-(--color-gold)/40 data-placeholder:text-(--color-text-secondary)">
+                    <SelectTrigger
+                      id="contact-subject-trigger"
+                      ref={subjectTriggerRef}
+                      aria-labelledby="contact-subject-label"
+                      aria-invalid={!!errors.subject}
+                      aria-describedby={
+                        errors.subject ? "contact-subject-error" : undefined
+                      }
+                      className="bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-text-secondary) focus:ring-(--color-gold)/40 data-placeholder:text-(--color-text-secondary)"
+                    >
                       <SelectValue placeholder="Select a subject" />
                     </SelectTrigger>
                     <SelectContent className="bg-(--color-navy-surface) border-(--color-navy-border)">
@@ -221,7 +280,10 @@ export default function ContactPageClient() {
                     </SelectContent>
                   </Select>
                   {errors.subject && (
-                    <p className="font-sans text-xs text-(--color-coral)">
+                    <p
+                      id="contact-subject-error"
+                      className="font-sans text-xs text-(--color-coral)"
+                    >
                       {errors.subject.message}
                     </p>
                   )}
@@ -230,10 +292,14 @@ export default function ContactPageClient() {
 
               {/* Message */}
               <div className="space-y-1.5">
-                <label className="font-sans text-xs font-medium uppercase tracking-widest text-(--color-white-muted)">
+                <label
+                  htmlFor="contact-message"
+                  className="font-sans text-xs font-medium uppercase tracking-widest text-(--color-white-muted)"
+                >
                   Message <span className="text-(--color-coral)">*</span>
                 </label>
                 <Textarea
+                  id="contact-message"
                   {...register("message", {
                     required: "Message is required",
                     minLength: {
@@ -243,10 +309,17 @@ export default function ContactPageClient() {
                   })}
                   rows={5}
                   placeholder="Tell us about your dream trip or any questions you have..."
+                  aria-invalid={!!errors.message}
+                  aria-describedby={
+                    errors.message ? "contact-message-error" : undefined
+                  }
                   className="bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60 resize-none"
                 />
                 {errors.message && (
-                  <p className="font-sans text-xs text-(--color-coral)">
+                  <p
+                    id="contact-message-error"
+                    className="font-sans text-xs text-(--color-coral)"
+                  >
                     {errors.message.message}
                   </p>
                 )}
@@ -262,6 +335,13 @@ export default function ContactPageClient() {
                 {isSubmitting ? "Sending..." : "Send Message →"}
               </Button>
             </form>
+
+            <Link
+              href="/packages"
+              className="mt-6 inline-block font-sans text-sm text-(--color-text-secondary) hover:text-(--color-gold) transition-colors"
+            >
+              Explore Journeys →
+            </Link>
           </div>
 
           {/* ── Contact Info ──────────────────────────────────── */}

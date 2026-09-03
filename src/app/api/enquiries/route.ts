@@ -9,6 +9,15 @@ import {
 } from "@/lib/rate-limit";
 import { getResend } from "@/lib/resend";
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 const enquirySchema = z.object({
   name: z.string().min(2).max(100),
   email: z.string().email(),
@@ -50,27 +59,33 @@ export async function POST(req: NextRequest) {
     });
 
     const adminEmail = process.env.ADMIN_EMAIL ?? "";
-    const fromEmail = process.env.RESEND_FROM_EMAIL ?? "bookings@rapidluxe.com";
+    const fromEmail = process.env.RESEND_FROM_EMAIL ?? "info@rapidluxe.com";
 
     if (adminEmail) {
       try {
+        const safeName = escapeHtml(name);
+        const safeEmail = escapeHtml(email);
+        const safePhone = phone ? escapeHtml(phone) : "";
+        const safeSubject = escapeHtml(subject);
+        const safeMessage = escapeHtml(message).replace(/\n/g, "<br />");
+
         await getResend().emails.send({
           from: fromEmail,
           to: adminEmail,
-          subject: `New contact enquiry — ${subject}`,
+          subject: `New contact enquiry — ${safeSubject}`,
           html: `
             <div style="background:#1B2A41;color:#D4D8E2;font-family:system-ui,sans-serif;padding:40px 20px;max-width:580px;margin:0 auto">
               <h2 style="color:#F9A826;margin:0 0 20px">New Contact Enquiry</h2>
               <table style="width:100%;border-collapse:collapse">
                 <tr><td style="color:#8891A4;font-size:11px;text-transform:uppercase;padding:8px 0 2px">Name</td></tr>
-                <tr><td style="color:#D4D8E2;font-size:14px;padding:0 0 12px">${name}</td></tr>
+                <tr><td style="color:#D4D8E2;font-size:14px;padding:0 0 12px">${safeName}</td></tr>
                 <tr><td style="color:#8891A4;font-size:11px;text-transform:uppercase;padding:8px 0 2px">Email</td></tr>
-                <tr><td style="color:#D4D8E2;font-size:14px;padding:0 0 12px">${email}</td></tr>
-                ${phone ? `<tr><td style="color:#8891A4;font-size:11px;text-transform:uppercase;padding:8px 0 2px">Phone</td></tr><tr><td style="color:#D4D8E2;font-size:14px;padding:0 0 12px">${phone}</td></tr>` : ""}
+                <tr><td style="color:#D4D8E2;font-size:14px;padding:0 0 12px">${safeEmail}</td></tr>
+                ${safePhone ? `<tr><td style="color:#8891A4;font-size:11px;text-transform:uppercase;padding:8px 0 2px">Phone</td></tr><tr><td style="color:#D4D8E2;font-size:14px;padding:0 0 12px">${safePhone}</td></tr>` : ""}
                 <tr><td style="color:#8891A4;font-size:11px;text-transform:uppercase;padding:8px 0 2px">Subject</td></tr>
-                <tr><td style="color:#D4D8E2;font-size:14px;padding:0 0 12px">${subject}</td></tr>
+                <tr><td style="color:#D4D8E2;font-size:14px;padding:0 0 12px">${safeSubject}</td></tr>
                 <tr><td style="color:#8891A4;font-size:11px;text-transform:uppercase;padding:8px 0 2px">Message</td></tr>
-                <tr><td style="color:#D4D8E2;font-size:14px;line-height:1.6;padding:0 0 12px;white-space:pre-wrap">${message}</td></tr>
+                <tr><td style="color:#D4D8E2;font-size:14px;line-height:1.6;padding:0 0 12px;white-space:pre-wrap">${safeMessage}</td></tr>
               </table>
               <hr style="border-color:#2A2F40;margin:24px 0" />
               <p style="color:#8891A4;font-size:12px;text-align:center">RapidLuxe — Admin Notification</p>

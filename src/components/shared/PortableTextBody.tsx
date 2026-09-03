@@ -15,12 +15,12 @@ const components: PortableTextComponents = {
       </p>
     ),
     h2: ({ children }) => (
-      <h2 className="font-['Cormorant_Garamond'] text-2xl md:text-3xl text-white mt-10 mb-4">
+      <h2 className="font-['Cormorant_Garamond'] text-2xl md:text-3xl text-(--color-white) mt-10 mb-4">
         {children}
       </h2>
     ),
     h3: ({ children }) => (
-      <h3 className="font-['Cormorant_Garamond'] text-xl md:text-2xl text-white mt-8 mb-3">
+      <h3 className="font-['Cormorant_Garamond'] text-xl md:text-2xl text-(--color-white) mt-8 mb-3">
         {children}
       </h3>
     ),

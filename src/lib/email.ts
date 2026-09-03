@@ -10,7 +10,7 @@ import type { BookingEmailPayload } from "@/types/email";
 
 import { getResend } from "./resend";
 
-const FROM = process.env.RESEND_FROM_EMAIL ?? "bookings@rapidluxe.com";
+const FROM = process.env.RESEND_FROM_EMAIL ?? "info@rapidluxe.com";
 const ADMIN = process.env.ADMIN_EMAIL ?? "";
 
 export async function sendEnquiryReceivedEmail(

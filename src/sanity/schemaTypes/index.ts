@@ -1,12 +1,13 @@
 import { type SchemaTypeDefinition } from "sanity";
 
-import { post } from "./post";
+import { aboutPage } from "./aboutPage";
 import { author } from "./author";
 import { category } from "./category";
 import { destination } from "./destination";
-import { staticPage } from "./staticPage";
-import { aboutPage } from "./aboutPage";
+import { faqPage } from "./faqPage";
+import { post } from "./post";
 import { siteContent } from "./siteContent";
+import { staticPage } from "./staticPage";
 import { testimonial } from "./testimonial";
 
 export const schema: { types: SchemaTypeDefinition[] } = {
@@ -17,6 +18,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     destination,
     staticPage,
     aboutPage,
+    faqPage,
     siteContent,
     testimonial,
   ],

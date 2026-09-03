@@ -93,7 +93,7 @@ const pages: PageDoc[] = [
       ),
       heading("How can I contact Rapidluxe support?"),
       block(
-        "You can reach us via the Contact page, WhatsApp, or email at bookings@rapidluxe.com. Our team is available 7 days a week.",
+        "You can reach us via the Contact page, WhatsApp, or email at info@rapidluxe.com. Our team is available 7 days a week.",
       ),
     ],
   },

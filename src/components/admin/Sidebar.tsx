@@ -85,7 +85,7 @@ const NAV_GROUPS: NavGroup[] = [
       },
       { label: "Static Pages", href: "/admin/pages", icon: Files, exact: true },
       { label: "About Us", href: "/admin/pages/about", icon: Building2 },
-      { label: "FAQs", href: "/admin/pages/faqs", icon: CircleHelp },
+      { label: "FAQs", href: "/studio/structure/faqPage", icon: CircleHelp },
       {
         label: "Cancellation Policy",
         href: "/admin/pages/cancellation-policy",
