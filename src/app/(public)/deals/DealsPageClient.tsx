@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgeCheck, Crown, Tag, Timer } from "lucide-react";
+import { BadgeCheck, Crown, Gem, Tag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -22,9 +22,9 @@ const WHY_CARDS = [
     body: "No inflated original prices. Every discount reflects a real reduction from our standard package rate.",
   },
   {
-    icon: Timer,
-    title: "Limited Availability",
-    body: "Our deals have real slot limits set by availability. When it's gone, it's gone — no artificial scarcity.",
+    icon: Gem,
+    title: "Thoughtfully Curated",
+    body: "Every deal is handpicked from our journeys by our team — not an automated discount feed.",
   },
   {
     icon: Crown,
@@ -60,14 +60,13 @@ function NewsletterStrip() {
     <section className="bg-(--color-navy-surface) border-y border-(--color-navy-border) py-16">
       <div className="text-center max-w-xl mx-auto px-4">
         <p className="font-sans text-xs uppercase tracking-widest text-(--color-gold)">
-          NEVER MISS A DEAL
+          STAY INFORMED
         </p>
         <h2 className="font-['Cormorant_Garamond'] text-4xl text-white mt-2">
-          Be First. Get Exclusive Access.
+          Hear About New Deals First.
         </h2>
         <p className="font-sans text-(--color-white-muted) mt-4">
-          Subscribe and get flash deals delivered before they&apos;re open to
-          the public.
+          Subscribe to be notified when we add a new curated offer.
         </p>
 
         {submitted ? (
@@ -129,7 +128,7 @@ export default function DealsPageClient() {
 
         <div className="relative max-w-7xl mx-auto px-4 md:px-8 w-full">
           <p className="font-sans text-xs uppercase tracking-widest text-(--color-gold)">
-            LIMITED TIME OFFERS
+            CURATED OFFERS
           </p>
           <h1 className="font-['Cormorant_Garamond'] font-light text-5xl md:text-7xl text-white mt-3">
             Exclusive Deals.
@@ -137,14 +136,14 @@ export default function DealsPageClient() {
             Extraordinary Journeys.
           </h1>
           <p className="font-sans text-lg text-(--color-white-muted) max-w-2xl mt-4">
-            Handpicked offers with genuine savings — available for a limited
-            time only.
+            Handpicked offers with genuine savings, each valid for a limited
+            time.
           </p>
 
           {earliestExpiresAt && (
             <div className="mt-8 flex items-center gap-4">
               <span className="font-sans text-sm text-(--color-white-muted)">
-                Offers end in:
+                Earliest offer valid until:
               </span>
               <CountdownTimer
                 variant="blocks"
@@ -178,7 +177,7 @@ export default function DealsPageClient() {
               className="mt-6 h-10 font-sans text-sm"
               asChild
             >
-              <Link href="/packages">Browse All Packages →</Link>
+              <Link href="/packages">Explore Journeys →</Link>
             </Button>
           </div>
         ) : (
