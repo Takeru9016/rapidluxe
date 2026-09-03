@@ -2,7 +2,7 @@
 
 import { ChevronLeft, ChevronRight, Grid2x2, X } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 interface DetailPhotoGridProps {
@@ -19,6 +19,9 @@ export function DetailPhotoGrid({
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   const thumbs = images.slice(1, 5);
 
@@ -42,6 +45,22 @@ export function DetailPhotoGrid({
       if (e.key === "Escape") close();
       if (e.key === "ArrowLeft") prev();
       if (e.key === "ArrowRight") next();
+      if (e.key === "Tab") {
+        const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+          "button:not([disabled])",
+        );
+        if (!focusable || focusable.length === 0) return;
+        const list = Array.from(focusable);
+        const first = list[0];
+        const last = list[list.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
     window.addEventListener("keydown", handleKey);
     document.body.style.overflow = "hidden";
@@ -50,6 +69,16 @@ export function DetailPhotoGrid({
       document.body.style.overflow = "";
     };
   }, [galleryOpen, prev, next, close]);
+
+  // Move focus into the dialog on open, restore it to the trigger on close.
+  useEffect(() => {
+    if (galleryOpen) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
+      closeButtonRef.current?.focus();
+    } else {
+      previousFocusRef.current?.focus();
+    }
+  }, [galleryOpen]);
 
   return (
     <>
@@ -68,6 +97,7 @@ export function DetailPhotoGrid({
             src={images[0]}
             alt={`${alt} — main`}
             fill
+            sizes="(max-width: 768px) 100vw, 60vw"
             className="object-cover hover:brightness-110 transition-all duration-300"
             priority={priority}
           />
@@ -88,6 +118,7 @@ export function DetailPhotoGrid({
                   src={url}
                   alt={`${alt} — photo ${i + 2}`}
                   fill
+                  sizes="(max-width: 768px) 50vw, 20vw"
                   className="object-cover hover:brightness-110 transition-all duration-300"
                 />
                 {i === thumbs.length - 1 && (
@@ -124,6 +155,7 @@ export function DetailPhotoGrid({
             src={images[0]}
             alt={`${alt} — main`}
             fill
+            sizes="(min-width: 768px) 0px, 100vw"
             className="object-cover"
             priority={priority}
           />
@@ -142,6 +174,7 @@ export function DetailPhotoGrid({
                 src={url}
                 alt={`${alt} — photo ${i + 2}`}
                 fill
+                sizes="(min-width: 768px) 0px, 80px"
                 className="object-cover"
               />
             </div>
@@ -164,6 +197,7 @@ export function DetailPhotoGrid({
         mounted &&
         createPortal(
           <div
+            ref={dialogRef}
             className="fixed inset-0 z-50 bg-black/95 flex flex-col"
             role="dialog"
             aria-modal="true"
@@ -175,6 +209,7 @@ export function DetailPhotoGrid({
                 {activeIndex + 1} / {images.length}
               </span>
               <button
+                ref={closeButtonRef}
                 onClick={close}
                 aria-label="Close gallery"
                 className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
@@ -244,6 +279,7 @@ export function DetailPhotoGrid({
                       src={url}
                       alt={`${alt} — thumb ${i + 1}`}
                       fill
+                      sizes="64px"
                       className="object-cover"
                     />
                   </button>

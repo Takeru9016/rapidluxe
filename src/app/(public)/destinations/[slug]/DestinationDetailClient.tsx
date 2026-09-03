@@ -17,6 +17,8 @@ import {
   Train,
   XCircle,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import {
   ActivityCard,
@@ -35,18 +37,12 @@ import {
   useDestinationWeather,
 } from "@/hooks/api/useDestinations";
 import { usePackages } from "@/hooks/api/usePackages";
-import {
-  deriveCrowdLevel,
-  deriveRecommendation,
-  describeWeather,
-} from "@/lib/whenToVisit";
+import { describeWeather } from "@/lib/whenToVisit";
 import type {
   AvailabilityStatus,
-  CrowdLevel,
   TransportType,
   VisaType,
   VisitRecommendation,
-  WhenToVisitMonth,
 } from "@/types/destination";
 import type { Activity } from "@/types/package";
 
@@ -74,15 +70,6 @@ const VISA_LABELS: Record<VisaType, string> = {
   VISA_REQUIRED: "Visa Required",
 };
 
-const CROWD_BADGE: Record<
-  CrowdLevel,
-  { variant: "teal" | "gold" | "coral"; label: string }
-> = {
-  LOW: { variant: "teal", label: "LOW" },
-  MEDIUM: { variant: "gold", label: "MEDIUM" },
-  HIGH: { variant: "coral", label: "HIGH" },
-};
-
 const TRANSPORT_ICONS: Record<
   TransportType,
   React.ComponentType<{ size?: number; className?: string }>
@@ -98,18 +85,19 @@ const TRANSPORT_ICONS: Record<
   "Cable Car": Milestone,
 };
 
-const ABOUT_PARAGRAPHS = (name: string) => [
-  `${name} is one of the world's most sought-after destinations, offering an unparalleled blend of natural beauty, cultural richness, and luxurious experiences. From dramatic landscapes to vibrant local traditions, every corner reveals something extraordinary for the discerning traveller.`,
-  `The region boasts a diverse tapestry of experiences — from ancient temples and historic palaces to pristine beaches and world-class dining. Local cuisine is a highlight, with flavours that have evolved over centuries of trade and cultural exchange, now enjoyed in settings ranging from humble street stalls to Michelin-starred restaurants.`,
-  `Whether you seek adventure, relaxation, or cultural immersion, ${name} delivers with elegance. The best experiences here are often the quieter ones: a sunrise over misty mountains, an afternoon wandering through a centuries-old market, or a private boat ride through secluded waterways far from the crowds.`,
-];
-
 const TRAVEL_TIPS = [
   "Book accommodation and internal transfers at least 60 days in advance during peak season.",
   "Carry a mix of local currency and USD — ATMs may be sparse in rural areas.",
   "Purchase comprehensive travel insurance that covers medical evacuation before departure.",
   "Respect local customs and dress codes, especially at religious or heritage sites.",
 ];
+
+interface VisitRow {
+  month: string;
+  weather?: { temp: number; rainfall: number };
+  availability?: AvailabilityStatus;
+  recommendation?: VisitRecommendation;
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -161,23 +149,40 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
           : [];
   const hasWhenToVisitData =
     monthlyWeather.length > 0 || (dest?.whenToVisit?.length ?? 0) > 0;
-  const allMonths: WhenToVisitMonth[] = hasWhenToVisitData
+  const allMonths: VisitRow[] = hasWhenToVisitData
     ? MONTHS.map((month) => {
-        const stored = dest?.whenToVisit?.find((m) => m.month === month);
+        const stored = dest?.whenToVisit?.find((m) => m.month === month) as
+          | {
+              crowdLevel?: string;
+              availability?: string;
+              recommendation?: string;
+              recommended?: boolean;
+            }
+          | undefined;
         const w = monthlyWeather.find((m) => m.month === month);
-        const crowdLevel =
-          stored?.crowdLevel || (w ? deriveCrowdLevel(w.rating) : "MEDIUM");
-        return {
-          month,
-          crowdLevel,
-          availability: stored?.availability || "Open",
-          recommendation:
-            stored?.recommendation ||
-            (w ? deriveRecommendation(crowdLevel, w.rating) : "Recommended"),
-        };
+        const availability =
+          stored?.availability && stored.availability !== ""
+            ? (stored.availability as AvailabilityStatus)
+            : undefined;
+        const recommendation: VisitRecommendation | undefined =
+          stored?.recommendation === "Recommended" ||
+          stored?.recommendation === "Not recommended"
+            ? stored.recommendation
+            : stored?.recommended === true
+              ? "Recommended"
+              : undefined;
+        return { month, weather: w, availability, recommendation };
       })
     : [];
   const visibleMonths = showAllMonths ? allMonths : allMonths.slice(0, 6);
+  const hasAnyAvailability = allMonths.some((m) => m.availability);
+  const hasAnyRecommendation = allMonths.some((m) => m.recommendation);
+  const bestTimeLabel =
+    dest?.bestMonths && dest.bestMonths.length > 0
+      ? dest.bestMonths.length === 1
+        ? dest.bestMonths[0]
+        : `${dest.bestMonths[0]}–${dest.bestMonths[dest.bestMonths.length - 1]}`
+      : "Year-round";
 
   if (destLoading) {
     return (
@@ -225,6 +230,34 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
       )}
 
       <div className="max-w-7xl mx-auto px-4 md:px-8">
+        {/* ── 0. BREADCRUMB + H1 ────────────────────────────────────────────── */}
+        <div className="pt-6 md:pt-8">
+          <nav aria-label="Breadcrumb" className="mb-3">
+            <ol className="flex items-center gap-2 text-sm font-sans text-(--color-text-secondary)">
+              <li>
+                <Link
+                  href="/destinations"
+                  className="hover:text-white transition-colors"
+                >
+                  Destinations
+                </Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li aria-current="page" className="text-(--color-white)">
+                {dest.name}
+              </li>
+            </ol>
+          </nav>
+          <h1 className="font-display text-3xl md:text-5xl text-(--color-white)">
+            {dest.name}
+          </h1>
+          {dest.country && (
+            <p className="mt-1 text-sm font-sans text-(--color-text-secondary)">
+              {dest.country}
+            </p>
+          )}
+        </div>
+
         {/* ── 2. QUICK FACTS ────────────────────────────────────────────────── */}
         <section className="py-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -234,13 +267,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
                 Best Time
               </p>
               <p className="font-['Cormorant_Garamond'] text-lg text-(--color-white)">
-                {dest.bestMonths && dest.bestMonths.length > 0
-                  ? dest.bestMonths.length > 4
-                    ? `${dest.bestMonths.slice(0, 3).join(", ")} +${
-                        dest.bestMonths.length - 3
-                      } more`
-                    : dest.bestMonths.join(", ")
-                  : "Year-round"}
+                {bestTimeLabel}
               </p>
             </div>
 
@@ -293,16 +320,9 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
               className="space-y-5 max-w-3xl"
             />
           ) : (
-            <div className="space-y-5 max-w-3xl">
-              {ABOUT_PARAGRAPHS(dest.name).map((para, i) => (
-                <p
-                  key={i}
-                  className="font-sans text-base text-(--color-white-muted) leading-relaxed"
-                >
-                  {para}
-                </p>
-              ))}
-            </div>
+            <p className="text-sm font-sans text-(--color-text-secondary) italic">
+              Editorial coverage for {dest.name} is coming soon.
+            </p>
           )}
         </section>
 
@@ -341,11 +361,13 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
                   >
                     {act.imageUrl && (
                       <div className="h-40 bg-(--color-navy-border)/40 relative overflow-hidden">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <Image
                           src={act.imageUrl}
                           alt={act.name}
-                          className="w-full h-full object-cover"
+                          fill
+                          unoptimized
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          className="object-cover"
                         />
                       </div>
                     )}
@@ -384,7 +406,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
               When to visit
             </h2>
             <p className="font-sans text-sm text-(--color-text-secondary) mb-8">
-              We&apos;ve analysed crowd patterns to identify the best months.
+              Monthly weather at a glance.
             </p>
 
             <div className="overflow-x-auto rounded-xl border border-(--color-navy-border)">
@@ -394,9 +416,6 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
                     <th className="font-sans text-xs text-(--color-text-secondary) uppercase tracking-wide px-4 py-3 text-left">
                       Month
                     </th>
-                    <th className="font-sans text-xs text-(--color-text-secondary) uppercase tracking-wide px-4 py-3 text-left">
-                      Crowd Level
-                    </th>
                     <th className="font-sans text-xs text-(--color-text-secondary) uppercase tracking-wide px-4 py-3 text-left hidden md:table-cell">
                       Weather
                     </th>
@@ -405,12 +424,16 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
                         Temp
                       </th>
                     )}
-                    <th className="font-sans text-xs text-(--color-text-secondary) uppercase tracking-wide px-4 py-3 text-left">
-                      Availability
-                    </th>
-                    <th className="font-sans text-xs text-(--color-text-secondary) uppercase tracking-wide px-4 py-3 text-left">
-                      Our Recommendation
-                    </th>
+                    {hasAnyAvailability && (
+                      <th className="font-sans text-xs text-(--color-text-secondary) uppercase tracking-wide px-4 py-3 text-left">
+                        Availability
+                      </th>
+                    )}
+                    {hasAnyRecommendation && (
+                      <th className="font-sans text-xs text-(--color-text-secondary) uppercase tracking-wide px-4 py-3 text-left">
+                        Our Recommendation
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -422,65 +445,43 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
                       <td className="font-sans font-medium text-(--color-white) px-4 py-4 whitespace-nowrap">
                         {row.month}
                       </td>
-                      <td className="px-4 py-4">
-                        <span
-                          className={[
-                            "font-sans text-xs px-2 py-0.5 rounded-full",
-                            row.crowdLevel === "LOW" &&
-                              "bg-(--color-teal)/20 text-(--color-teal) border border-(--color-teal)/30",
-                            row.crowdLevel === "MEDIUM" &&
-                              "bg-(--color-gold)/20 text-(--color-gold) border border-(--color-gold)/30",
-                            row.crowdLevel === "HIGH" &&
-                              "bg-(--color-coral)/20 text-(--color-coral) border border-(--color-coral)/30",
-                          ]
-                            .filter(Boolean)
-                            .join(" ")}
-                        >
-                          {row.crowdLevel &&
-                          CROWD_BADGE[row.crowdLevel as CrowdLevel]
-                            ? CROWD_BADGE[row.crowdLevel as CrowdLevel].label
-                            : "—"}
-                        </span>
-                      </td>
                       <td className="font-sans text-sm text-(--color-white-muted) px-4 py-4 hidden md:table-cell max-w-xs">
-                        {(() => {
-                          const w = monthlyWeather.find(
-                            (m) => m.month === row.month,
-                          );
-                          return w ? describeWeather(w.temp, w.rainfall) : "—";
-                        })()}
+                        {row.weather
+                          ? describeWeather(
+                              row.weather.temp,
+                              row.weather.rainfall,
+                            )
+                          : "—"}
                       </td>
-                      {monthlyWeather.length > 0 &&
-                        (() => {
-                          const w = monthlyWeather.find(
-                            (m) => m.month === row.month,
-                          );
-                          return (
-                            <td className="font-mono text-xs text-(--color-gold) px-4 py-4 hidden lg:table-cell whitespace-nowrap">
-                              {w ? `${w.temp}°C` : "—"}
-                            </td>
-                          );
-                        })()}
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-1.5">
-                          <AvailabilityIcon
-                            status={row.availability as AvailabilityStatus}
-                          />
-                          <span className="font-sans text-sm text-(--color-white-muted)">
-                            {row.availability}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-1.5">
-                          <RecommendationIcon
-                            value={row.recommendation as VisitRecommendation}
-                          />
-                          <span className="font-sans text-sm text-(--color-white-muted) hidden sm:inline">
-                            {row.recommendation}
-                          </span>
-                        </div>
-                      </td>
+                      {monthlyWeather.length > 0 && (
+                        <td className="font-mono text-xs text-(--color-gold) px-4 py-4 hidden lg:table-cell whitespace-nowrap">
+                          {row.weather ? `${row.weather.temp}°C` : "—"}
+                        </td>
+                      )}
+                      {hasAnyAvailability && (
+                        <td className="px-4 py-4">
+                          {row.availability && (
+                            <div className="flex items-center gap-1.5">
+                              <AvailabilityIcon status={row.availability} />
+                              <span className="font-sans text-sm text-(--color-white-muted)">
+                                {row.availability}
+                              </span>
+                            </div>
+                          )}
+                        </td>
+                      )}
+                      {hasAnyRecommendation && (
+                        <td className="px-4 py-4">
+                          {row.recommendation && (
+                            <div className="flex items-center gap-1.5">
+                              <RecommendationIcon value={row.recommendation} />
+                              <span className="font-sans text-sm text-(--color-white-muted) hidden sm:inline">
+                                {row.recommendation}
+                              </span>
+                            </div>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
