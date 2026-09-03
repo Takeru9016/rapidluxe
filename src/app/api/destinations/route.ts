@@ -30,6 +30,7 @@ export async function GET(req: NextRequest) {
       country: true,
       continent: true,
       imageUrl: true,
+      description: true,
       bestMonths: true,
       _count: { select: { packages: true } },
     },

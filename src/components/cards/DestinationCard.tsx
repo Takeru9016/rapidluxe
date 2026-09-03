@@ -15,6 +15,14 @@ export function DestinationCard({
   packageCount,
   className,
 }: DestinationCardProps) {
+  const bestMonths = destination.bestMonths ?? [];
+  const bestTimeLabel =
+    bestMonths.length === 0
+      ? null
+      : bestMonths.length === 1
+        ? bestMonths[0]
+        : `${bestMonths[0]}–${bestMonths[bestMonths.length - 1]}`;
+
   return (
     <Link href={`/destinations/${destination.slug}`}>
       <article
@@ -50,9 +58,19 @@ export function DestinationCard({
           <h3 className="font-(family-name:--font-display) text-2xl text-white leading-tight">
             {destination.name}
           </h3>
+          {destination.description && (
+            <p className="mt-1 text-sm text-white/80 font-sans line-clamp-2">
+              {destination.description}
+            </p>
+          )}
+          {bestTimeLabel && (
+            <p className="mt-1 text-xs text-(--color-gold) font-sans">
+              Best time: {bestTimeLabel}
+            </p>
+          )}
           {packageCount !== undefined && packageCount > 0 && (
             <p className="mt-1 text-sm text-(--color-gold) font-mono">
-              {packageCount} packages
+              {packageCount} {packageCount === 1 ? "Journey" : "Journeys"}
             </p>
           )}
         </div>

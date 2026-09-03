@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
 
 import { DestinationCard } from "@/components";
 import { DestinationCardSkeleton } from "@/components/shared/Skeletons";
@@ -34,6 +34,7 @@ const VALID_CONTINENTS = new Set<string>([
 
 function DestinationsContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const continentParam = searchParams.get("continent") ?? "";
   const initialTab: FilterTab = VALID_CONTINENTS.has(continentParam)
     ? (continentParam as FilterTab)
@@ -46,6 +47,18 @@ function DestinationsContent() {
     setActiveTab(VALID_CONTINENTS.has(param) ? (param as FilterTab) : "ALL");
   }, [searchParams]);
 
+  function handleTabChange(v: string) {
+    const next = v as FilterTab;
+    setActiveTab(next);
+    const params = new URLSearchParams(searchParams.toString());
+    if (next === "ALL") params.delete("continent");
+    else params.set("continent", next);
+    const qs = params.toString();
+    router.push(qs ? `/destinations?${qs}` : "/destinations", {
+      scroll: false,
+    });
+  }
+
   const { data, isLoading } = useDestinations(
     activeTab === "ALL" ? undefined : (activeTab as Continent),
   );
@@ -54,17 +67,18 @@ function DestinationsContent() {
 
   return (
     <section className="max-w-7xl mx-auto px-4 md:px-8 py-12">
-      <div className="mb-10">
-        <Tabs
-          value={activeTab}
-          onValueChange={(v) => setActiveTab(v as FilterTab)}
-        >
-          <TabsList className="flex flex-wrap h-auto gap-2 bg-transparent p-0">
+      <h2 className="font-display text-2xl md:text-3xl text-white mb-6">
+        Browse by Region
+      </h2>
+
+      <div className="mb-16">
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
+          <TabsList className="flex w-full flex-wrap h-auto gap-3 bg-transparent p-0">
             {TABS.map((tab) => (
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
-                className="rounded-full border border-(--color-gold)/30 px-5 py-2 text-sm font-sans font-medium text-(--color-white-muted) transition-all duration-200 cursor-pointer data-[state=active]:bg-(--color-gold) data-[state=active]:text-[#1B2A41] data-[state=active]:border-(--color-gold) data-[state=inactive]:hover:border-(--color-gold)/60 data-[state=inactive]:hover:text-white"
+                className="flex-none rounded-full border border-(--color-gold)/30 px-5 py-2.5 text-sm font-sans font-medium text-(--color-white-muted) transition-all duration-200 cursor-pointer data-[state=active]:bg-(--color-gold) data-[state=active]:text-[#1B2A41] data-[state=active]:border-(--color-gold) data-[state=inactive]:hover:border-(--color-gold)/60 data-[state=inactive]:hover:text-white"
               >
                 {tab.label}
               </TabsTrigger>
@@ -103,9 +117,45 @@ function DestinationsContent() {
   );
 }
 
+function SeasonalDiscovery() {
+  const { data } = useDestinations();
+  const destinations = data?.data ?? [];
+
+  const currentMonth = useMemo(
+    () => new Date().toLocaleString("en-US", { month: "long" }),
+    [],
+  );
+
+  const inSeason = destinations.filter((d) =>
+    d.bestMonths?.includes(currentMonth),
+  );
+
+  if (inSeason.length === 0) return null;
+
+  return (
+    <section className="max-w-7xl mx-auto px-4 md:px-8 pb-12">
+      <h2 className="font-display text-xl md:text-2xl text-white mb-1">
+        Best Time to Go
+      </h2>
+      <p className="text-sm font-sans text-(--color-white-muted) mb-4">
+        Destinations at their best this {currentMonth}.
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {inSeason.map((d) => (
+          <DestinationCard
+            key={d.id}
+            destination={d as unknown as Destination}
+            packageCount={d._count.packages}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default function DestinationsPageClient() {
   return (
-    <main>
+    <>
       {/* HERO */}
       <section className="relative h-64 md:h-80 overflow-hidden">
         <Image
@@ -132,6 +182,9 @@ export default function DestinationsPageClient() {
       <Suspense fallback={null}>
         <DestinationsContent />
       </Suspense>
-    </main>
+
+      {/* SEASONAL DISCOVERY */}
+      <SeasonalDiscovery />
+    </>
   );
 }

@@ -181,7 +181,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
 
   if (destLoading) {
     return (
-      <main className="max-w-7xl mx-auto px-4 md:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
@@ -195,13 +195,13 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
             <PackageCardSkeleton key={i} />
           ))}
         </div>
-      </main>
+      </div>
     );
   }
 
   if (!dest) {
     return (
-      <main className="flex flex-col items-center justify-center py-32 text-center">
+      <div className="flex flex-col items-center justify-center py-32 text-center">
         <p className="font-display text-2xl text-(--color-white) mb-2">
           Destination not found
         </p>
@@ -209,12 +209,12 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
           The destination you&apos;re looking for doesn&apos;t exist or has been
           removed.
         </p>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main>
+    <div>
       {/* ── 1. DETAIL PHOTO GRID ──────────────────────────────────────────── */}
       {images.length > 0 ? (
         <DetailPhotoGrid images={images} alt={dest.name} priority />
@@ -309,7 +309,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
         {/* ── 4. PACKAGES ───────────────────────────────────────────────────── */}
         <section className="py-12 border-t border-(--color-navy-border)">
           <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-(--color-white) mb-8">
-            Packages to {dest.name}
+            Journeys to {dest.name}
           </h2>
           {pkgsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -579,6 +579,6 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
         {/* ── 10. TRAVEL ESSENTIALS ─────────────────────────────────────────── */}
         <UsefulLinks />
       </div>
-    </main>
+    </div>
   );
 }
