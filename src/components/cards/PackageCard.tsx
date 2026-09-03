@@ -110,7 +110,7 @@ export function PackageCard({
         <div className={cn(variant === "compact" ? "p-4" : "p-5")}>
           <h3
             className={cn(
-              "font-serif text-white leading-tight",
+              "font-display text-white leading-tight",
               variant === "compact" ? "text-lg" : "text-xl",
             )}
           >

@@ -51,6 +51,7 @@ const DURATION_BUCKETS = [
 
 const SORT_OPTIONS = [
   { value: "popular", label: "Curated" },
+  { value: "newest", label: "Newest" },
   { value: "price-asc", label: "Price: Low to High" },
   { value: "price-desc", label: "Price: High to Low" },
   { value: "duration", label: "Duration" },
@@ -60,6 +61,7 @@ type SortValue = (typeof SORT_OPTIONS)[number]["value"];
 
 const SORT_TO_API: Record<SortValue, PackagesQuery["sort"]> = {
   popular: "featured",
+  newest: undefined,
   "price-asc": "price_asc",
   "price-desc": "price_desc",
   duration: "duration_asc",
@@ -266,6 +268,7 @@ function PackagesContent() {
   const [loadedPackages, setLoadedPackages] = useState<ApiPackage[]>([]);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [loadMoreAnnouncement, setLoadMoreAnnouncement] = useState("");
 
   const { sort, setSort } = useSearchStore();
   const searchParams = useSearchParams();
@@ -394,7 +397,7 @@ function PackagesContent() {
     durationMin: durationBucket?.min,
     durationMax: durationBucket?.max,
     tags: selectedTags.length > 0 ? selectedTags : undefined,
-    sort: SORT_TO_API[sort as SortValue] ?? "featured",
+    sort: SORT_TO_API[sort as SortValue],
     page,
     limit: PAGE_SIZE,
   });
@@ -404,6 +407,12 @@ function PackagesContent() {
     setLoadedPackages((prev) =>
       page === 1 ? packagesData.data : [...prev, ...packagesData.data],
     );
+    if (page > 1) {
+      const loadedCount = packagesData.data.length;
+      setLoadMoreAnnouncement(
+        `${loadedCount} more ${loadedCount === 1 ? "Journey" : "Journeys"} loaded.`,
+      );
+    }
     setTotal(packagesData.pagination.total);
     setTotalPages(packagesData.pagination.totalPages);
   }, [packagesData, page]);
@@ -470,6 +479,10 @@ function PackagesContent() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 pb-12 md:pb-16">
+        <h2 className="font-display text-xl md:text-2xl font-light text-white mb-4">
+          Browse by Destination
+        </h2>
+
         {/* Destination discovery */}
         <DestinationChipRow
           destinations={destinations}
@@ -619,6 +632,10 @@ function PackagesContent() {
                 </Button>
               </div>
             )}
+
+            <span aria-live="polite" aria-atomic="true" className="sr-only">
+              {loadMoreAnnouncement}
+            </span>
           </>
         )}
       </div>
