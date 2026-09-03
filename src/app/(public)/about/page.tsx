@@ -4,29 +4,16 @@ import { ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { cache } from "react";
 
 import { sanityReadClient } from "@/lib/sanity";
 
-export const metadata: Metadata = {
-  title: "About Us",
-  description:
-    "RapidLuxe — India's premier luxury travel company. Founded in 2017, we curate extraordinary journeys for discerning travellers across 50+ destinations.",
-  openGraph: {
-    title: "About Us | RapidLuxe",
-    description:
-      "RapidLuxe — India's premier luxury travel company. Founded in 2017, we curate extraordinary journeys for discerning travellers across 50+ destinations.",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?w=1200&auto=format&fit=crop&q=80",
-        width: 1200,
-        height: 800,
-        alt: "RapidLuxe team",
-      },
-    ],
-  },
-};
-
 // ── Sanity types ──────────────────────────────────────────────────────────────
+
+interface TrustStat {
+  number: string;
+  label: string;
+}
 
 interface SanityAboutPage {
   headline: string | null;
@@ -41,43 +28,61 @@ interface SanityAboutPage {
     bio: string;
     imageUrl: string | null;
   }> | null;
+  stats: TrustStat[] | null;
 }
 
-interface TrustStat {
-  number: string;
-  label: string;
-}
-
-async function getAboutData(): Promise<{
-  about: SanityAboutPage | null;
-  trustBarStats: TrustStat[];
-}> {
+const getAboutData = cache(async (): Promise<SanityAboutPage | null> => {
   try {
-    const [about, siteData] = await Promise.all([
-      sanityReadClient.fetch<SanityAboutPage | null>(
-        `*[_type == "aboutPage"][0] {
-          headline,
-          subheadline,
-          "heroImageUrl": heroImage.asset->url,
-          story,
-          "missionTitle": mission.title,
-          "missionBody": mission.body,
-          "team": team[] {
-            name,
-            role,
-            bio,
-            "imageUrl": image.asset->url
-          }
-        }`,
-      ),
-      sanityReadClient.fetch<{ trustBarStats: TrustStat[] | null } | null>(
-        `*[_type == "siteContent"][0] { trustBarStats[] { number, label } }`,
-      ),
-    ]);
-    return { about, trustBarStats: siteData?.trustBarStats ?? [] };
+    return await sanityReadClient.fetch<SanityAboutPage | null>(
+      `*[_type == "aboutPage"][0] {
+        headline,
+        subheadline,
+        "heroImageUrl": heroImage.asset->url,
+        story,
+        "missionTitle": mission.title,
+        "missionBody": mission.body,
+        "team": team[] {
+          name,
+          role,
+          bio,
+          "imageUrl": image.asset->url
+        },
+        stats[] { number, label }
+      }`,
+    );
   } catch {
-    return { about: null, trustBarStats: [] };
+    return null;
   }
+});
+
+export async function generateMetadata(): Promise<Metadata> {
+  const sanity = await getAboutData();
+
+  const title = sanity?.headline
+    ? `${sanity.headline} | RapidLuxe`
+    : "Therapycation | RapidLuxe";
+  const description =
+    sanity?.subheadline ??
+    "RapidLuxe is a bespoke luxury travel company built around the Therapycation philosophy — travel designed to restore you.";
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [
+        {
+          url:
+            sanity?.heroImageUrl ??
+            "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?w=1200&auto=format&fit=crop&q=80",
+          width: 1200,
+          height: 800,
+          alt: "RapidLuxe team",
+        },
+      ],
+    },
+  };
 }
 
 // ── Process steps ─────────────────────────────────────────────────────────────
@@ -124,7 +129,8 @@ function getInitials(name: string): string {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function AboutPage() {
-  const { about: sanity, trustBarStats } = await getAboutData();
+  const sanity = await getAboutData();
+  const trustStats = sanity?.stats ?? [];
 
   const heroImage =
     sanity?.heroImageUrl ??
@@ -161,6 +167,9 @@ export default async function AboutPage() {
 
       {/* SECTION 2 — Story (40 / 60) */}
       <section className="py-20 max-w-7xl mx-auto px-4 md:px-8">
+        <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-(--color-white) font-light mb-10">
+          Our Story
+        </h2>
         <div className="grid md:grid-cols-5 gap-16 items-start">
           {/* Left 40% — pull quote */}
           <div className="md:col-span-2">
@@ -212,11 +221,11 @@ export default async function AboutPage() {
       </section>
 
       {/* SECTION 3 — Trust stats bar */}
-      {trustBarStats.length > 0 && (
+      {trustStats.length > 0 && (
         <section className="border-y py-12 bg-(--color-navy-surface) border-(--color-navy-border)">
           <div className="max-w-7xl mx-auto px-4 md:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-0 md:divide-x md:divide-(--color-navy-border)">
-              {trustBarStats.map(({ number, label }) => (
+              {trustStats.map(({ number, label }) => (
                 <div
                   key={label}
                   className="flex flex-col items-center gap-2 md:px-8"
@@ -433,15 +442,25 @@ export default async function AboutPage() {
           className="font-sans text-sm mb-8 max-w-md mx-auto"
           style={{ color: "rgba(11,15,26,0.7)" }}
         >
-          Browse our curated packages and let us design your next Therapycation.
+          Explore our curated journeys and let us design your next
+          Therapycation.
         </p>
-        <Link
-          href="/packages"
-          className="inline-flex items-center gap-2 font-sans font-medium px-10 py-4 rounded-lg text-sm transition-opacity hover:opacity-90"
-          style={{ backgroundColor: "#1B2A41", color: "#FFFFFF" }}
-        >
-          Browse Packages <ArrowRight size={16} />
-        </Link>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link
+            href="/packages"
+            className="inline-flex items-center gap-2 font-sans font-medium px-10 py-4 rounded-lg text-sm transition-opacity hover:opacity-90"
+            style={{ backgroundColor: "#1B2A41", color: "#FFFFFF" }}
+          >
+            Explore Journeys <ArrowRight size={16} />
+          </Link>
+          <Link
+            href="/contact"
+            className="inline-flex items-center gap-2 font-sans font-medium px-10 py-4 rounded-lg text-sm border-2 transition-colors hover:bg-[#1B2A41]/10"
+            style={{ borderColor: "#1B2A41", color: "#1B2A41" }}
+          >
+            Bespoke Planning
+          </Link>
+        </div>
       </section>
     </main>
   );
