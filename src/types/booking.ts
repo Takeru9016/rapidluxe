@@ -89,7 +89,9 @@ export type DisplayStatus = "upcoming" | "completed" | "cancelled" | "refunded";
 export interface UserBooking {
   id: string;
   bookingRef: string | null;
+  /** Authoritative six-state status, sourced directly from the persisted booking. */
   status: DbBookingStatus;
+  /** Coarse Upcoming/Completed/Cancelled grouping only — not for status display. */
   displayStatus: DisplayStatus;
   departureDate: string;
   returnDate: string | null;

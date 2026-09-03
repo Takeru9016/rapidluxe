@@ -13,32 +13,33 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { use } from "react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/shared/Badge";
 import { Button } from "@/components/ui/button";
-import { useBooking } from "@/hooks/api/useBookings";
+import {
+  useBooking,
+  useCancelBooking,
+  usePayBooking,
+} from "@/hooks/api/useBookings";
+import { BOOKING_STATUS_CONFIG } from "@/lib/booking-status";
 import { calculateGST, formatDate, formatPrice } from "@/lib/utils";
-import type { DisplayStatus } from "@/types/booking";
-
-// ── Status Config ─────────────────────────────────────────────────────────────
-
-const statusConfig: Record<
-  DisplayStatus,
-  { label: string; variant: "teal" | "ghost" | "coral" | "gold" }
-> = {
-  upcoming: { label: "Upcoming", variant: "teal" },
-  completed: { label: "Completed", variant: "ghost" },
-  cancelled: { label: "Cancelled", variant: "coral" },
-  refunded: { label: "Refunded", variant: "gold" },
-};
 
 // ── Section Label ─────────────────────────────────────────────────────────────
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-xs font-['DM_Sans'] font-medium uppercase tracking-widest text-(--color-gold) mb-4">
-      {children}
-    </p>
+function SectionLabel({
+  children,
+  heading = false,
+}: {
+  children: React.ReactNode;
+  heading?: boolean;
+}) {
+  const className =
+    "text-xs font-['DM_Sans'] font-medium uppercase tracking-widest text-(--color-gold) mb-4";
+  return heading ? (
+    <h2 className={className}>{children}</h2>
+  ) : (
+    <p className={className}>{children}</p>
   );
 }
 
@@ -67,31 +68,72 @@ export default function BookingDetailPage({
 }) {
   const { id } = use(params);
   const { data, isLoading, isError } = useBooking(id);
+  const payMutation = usePayBooking();
+  const cancelMutation = useCancelBooking();
 
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-(--color-navy) pt-24">
+      <div className="min-h-screen bg-(--color-navy) pt-24">
         <div className="max-w-3xl mx-auto px-4 md:px-8 py-12 space-y-8">
           <DetailSkeleton />
         </div>
-      </main>
+      </div>
     );
   }
 
   if (isError || !data) notFound();
 
   const booking = data.data;
-  const { label, variant } = statusConfig[booking.displayStatus];
+  const { label, description, variant } = BOOKING_STATUS_CONFIG[booking.status];
   const { base, gst, total } = calculateGST(booking.baseAmount);
   const coverImage =
     booking.package.images[0] ??
     "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&q=80";
-  const packageType = booking.package.tags[0] ?? "Travel";
+  const journeyType = booking.package.tags[0] ?? "—";
   const leadTraveler =
     booking.travelers.find((t) => t.isLead) ?? booking.travelers[0];
 
+  const canPay = booking.status === "AWAITING_PAYMENT";
+  const canDownloadInvoice =
+    booking.status === "PAID" || booking.status === "CONFIRMED";
+  const canCancel =
+    booking.status === "ENQUIRY" || booking.status === "QUOTE_SENT";
+  const isPaidOrConfirmed =
+    booking.status === "PAID" || booking.status === "CONFIRMED";
+
+  const handlePayNow = () => {
+    payMutation.mutate(booking.id, {
+      onSuccess: (data) => {
+        window.location.href = data.payUrl;
+      },
+      onError: (err) => {
+        toast.error(
+          err instanceof Error
+            ? err.message
+            : "Payment is not available for this booking.",
+        );
+      },
+    });
+  };
+
+  const handleCancel = () => {
+    if (!window.confirm("Cancel this booking? This action cannot be undone.")) {
+      return;
+    }
+    cancelMutation.mutate(booking.id, {
+      onSuccess: () => {
+        toast.success("Your booking has been cancelled.");
+      },
+      onError: (err) => {
+        toast.error(
+          err instanceof Error ? err.message : "Failed to cancel booking.",
+        );
+      },
+    });
+  };
+
   return (
-    <main className="min-h-screen bg-(--color-navy) pt-24">
+    <div className="min-h-screen bg-(--color-navy) pt-24">
       <div className="max-w-3xl mx-auto px-4 md:px-8 py-12 space-y-8">
         {/* Back */}
         <Link
@@ -109,8 +151,11 @@ export default function BookingDetailPage({
               <Badge variant={variant} size="sm" className="mb-3">
                 {label}
               </Badge>
-              <p className="font-['JetBrains_Mono'] text-2xl md:text-3xl text-white">
-                #{booking.bookingRef ?? id.slice(-6).toUpperCase()}
+              <h1 className="font-['JetBrains_Mono'] text-2xl md:text-3xl text-white">
+                {booking.bookingRef ? `#${booking.bookingRef}` : "—"}
+              </h1>
+              <p className="font-['DM_Sans'] text-sm text-(--color-text-secondary) mt-2">
+                {description}
               </p>
             </div>
             {booking.returnDate && (
@@ -127,7 +172,7 @@ export default function BookingDetailPage({
           </div>
         </div>
 
-        {/* ── Package Summary ── */}
+        {/* ── Journey Summary ── */}
         <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) overflow-hidden">
           <div className="relative h-48 w-full">
             <Image
@@ -140,19 +185,19 @@ export default function BookingDetailPage({
             <div className="absolute inset-0 bg-linear-to-t from-(--color-navy-surface) to-transparent" />
           </div>
           <div className="p-6 -mt-8 relative">
-            <SectionLabel>Package</SectionLabel>
+            <SectionLabel>Journey</SectionLabel>
             <h2 className="font-['Cormorant_Garamond'] text-2xl text-white leading-tight mb-1">
               {booking.package.title}
             </h2>
             <p className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
-              {booking.package.durationNights} nights · {packageType}
+              {booking.package.durationNights} nights · {journeyType}
             </p>
           </div>
         </div>
 
         {/* ── Trip Details ── */}
         <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
-          <SectionLabel>Trip Details</SectionLabel>
+          <SectionLabel heading>Trip Details</SectionLabel>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               {
@@ -174,8 +219,8 @@ export default function BookingDetailPage({
               },
               {
                 icon: Package,
-                label: "Package Type",
-                value: packageType,
+                label: "Journey Type",
+                value: journeyType,
               },
             ].map(({ icon: Icon, label, value }) => (
               <div
@@ -195,7 +240,7 @@ export default function BookingDetailPage({
         {/* ── Traveler Info ── */}
         {leadTraveler && (
           <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
-            <SectionLabel>Traveler Information</SectionLabel>
+            <SectionLabel heading>Traveler Information</SectionLabel>
             <div className="overflow-x-auto">
               <table className="w-full text-sm font-['DM_Sans']">
                 <thead>
@@ -233,7 +278,7 @@ export default function BookingDetailPage({
 
         {/* ── Payment Summary ── */}
         <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
-          <SectionLabel>Payment Summary</SectionLabel>
+          <SectionLabel heading>Payment Summary</SectionLabel>
           <div className="space-y-3">
             <div className="flex justify-between text-sm font-['DM_Sans']">
               <span className="text-(--color-white-muted)">Base Amount</span>
@@ -255,7 +300,9 @@ export default function BookingDetailPage({
             </div>
             <div className="h-px bg-(--color-navy-border)" />
             <div className="flex justify-between font-['DM_Sans']">
-              <span className="text-white font-medium">Total Paid</span>
+              <span className="text-white font-medium">
+                {isPaidOrConfirmed ? "Total Paid" : "Total Amount"}
+              </span>
               <span className="font-['JetBrains_Mono'] text-(--color-gold) font-bold text-lg">
                 {formatPrice(total)}
               </span>
@@ -287,8 +334,19 @@ export default function BookingDetailPage({
 
         {/* ── Actions Row ── */}
         <div className="flex flex-wrap gap-3">
-          {booking.displayStatus === "upcoming" ||
-          booking.displayStatus === "completed" ? (
+          {canPay && (
+            <Button
+              variant="coral"
+              className="h-auto gap-2 px-4 py-2.5 font-sans"
+              onClick={handlePayNow}
+              disabled={payMutation.isPending}
+            >
+              <CreditCard size={14} />
+              {payMutation.isPending ? "Redirecting…" : "Pay Now"}
+            </Button>
+          )}
+
+          {canDownloadInvoice ? (
             <Button
               variant="outline-gold"
               className="h-auto gap-2 px-4 py-2.5 font-sans"
@@ -305,8 +363,9 @@ export default function BookingDetailPage({
             </Button>
           ) : (
             <button
+              type="button"
               disabled
-              title="Available after payment is confirmed"
+              title="Invoice is available once payment is confirmed"
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-(--color-navy-border) text-(--color-text-secondary) text-sm font-['DM_Sans'] cursor-not-allowed opacity-50"
             >
               <Download size={14} />
@@ -325,16 +384,18 @@ export default function BookingDetailPage({
             </Link>
           </Button>
 
-          {booking.displayStatus === "upcoming" && (
+          {canCancel && (
             <Button
               variant="destructive"
               className="h-auto gap-2 px-4 py-2.5 font-sans"
+              onClick={handleCancel}
+              disabled={cancelMutation.isPending}
             >
-              Cancel Booking
+              {cancelMutation.isPending ? "Cancelling…" : "Cancel Booking"}
             </Button>
           )}
         </div>
       </div>
-    </main>
+    </div>
   );
 }

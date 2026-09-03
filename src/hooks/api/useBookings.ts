@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type { UserBooking, UserBookingDetail } from "@/types/booking";
 
@@ -22,5 +22,42 @@ export function useBooking(id: string) {
       return res.json() as Promise<{ data: UserBookingDetail }>;
     },
     enabled: !!id,
+  });
+}
+
+export function useCancelBooking() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/bookings/${id}/cancel`, {
+        method: "POST",
+      });
+      const json: { data?: { status: string }; error?: string } =
+        await res.json();
+      if (!res.ok) {
+        throw new Error(json.error ?? "Failed to cancel booking");
+      }
+      return json.data;
+    },
+    onSuccess: (_data, id) => {
+      void queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      void queryClient.invalidateQueries({ queryKey: ["booking", id] });
+    },
+  });
+}
+
+export function usePayBooking() {
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/bookings/${id}/pay`, { method: "POST" });
+      const json: { data?: { payUrl: string }; error?: string } =
+        await res.json();
+      if (!res.ok || !json.data) {
+        throw new Error(
+          json.error ?? "Payment is not available for this booking.",
+        );
+      }
+      return json.data;
+    },
   });
 }

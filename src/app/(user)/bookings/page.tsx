@@ -4,11 +4,13 @@ import { BookOpen, Calendar, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/shared/Badge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { BookingCardSkeleton } from "@/components/shared/Skeletons";
-import { useBookings } from "@/hooks/api/useBookings";
+import { useBookings, usePayBooking } from "@/hooks/api/useBookings";
+import { BOOKING_STATUS_CONFIG } from "@/lib/booking-status";
 import { formatDateRange, formatPrice } from "@/lib/utils";
 import type { DisplayStatus, UserBooking } from "@/types/booking";
 
@@ -16,31 +18,34 @@ import type { DisplayStatus, UserBooking } from "@/types/booking";
 
 type FilterStatus = "all" | DisplayStatus;
 
-// ── Status Config ─────────────────────────────────────────────────────────────
-
-const statusConfig: Record<
-  DisplayStatus,
-  { label: string; variant: "teal" | "ghost" | "coral" | "gold" }
-> = {
-  upcoming: { label: "Upcoming", variant: "teal" },
-  completed: { label: "Completed", variant: "ghost" },
-  cancelled: { label: "Cancelled", variant: "coral" },
-  refunded: { label: "Refunded", variant: "gold" },
-};
-
 const FILTERS: { value: FilterStatus; label: string }[] = [
   { value: "all", label: "All" },
   { value: "upcoming", label: "Upcoming" },
   { value: "completed", label: "Completed" },
   { value: "cancelled", label: "Cancelled" },
-  { value: "refunded", label: "Refunded" },
 ];
 
 // ── Booking Card ──────────────────────────────────────────────────────────────
 
 function BookingCard({ booking }: { booking: UserBooking }) {
-  const { label, variant } = statusConfig[booking.displayStatus];
+  const { label, description, variant } = BOOKING_STATUS_CONFIG[booking.status];
   const coverImage = booking.package.images[0] ?? "";
+  const payMutation = usePayBooking();
+
+  const handlePayNow = () => {
+    payMutation.mutate(booking.id, {
+      onSuccess: (data) => {
+        window.location.href = data.payUrl;
+      },
+      onError: (err) => {
+        toast.error(
+          err instanceof Error
+            ? err.message
+            : "Payment is not available for this booking.",
+        );
+      },
+    });
+  };
 
   return (
     <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-5 flex gap-4">
@@ -69,6 +74,9 @@ function BookingCard({ booking }: { booking: UserBooking }) {
         <p className="font-['JetBrains_Mono'] text-xs text-(--color-text-secondary)">
           {booking.bookingRef ? `#${booking.bookingRef}` : "—"}
         </p>
+        <p className="font-['DM_Sans'] text-xs text-(--color-text-secondary)">
+          {description}
+        </p>
         <div className="flex flex-wrap gap-4 text-sm text-(--color-white-muted) font-['DM_Sans']">
           {booking.returnDate ? (
             <span className="flex items-center gap-1.5">
@@ -91,16 +99,28 @@ function BookingCard({ booking }: { booking: UserBooking }) {
             {booking.children > 0 ? ` · ${booking.children} Children` : ""}
           </span>
         </div>
-        <div className="flex items-center justify-between mt-auto pt-1">
+        <div className="flex items-center justify-between mt-auto pt-1 gap-3">
           <span className="font-['JetBrains_Mono'] text-(--color-gold) text-base">
             {formatPrice(booking.totalAmount)}
           </span>
-          <Link
-            href={`/bookings/${booking.id}`}
-            className="text-xs font-['DM_Sans'] font-medium text-(--color-gold) hover:text-(--color-gold-light) transition-colors"
-          >
-            View Details →
-          </Link>
+          <div className="flex items-center gap-4 shrink-0">
+            {booking.status === "AWAITING_PAYMENT" && (
+              <button
+                type="button"
+                onClick={handlePayNow}
+                disabled={payMutation.isPending}
+                className="font-['DM_Sans'] text-xs font-medium text-(--color-navy) bg-(--color-gold) hover:bg-(--color-gold-light) disabled:opacity-50 px-3 py-1.5 rounded-md transition-colors"
+              >
+                {payMutation.isPending ? "Redirecting…" : "Pay Now"}
+              </button>
+            )}
+            <Link
+              href={`/bookings/${booking.id}`}
+              className="text-xs font-['DM_Sans'] font-medium text-(--color-gold) hover:text-(--color-gold-light) transition-colors"
+            >
+              View Details →
+            </Link>
+          </div>
         </div>
       </div>
     </div>
@@ -120,7 +140,7 @@ export default function BookingsPage() {
       : bookings.filter((b) => b.displayStatus === filter);
 
   return (
-    <main className="min-h-screen bg-(--color-navy) pt-24">
+    <div className="min-h-screen bg-(--color-navy) pt-24">
       <div className="max-w-4xl mx-auto px-4 md:px-8 py-12">
         <h1 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-white mb-8">
           My Bookings
@@ -130,6 +150,7 @@ export default function BookingsPage() {
           {FILTERS.map(({ value, label }) => (
             <button
               key={value}
+              type="button"
               onClick={() => setFilter(value)}
               className={`px-4 py-1.5 rounded-full text-sm font-['DM_Sans'] border transition-colors ${
                 filter === value
@@ -156,10 +177,14 @@ export default function BookingsPage() {
             }
             description={
               filter === "all"
-                ? "When you book a package it will appear here."
+                ? "When you book a journey it will appear here."
                 : `You have no ${filter} bookings.`
             }
-            action={{ label: "Explore Packages", href: "/packages" }}
+            action={
+              filter === "cancelled"
+                ? undefined
+                : { label: "Explore Journeys", href: "/packages" }
+            }
           />
         ) : (
           <div className="flex flex-col gap-4">
@@ -169,6 +194,6 @@ export default function BookingsPage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }
