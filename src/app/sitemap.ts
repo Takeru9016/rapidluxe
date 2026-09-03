@@ -1,11 +1,18 @@
 import type { MetadataRoute } from "next";
 
 import { prisma } from "@/lib/prisma";
+import { ALL_POST_SLUGS_QUERY } from "@/lib/queries/blog";
+import { sanityReadClient } from "@/lib/sanity";
+
+interface PostSlugRow {
+  slug: string | null;
+  publishedAt: string | null;
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://rapidluxe.com";
 
-  const [packages, destinations] = await Promise.all([
+  const [packages, destinations, posts] = await Promise.all([
     prisma.package.findMany({
       where: { status: "PUBLISHED" },
       select: { slug: true, updatedAt: true },
@@ -13,6 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     prisma.destination.findMany({
       select: { slug: true, createdAt: true },
     }),
+    sanityReadClient.fetch<PostSlugRow[]>(ALL_POST_SLUGS_QUERY).catch(() => []),
   ]);
 
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -74,5 +82,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: "monthly" as const,
   }));
 
-  return [...staticRoutes, ...packageRoutes, ...destinationRoutes];
+  const postRoutes: MetadataRoute.Sitemap = posts
+    .filter((post): post is PostSlugRow & { slug: string } => !!post.slug)
+    .map((post) => ({
+      url: `${appUrl}/blog/${post.slug}`,
+      lastModified: post.publishedAt ? new Date(post.publishedAt) : new Date(),
+      priority: 0.6,
+      changeFrequency: "monthly" as const,
+    }));
+
+  return [
+    ...staticRoutes,
+    ...packageRoutes,
+    ...destinationRoutes,
+    ...postRoutes,
+  ];
 }

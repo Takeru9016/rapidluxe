@@ -40,6 +40,12 @@ export const RELATED_POSTS_QUERY = `*[_type == "post" && slug.current != $slug] 
   category-> { title, slug }
 }`;
 
+// Slugs only — used by sitemap.ts to list individual article URLs.
+export const ALL_POST_SLUGS_QUERY = `*[_type == "post" && defined(slug.current)] {
+  "slug": slug.current,
+  publishedAt
+}`;
+
 export const DESTINATION_EDITORIAL_QUERY = `*[_type == "destination" && slug.current == $slug][0] {
   about,
   travelTips,

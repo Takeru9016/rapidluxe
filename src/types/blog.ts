@@ -67,13 +67,13 @@ export interface BlogCardData {
   id: string;
   title: string;
   slug: string;
-  category: string;
+  category: string | null;
   excerpt: string;
   author: string;
   authorAvatarUrl: string;
   imageUrl: string;
-  readTime: number;
-  publishedAt: string;
+  readTime: number | null;
+  publishedAt: string | null;
 }
 
 // ── Admin blog API payload (matches the Sanity post schema) ──

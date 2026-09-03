@@ -56,21 +56,31 @@ function RelatedCard({ post }: { post: BlogCardData }) {
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, 33vw"
           />
-          <div className="absolute top-3 left-3">
-            <Badge variant="gold" size="sm">
-              {post.category}
-            </Badge>
-          </div>
+          {post.category && (
+            <div className="absolute top-3 left-3">
+              <Badge variant="gold" size="sm">
+                {post.category}
+              </Badge>
+            </div>
+          )}
         </div>
         <div className="p-5">
           <h3 className="font-['Cormorant_Garamond'] text-lg text-(--color-white) line-clamp-2 group-hover:text-(--color-gold-light) transition-colors">
             {post.title}
           </h3>
           <div className="mt-3 flex items-center gap-2 text-xs font-sans text-(--color-text-secondary)">
-            <Clock size={11} className="shrink-0" />
-            <span>{post.readTime} min read</span>
-            <span aria-hidden>·</span>
-            <span>{formatDate(post.publishedAt)}</span>
+            {post.readTime != null && (
+              <>
+                <Clock size={11} className="shrink-0" />
+                <span>{post.readTime} min read</span>
+              </>
+            )}
+            {post.publishedAt && (
+              <>
+                <span aria-hidden>·</span>
+                <span>{formatDate(post.publishedAt)}</span>
+              </>
+            )}
           </div>
         </div>
       </article>
@@ -114,6 +124,19 @@ export default async function BlogPostPage({
 
       {/* Header */}
       <div className="max-w-3xl mx-auto px-4 py-8">
+        <nav aria-label="Breadcrumb" className="mb-3">
+          <ol className="flex items-center gap-2 text-sm font-sans text-(--color-text-secondary)">
+            <li>
+              <Link href="/blog" className="hover:text-white transition-colors">
+                Journal
+              </Link>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li aria-current="page" className="text-(--color-white)">
+              {post.title}
+            </li>
+          </ol>
+        </nav>
         <div className="flex items-center gap-3 mb-4">
           {post.category?.title && (
             <Badge variant="gold" size="sm">
@@ -191,13 +214,16 @@ export default async function BlogPostPage({
             <p className="font-['Cormorant_Garamond'] text-xl text-(--color-white)">
               {authorName}
             </p>
-            <p className="font-sans text-xs text-(--color-gold) uppercase tracking-widest mt-0.5">
-              {post.author?.role ?? "Travel Writer"}
-            </p>
-            <p className="font-sans text-sm text-(--color-text-secondary) mt-2 leading-relaxed">
-              {post.author?.bio ??
-                "A seasoned travel writer covering luxury and adventure destinations across Asia, Europe, and beyond."}
-            </p>
+            {post.author?.role && (
+              <p className="font-sans text-xs text-(--color-gold) uppercase tracking-widest mt-0.5">
+                {post.author.role}
+              </p>
+            )}
+            {post.author?.bio && (
+              <p className="font-sans text-sm text-(--color-text-secondary) mt-2 leading-relaxed">
+                {post.author.bio}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -232,7 +258,7 @@ export default async function BlogPostPage({
             asChild
           >
             <Link href="/packages">
-              Browse Packages <ArrowRight size={16} />
+              Explore Journeys <ArrowRight size={16} />
             </Link>
           </Button>
         </div>

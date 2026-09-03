@@ -1,4 +1,4 @@
-import type { PostListItem, BlogCardData } from "@/types/blog";
+import type { BlogCardData, PostListItem } from "@/types/blog";
 
 // Fallbacks for posts authored without an image yet. images.unsplash.com is
 // already whitelisted in next.config for the dummy data.
@@ -12,12 +12,12 @@ export function toBlogCard(p: PostListItem): BlogCardData {
     id: p._id,
     title: p.title,
     slug: p.slug.current,
-    category: p.category?.title ?? "Travel",
+    category: p.category?.title ?? null,
     excerpt: p.excerpt ?? "",
     author: p.author?.name ?? "RapidLuxe",
     authorAvatarUrl: p.author?.image?.asset?.url ?? BLOG_FALLBACK_AVATAR,
     imageUrl: p.mainImage?.asset?.url ?? BLOG_FALLBACK_IMAGE,
-    readTime: p.readTime ?? 5,
-    publishedAt: p.publishedAt ?? new Date().toISOString(),
+    readTime: p.readTime ?? null,
+    publishedAt: p.publishedAt ?? null,
   };
 }

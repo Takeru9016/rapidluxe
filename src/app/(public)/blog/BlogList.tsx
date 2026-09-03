@@ -4,7 +4,10 @@ import { ArrowRight, Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/shared/Badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDate } from "@/lib/utils";
 import type { BlogCardData } from "@/types/blog";
@@ -29,11 +32,13 @@ function BlogCard({ post }: { post: BlogCardData }) {
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, 33vw"
           />
-          <div className="absolute top-3 left-3">
-            <Badge variant="gold" size="sm">
-              {post.category}
-            </Badge>
-          </div>
+          {post.category && (
+            <div className="absolute top-3 left-3">
+              <Badge variant="gold" size="sm">
+                {post.category}
+              </Badge>
+            </div>
+          )}
         </div>
         <div className="p-5 flex flex-col flex-1">
           <h3 className="font-['Cormorant_Garamond'] text-xl text-(--color-white) line-clamp-2 group-hover:text-(--color-gold-light) transition-colors">
@@ -53,15 +58,91 @@ function BlogCard({ post }: { post: BlogCardData }) {
               />
             </div>
             <span>{post.author}</span>
-            <span aria-hidden>·</span>
-            <span>{formatDate(post.publishedAt)}</span>
-            <span aria-hidden>·</span>
-            <Clock size={11} className="shrink-0" />
-            <span>{post.readTime} min</span>
+            {post.publishedAt && (
+              <>
+                <span aria-hidden>·</span>
+                <span>{formatDate(post.publishedAt)}</span>
+              </>
+            )}
+            {post.readTime != null && (
+              <>
+                <span aria-hidden>·</span>
+                <Clock size={11} className="shrink-0" />
+                <span>{post.readTime} min</span>
+              </>
+            )}
           </div>
         </div>
       </article>
     </Link>
+  );
+}
+
+function JournalNewsletterStrip() {
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      setSubmitted(true);
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <section className="bg-(--color-navy-surface) border-y border-(--color-navy-border) py-16">
+      <div className="text-center max-w-xl mx-auto px-4">
+        <p className="font-sans text-xs uppercase tracking-widest text-(--color-gold)">
+          STAY INFORMED
+        </p>
+        <h2 className="font-['Cormorant_Garamond'] text-4xl text-white mt-2">
+          New Stories, Delivered.
+        </h2>
+        <p className="font-sans text-(--color-white-muted) mt-4">
+          Subscribe to hear when we publish a new Journal story.
+        </p>
+
+        {submitted ? (
+          <p className="mt-8 text-(--color-gold) font-sans">
+            ✓ You&apos;re on the list!
+          </p>
+        ) : (
+          <form
+            onSubmit={handleSubmit}
+            className="mt-8 flex gap-3 max-w-sm mx-auto"
+          >
+            <Input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com"
+              className="bg-(--color-navy) border border-(--color-navy-border) focus:border-(--color-gold) text-white placeholder:text-(--color-text-secondary) rounded-lg px-4 h-10 flex-1"
+            />
+            <Button
+              type="submit"
+              variant="gold"
+              disabled={submitting}
+              className="h-10 px-6 font-sans font-medium"
+            >
+              Subscribe →
+            </Button>
+          </form>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -115,9 +196,11 @@ export function BlogList({ posts }: { posts: BlogCardData[] }) {
                   <Badge variant="coral" size="sm">
                     Featured
                   </Badge>
-                  <Badge variant="gold" size="sm">
-                    {featured.category}
-                  </Badge>
+                  {featured.category && (
+                    <Badge variant="gold" size="sm">
+                      {featured.category}
+                    </Badge>
+                  )}
                 </div>
                 <h2 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-(--color-white) leading-snug group-hover:text-(--color-gold-light) transition-colors">
                   {featured.title}
@@ -136,11 +219,19 @@ export function BlogList({ posts }: { posts: BlogCardData[] }) {
                     />
                   </div>
                   <span>{featured.author}</span>
-                  <span aria-hidden>·</span>
-                  <span>{formatDate(featured.publishedAt)}</span>
-                  <span aria-hidden>·</span>
-                  <Clock size={11} className="shrink-0" />
-                  <span>{featured.readTime} min read</span>
+                  {featured.publishedAt && (
+                    <>
+                      <span aria-hidden>·</span>
+                      <span>{formatDate(featured.publishedAt)}</span>
+                    </>
+                  )}
+                  {featured.readTime != null && (
+                    <>
+                      <span aria-hidden>·</span>
+                      <Clock size={11} className="shrink-0" />
+                      <span>{featured.readTime} min read</span>
+                    </>
+                  )}
                 </div>
                 <span className="inline-flex items-center gap-2 font-sans text-sm text-(--color-gold) font-medium mt-2">
                   Read Article <ArrowRight size={14} />
@@ -180,6 +271,8 @@ export function BlogList({ posts }: { posts: BlogCardData[] }) {
           )}
         </div>
       )}
+
+      <JournalNewsletterStrip />
     </main>
   );
 }
