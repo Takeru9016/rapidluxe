@@ -47,6 +47,12 @@ export async function GET(
         discountAmount: true,
         totalAmount: true,
         couponCode: true,
+        quotedAmount: true,
+        quoteNotes: true,
+        paymentDueDate: true,
+        occasion: true,
+        dietaryRequirements: true,
+        specialRequests: true,
         razorpayOrderId: true,
         razorpayPaymentId: true,
         package: {
@@ -69,6 +75,7 @@ export async function GET(
       ...booking,
       departureDate: booking.departureDate.toISOString(),
       returnDate: booking.returnDate?.toISOString() ?? null,
+      paymentDueDate: booking.paymentDueDate?.toISOString() ?? null,
       displayStatus: computeDisplayStatus(
         booking.status as DbBookingStatus,
         booking.departureDate,

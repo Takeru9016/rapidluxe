@@ -111,6 +111,12 @@ export interface UserBookingDetail extends Omit<UserBooking, "package"> {
   gstAmount: number;
   discountAmount: number;
   couponCode: string | null;
+  quotedAmount: number | null;
+  quoteNotes: string | null;
+  paymentDueDate: string | null;
+  occasion: string | null;
+  dietaryRequirements: string[];
+  specialRequests: string | null;
   razorpayOrderId: string | null;
   razorpayPaymentId: string | null;
   travelers: TravelerDetail[];

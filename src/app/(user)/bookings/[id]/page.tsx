@@ -85,7 +85,14 @@ export default function BookingDetailPage({
 
   const booking = data.data;
   const { label, description, variant } = BOOKING_STATUS_CONFIG[booking.status];
-  const { base, gst, total } = calculateGST(booking.baseAmount);
+  const amount = booking.quotedAmount ?? booking.baseAmount;
+  const { base, gst, total } = calculateGST(amount);
+  const hasQuoteDetails = Boolean(booking.quoteNotes || booking.paymentDueDate);
+  const hasRequirements = Boolean(
+    booking.occasion ||
+      booking.specialRequests ||
+      booking.dietaryRequirements.length > 0,
+  );
   const coverImage =
     booking.package.images[0] ??
     "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&q=80";
@@ -273,6 +280,44 @@ export default function BookingDetailPage({
                 </tbody>
               </table>
             </div>
+
+            {hasRequirements && (
+              <div className="mt-6 pt-6 border-t border-(--color-navy-border) space-y-2">
+                <h3 className="text-xs font-['DM_Sans'] font-medium uppercase tracking-widest text-(--color-gold) mb-3">
+                  Requirements
+                </h3>
+                {booking.occasion && (
+                  <div className="flex justify-between gap-4 text-sm font-['DM_Sans']">
+                    <span className="text-(--color-text-secondary) shrink-0">
+                      Occasion
+                    </span>
+                    <span className="text-white text-right">
+                      {booking.occasion}
+                    </span>
+                  </div>
+                )}
+                {booking.dietaryRequirements.length > 0 && (
+                  <div className="flex justify-between gap-4 text-sm font-['DM_Sans']">
+                    <span className="text-(--color-text-secondary) shrink-0">
+                      Dietary Requirements
+                    </span>
+                    <span className="text-white text-right">
+                      {booking.dietaryRequirements.join(", ")}
+                    </span>
+                  </div>
+                )}
+                {booking.specialRequests && (
+                  <div className="flex justify-between gap-4 text-sm font-['DM_Sans']">
+                    <span className="text-(--color-text-secondary) shrink-0">
+                      Special Requests
+                    </span>
+                    <span className="text-white text-right">
+                      {booking.specialRequests}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -330,6 +375,29 @@ export default function BookingDetailPage({
               </>
             )}
           </div>
+
+          {hasQuoteDetails && (
+            <div className="mt-6 pt-6 border-t border-(--color-navy-border) space-y-3">
+              <h3 className="text-xs font-['DM_Sans'] font-medium uppercase tracking-widest text-(--color-gold) mb-1">
+                Quote Details
+              </h3>
+              {booking.paymentDueDate && (
+                <div className="flex justify-between text-sm font-['DM_Sans']">
+                  <span className="text-(--color-text-secondary)">
+                    Payment Due
+                  </span>
+                  <span className="text-white">
+                    {formatDate(booking.paymentDueDate)}
+                  </span>
+                </div>
+              )}
+              {booking.quoteNotes && (
+                <p className="text-sm font-['DM_Sans'] text-(--color-white-muted) leading-relaxed whitespace-pre-wrap">
+                  {booking.quoteNotes}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* ── Actions Row ── */}
