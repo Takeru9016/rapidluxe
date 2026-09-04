@@ -15,17 +15,17 @@ const components: PortableTextComponents = {
       </p>
     ),
     h2: ({ children }) => (
-      <h2 className="font-['Cormorant_Garamond'] text-2xl md:text-3xl text-(--color-white) mt-10 mb-4">
+      <h2 className="font-(--font-display) text-2xl md:text-3xl text-(--color-white) mt-10 mb-4">
         {children}
       </h2>
     ),
     h3: ({ children }) => (
-      <h3 className="font-['Cormorant_Garamond'] text-xl md:text-2xl text-(--color-white) mt-8 mb-3">
+      <h3 className="font-(--font-display) text-xl md:text-2xl text-(--color-white) mt-8 mb-3">
         {children}
       </h3>
     ),
     blockquote: ({ children }) => (
-      <blockquote className="border-l-2 border-(--color-gold) pl-5 my-6 font-['Cormorant_Garamond'] text-xl text-(--color-gold-light) italic">
+      <blockquote className="border-l-2 border-(--color-gold) pl-5 my-6 font-(--font-display) text-xl text-(--color-gold-light) italic">
         {children}
       </blockquote>
     ),
@@ -43,7 +43,7 @@ const components: PortableTextComponents = {
           href={href}
           target={external ? "_blank" : undefined}
           rel={external ? "noopener noreferrer" : undefined}
-          className="text-(--color-gold) underline underline-offset-2 hover:text-(--color-gold-light) transition-colors"
+          className="text-(--color-gold) underline underline-offset-2 hover:text-(--color-gold-light) transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-gold) focus-visible:ring-offset-2 focus-visible:ring-offset-(--color-navy) rounded-xs"
         >
           {children}
         </a>

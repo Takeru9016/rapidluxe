@@ -549,37 +549,30 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                   </div>
                 </div>
 
-                {pkg.cancellationPolicy &&
-                  pkg.cancellationPolicy.length > 0 && (
-                    <div className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-5">
-                      <h3 className="font-display text-lg text-(--color-white) mb-4">
-                        Cancellation Policy
-                      </h3>
-                      <ul className="flex flex-col gap-3">
-                        {pkg.cancellationPolicy.map((policy, i) => (
-                          <li
-                            key={i}
-                            className="flex items-center justify-between text-sm"
-                          >
-                            <span className="text-(--color-white-muted)">
-                              {policy.daysBeforeDeparture > 0
-                                ? `${policy.daysBeforeDeparture}+ days before departure`
-                                : "On departure day or no-show"}
-                            </span>
-                            <span
-                              className={
-                                policy.refundPercent > 0
-                                  ? "font-mono text-(--color-teal)"
-                                  : "font-mono text-(--color-coral)"
-                              }
-                            >
-                              {policy.refundPercent}% refund
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                {/* This Journey's cancellationPolicy data (if any) is not
+                    rendered here — the repository has no way to distinguish
+                    a genuine Journey-specific policy exception from legacy/
+                    default data (no flag exists for that), so the site's
+                    single Cancellation Policy page is always the
+                    authoritative source shown to customers. The underlying
+                    per-package data is preserved, untouched, for a future
+                    milestone that adds a real way to mark an intentional
+                    override. */}
+                <div className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-5">
+                  <h3 className="font-(--font-display) text-lg text-(--color-white) mb-2">
+                    Cancellation Policy
+                  </h3>
+                  <p className="font-(--font-body) text-sm text-(--color-white-muted) mb-3">
+                    This Journey follows RapidLuxe&apos;s standard Cancellation
+                    Policy.
+                  </p>
+                  <Link
+                    href="/cancellation-policy"
+                    className="inline-flex items-center gap-1 text-sm font-(--font-body) text-(--color-gold) hover:text-(--color-gold-light) underline underline-offset-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-gold) focus-visible:ring-offset-2 focus-visible:ring-offset-(--color-navy) rounded-xs"
+                  >
+                    View full Cancellation Policy →
+                  </Link>
+                </div>
 
                 <div>
                   <h3 className="font-display text-lg text-(--color-white) mb-4">

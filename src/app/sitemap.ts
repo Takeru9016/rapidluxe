@@ -66,6 +66,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
       changeFrequency: "monthly",
     },
+    {
+      url: `${appUrl}/faqs`,
+      lastModified: new Date(),
+      priority: 0.5,
+      changeFrequency: "monthly",
+    },
+    {
+      url: `${appUrl}/terms`,
+      lastModified: new Date(),
+      priority: 0.3,
+      changeFrequency: "yearly",
+    },
+    {
+      url: `${appUrl}/privacy`,
+      lastModified: new Date(),
+      priority: 0.3,
+      changeFrequency: "yearly",
+    },
+    {
+      url: `${appUrl}/cancellation-policy`,
+      lastModified: new Date(),
+      priority: 0.3,
+      changeFrequency: "yearly",
+    },
   ];
 
   const packageRoutes: MetadataRoute.Sitemap = packages.map((pkg) => ({

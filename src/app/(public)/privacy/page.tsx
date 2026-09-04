@@ -10,10 +10,15 @@ export const revalidate = 3600;
 const SLUG = "privacy";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = await sanityReadClient.fetch<StaticPageData | null>(
-    STATIC_PAGE_QUERY,
-    { slug: SLUG },
-  );
+  let page: StaticPageData | null = null;
+  try {
+    page = await sanityReadClient.fetch<StaticPageData | null>(
+      STATIC_PAGE_QUERY,
+      { slug: SLUG },
+    );
+  } catch (err) {
+    console.error("privacy page sanity fetch error:", err);
+  }
 
   return {
     title: page?.seo?.metaTitle ?? page?.title ?? "Privacy Policy",
@@ -22,16 +27,23 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function PrivacyPage() {
-  const page = await sanityReadClient.fetch<StaticPageData | null>(
-    STATIC_PAGE_QUERY,
-    { slug: SLUG },
-  );
+  let page: StaticPageData | null = null;
+  let fetchFailed = false;
+  try {
+    page = await sanityReadClient.fetch<StaticPageData | null>(
+      STATIC_PAGE_QUERY,
+      { slug: SLUG },
+    );
+  } catch (err) {
+    console.error("privacy page sanity fetch error:", err);
+    fetchFailed = true;
+  }
 
   return (
     <section className="bg-(--color-navy) min-h-screen">
       <div className="max-w-4xl mx-auto px-4 py-20">
         <div className="border-b border-(--color-gold)/30 pb-8 mb-10">
-          <h1 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-white font-light leading-tight">
+          <h1 className="font-(--font-display) text-4xl md:text-5xl text-white font-light leading-tight">
             {page?.title ?? "Privacy Policy"}
           </h1>
           {page?.subtitle && (
@@ -41,7 +53,11 @@ export default async function PrivacyPage() {
           )}
         </div>
 
-        {page?.body?.length ? (
+        {fetchFailed ? (
+          <p className="font-sans text-(--color-white-muted)">
+            We couldn&apos;t load this page right now. Please try again shortly.
+          </p>
+        ) : page?.body?.length ? (
           <PortableTextBody value={page.body} className="space-y-5" />
         ) : (
           <p className="font-sans text-(--color-white-muted)">
