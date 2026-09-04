@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { ActivityCard } from "@/components/cards/ActivityCard";
 import { HotelCard } from "@/components/cards/HotelCard";
@@ -146,19 +146,25 @@ export function PackageDetailClient({ slug }: { slug: string }) {
 
   const { isLoaded: authLoaded, isSignedIn } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const { has, toggle } = useWishlist();
   const isWishlisted = pkg ? has(pkg.id) : false;
+
+  const searchParams = useSearchParams();
 
   function handleWishlistToggle() {
     if (!pkg || !authLoaded) return;
     if (!isSignedIn) {
-      router.push("/sign-in");
+      // pathname/searchParams are always same-origin by construction, so no
+      // separate sanitizer is needed here — unlike SignInForm, which reads
+      // an untrusted redirect_url from the URL itself.
+      const query = searchParams.toString();
+      const target = query ? `${pathname}?${query}` : pathname;
+      router.push(`/sign-in?redirect_url=${encodeURIComponent(target)}`);
       return;
     }
     toggle(pkg.id);
   }
-
-  const searchParams = useSearchParams();
   const deals = dealsData?.data ?? [];
   const activeDeal = useMemo(() => {
     if (!pkg) return null;
