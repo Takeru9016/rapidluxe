@@ -111,7 +111,13 @@ export default function ProfilePage() {
   } | null>(null);
 
   // ── Fetch user profile ──
-  const { data: profileData } = useQuery<{ data: UserProfile }>({
+  const {
+    data: profileData,
+    isLoading: profileLoading,
+    isError: profileError,
+    isSuccess: profileLoaded,
+    refetch: refetchProfile,
+  } = useQuery<{ data: UserProfile }>({
     queryKey: ["user-profile"],
     queryFn: async () => {
       const res = await fetch("/api/user/me");
@@ -119,6 +125,13 @@ export default function ProfilePage() {
       return res.json() as Promise<{ data: UserProfile }>;
     },
   });
+
+  // A valid editable baseline requires BOTH a successful query and the
+  // effect below having actually run to populate baselineRef — isSuccess
+  // alone can be true for one render before the effect commits the
+  // baseline, and baselineRef alone can't distinguish "never loaded" from
+  // "loaded, fields genuinely empty". Combining both closes that gap.
+  const hasValidBaseline = profileLoaded && baselineRef.current !== null;
 
   useEffect(() => {
     if (!profileData?.data) return;
@@ -174,6 +187,10 @@ export default function ProfilePage() {
   }
 
   function handleSave() {
+    // Defense in depth — the Save button is only ever rendered when
+    // hasValidBaseline is true, but guard here too so this function can
+    // never act on an unestablished baseline regardless of caller.
+    if (!hasValidBaseline) return;
     const payload = buildChangedPayload();
     if (Object.keys(payload).length === 0) {
       toast("No changes to save");
@@ -437,140 +454,199 @@ export default function ProfilePage() {
                 Personal Details
               </h2>
 
-              {generalError && (
-                <p
-                  role="alert"
-                  className="mb-5 rounded-lg border border-(--color-coral)/40 bg-(--color-coral)/10 px-4 py-3 text-sm text-(--color-coral) font-(--font-body)"
+              {profileLoading ? (
+                <div
+                  aria-hidden="true"
+                  className="grid grid-cols-1 md:grid-cols-2 gap-5"
                 >
-                  {generalError}
-                </p>
-              )}
+                  {["full-name", "phone", "dob", "nationality", "passport"].map(
+                    (field, i) => (
+                      <div
+                        key={field}
+                        className={
+                          i === 4
+                            ? "md:col-span-2 flex flex-col gap-1.5"
+                            : "flex flex-col gap-1.5"
+                        }
+                      >
+                        <div className="h-3 w-24 rounded bg-(--color-navy-border) animate-pulse" />
+                        <div className="h-11 rounded-xl bg-(--color-navy-border) animate-pulse" />
+                      </div>
+                    ),
+                  )}
+                </div>
+              ) : profileError ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <AlertTriangle
+                    size={32}
+                    className="text-(--color-coral) mb-3"
+                  />
+                  <p
+                    role="alert"
+                    className="font-(--font-display) text-lg text-white mb-1"
+                  >
+                    Couldn&apos;t load your profile
+                  </p>
+                  <p className="font-(--font-body) text-sm text-(--color-text-secondary) mb-5 max-w-sm">
+                    Something went wrong while fetching your profile. Please try
+                    again.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="coral"
+                    onClick={() => refetchProfile()}
+                  >
+                    Try again
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  {generalError && (
+                    <p
+                      role="alert"
+                      className="mb-5 rounded-lg border border-(--color-coral)/40 bg-(--color-coral)/10 px-4 py-3 text-sm text-(--color-coral) font-(--font-body)"
+                    >
+                      {generalError}
+                    </p>
+                  )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                  <label htmlFor="profile-full-name" className={labelClass}>
-                    Full Name
-                  </label>
-                  <Input
-                    id="profile-full-name"
-                    className={inputClass}
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Your full name"
-                    disabled={saveMutation.isPending}
-                    aria-invalid={Boolean(fieldErrors.name)}
-                    aria-describedby={
-                      fieldErrors.name ? "profile-full-name-error" : undefined
-                    }
-                  />
-                  {fieldErrors.name && (
-                    <p id="profile-full-name-error" className={errorClass}>
-                      {fieldErrors.name}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label htmlFor="profile-phone" className={labelClass}>
-                    Phone Number
-                  </label>
-                  <Input
-                    id="profile-phone"
-                    className={inputClass}
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+91 98765 43210"
-                    disabled={saveMutation.isPending}
-                    aria-invalid={Boolean(fieldErrors.phone)}
-                    aria-describedby={
-                      fieldErrors.phone ? "profile-phone-error" : undefined
-                    }
-                  />
-                  {fieldErrors.phone && (
-                    <p id="profile-phone-error" className={errorClass}>
-                      {fieldErrors.phone}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label htmlFor="profile-dob" className={labelClass}>
-                    Date of Birth
-                  </label>
-                  <Input
-                    id="profile-dob"
-                    className={inputClass}
-                    type="date"
-                    value={dob}
-                    max={todayLocalYMD}
-                    onChange={(e) => setDob(e.target.value)}
-                    disabled={saveMutation.isPending}
-                    aria-invalid={Boolean(fieldErrors.dateOfBirth)}
-                    aria-describedby={
-                      fieldErrors.dateOfBirth ? "profile-dob-error" : undefined
-                    }
-                  />
-                  {fieldErrors.dateOfBirth && (
-                    <p id="profile-dob-error" className={errorClass}>
-                      {fieldErrors.dateOfBirth}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label htmlFor="profile-nationality" className={labelClass}>
-                    Nationality
-                  </label>
-                  <Input
-                    id="profile-nationality"
-                    className={inputClass}
-                    value={nationality}
-                    onChange={(e) => setNationality(e.target.value)}
-                    placeholder="Indian"
-                    disabled={saveMutation.isPending}
-                    aria-invalid={Boolean(fieldErrors.nationality)}
-                    aria-describedby={
-                      fieldErrors.nationality
-                        ? "profile-nationality-error"
-                        : undefined
-                    }
-                  />
-                  {fieldErrors.nationality && (
-                    <p id="profile-nationality-error" className={errorClass}>
-                      {fieldErrors.nationality}
-                    </p>
-                  )}
-                </div>
-                <div className="md:col-span-2">
-                  <label htmlFor="profile-passport" className={labelClass}>
-                    Passport Number
-                  </label>
-                  <Input
-                    id="profile-passport"
-                    className={inputClass}
-                    value={passport}
-                    onChange={(e) => setPassport(e.target.value)}
-                    placeholder="A1234567"
-                    disabled={saveMutation.isPending}
-                    aria-invalid={Boolean(fieldErrors.passportNumber)}
-                    aria-describedby={
-                      fieldErrors.passportNumber
-                        ? "profile-passport-error"
-                        : undefined
-                    }
-                  />
-                  {fieldErrors.passportNumber && (
-                    <p id="profile-passport-error" className={errorClass}>
-                      {fieldErrors.passportNumber}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <Button
-                variant="outline-gold"
-                onClick={handleSave}
-                disabled={saveMutation.isPending}
-                className="h-auto mt-8 px-6 py-2.5 rounded-full font-sans font-medium"
-              >
-                {saveMutation.isPending ? "Saving…" : "Save Changes"}
-              </Button>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label htmlFor="profile-full-name" className={labelClass}>
+                        Full Name
+                      </label>
+                      <Input
+                        id="profile-full-name"
+                        className={inputClass}
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        placeholder="Your full name"
+                        disabled={saveMutation.isPending}
+                        aria-invalid={Boolean(fieldErrors.name)}
+                        aria-describedby={
+                          fieldErrors.name
+                            ? "profile-full-name-error"
+                            : undefined
+                        }
+                      />
+                      {fieldErrors.name && (
+                        <p id="profile-full-name-error" className={errorClass}>
+                          {fieldErrors.name}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label htmlFor="profile-phone" className={labelClass}>
+                        Phone Number
+                      </label>
+                      <Input
+                        id="profile-phone"
+                        className={inputClass}
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="+91 98765 43210"
+                        disabled={saveMutation.isPending}
+                        aria-invalid={Boolean(fieldErrors.phone)}
+                        aria-describedby={
+                          fieldErrors.phone ? "profile-phone-error" : undefined
+                        }
+                      />
+                      {fieldErrors.phone && (
+                        <p id="profile-phone-error" className={errorClass}>
+                          {fieldErrors.phone}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label htmlFor="profile-dob" className={labelClass}>
+                        Date of Birth
+                      </label>
+                      <Input
+                        id="profile-dob"
+                        className={inputClass}
+                        type="date"
+                        value={dob}
+                        max={todayLocalYMD}
+                        onChange={(e) => setDob(e.target.value)}
+                        disabled={saveMutation.isPending}
+                        aria-invalid={Boolean(fieldErrors.dateOfBirth)}
+                        aria-describedby={
+                          fieldErrors.dateOfBirth
+                            ? "profile-dob-error"
+                            : undefined
+                        }
+                      />
+                      {fieldErrors.dateOfBirth && (
+                        <p id="profile-dob-error" className={errorClass}>
+                          {fieldErrors.dateOfBirth}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="profile-nationality"
+                        className={labelClass}
+                      >
+                        Nationality
+                      </label>
+                      <Input
+                        id="profile-nationality"
+                        className={inputClass}
+                        value={nationality}
+                        onChange={(e) => setNationality(e.target.value)}
+                        placeholder="Indian"
+                        disabled={saveMutation.isPending}
+                        aria-invalid={Boolean(fieldErrors.nationality)}
+                        aria-describedby={
+                          fieldErrors.nationality
+                            ? "profile-nationality-error"
+                            : undefined
+                        }
+                      />
+                      {fieldErrors.nationality && (
+                        <p
+                          id="profile-nationality-error"
+                          className={errorClass}
+                        >
+                          {fieldErrors.nationality}
+                        </p>
+                      )}
+                    </div>
+                    <div className="md:col-span-2">
+                      <label htmlFor="profile-passport" className={labelClass}>
+                        Passport Number
+                      </label>
+                      <Input
+                        id="profile-passport"
+                        className={inputClass}
+                        value={passport}
+                        onChange={(e) => setPassport(e.target.value)}
+                        placeholder="A1234567"
+                        disabled={saveMutation.isPending}
+                        aria-invalid={Boolean(fieldErrors.passportNumber)}
+                        aria-describedby={
+                          fieldErrors.passportNumber
+                            ? "profile-passport-error"
+                            : undefined
+                        }
+                      />
+                      {fieldErrors.passportNumber && (
+                        <p id="profile-passport-error" className={errorClass}>
+                          {fieldErrors.passportNumber}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline-gold"
+                    onClick={handleSave}
+                    disabled={saveMutation.isPending || !hasValidBaseline}
+                    className="h-auto mt-8 px-6 py-2.5 rounded-full font-sans font-medium"
+                  >
+                    {saveMutation.isPending ? "Saving…" : "Save Changes"}
+                  </Button>
+                </>
+              )}
             </div>
           </TabsContent>
         </Tabs>
