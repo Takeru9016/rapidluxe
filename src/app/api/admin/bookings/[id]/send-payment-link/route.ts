@@ -1,5 +1,5 @@
+import crypto from "node:crypto";
 import { auth } from "@clerk/nextjs/server";
-import crypto from "crypto";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { sendPaymentLinkEmail } from "@/lib/email";
@@ -16,29 +16,44 @@ export async function POST(
   }
 
   const { id } = await params;
-  const booking = await prisma.booking.findUnique({ where: { id } });
-  if (!booking) {
+
+  // Read only to shape the response (404 vs 409/400) — the atomic conditional
+  // update below is the actual authorization for the transition.
+  const existing = await prisma.booking.findUnique({
+    where: { id },
+    select: { status: true, quotedAmount: true },
+  });
+  if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  if (
-    booking.status !== "QUOTE_SENT" &&
-    booking.status !== "AWAITING_PAYMENT"
-  ) {
-    return NextResponse.json(
-      { error: `Cannot send a payment link from status ${booking.status}` },
-      { status: 409 },
-    );
-  }
-  if (!booking.quotedAmount) {
+  if (!existing.quotedAmount) {
     return NextResponse.json({ error: "No quote set" }, { status: 400 });
   }
 
   const paymentToken = crypto.randomUUID();
   const paymentTokenExpiry = new Date(Date.now() + 48 * 60 * 60 * 1000);
 
-  const updated = await prisma.booking.update({
-    where: { id },
+  // Atomic conditional transition: only QUOTE_SENT or AWAITING_PAYMENT
+  // (reissue) can win. quotedAmount is re-checked in the where clause too,
+  // so a concurrent send-quote that clears/changes it can't race a payment
+  // link into existence against a stale quote.
+  const { count } = await prisma.booking.updateMany({
+    where: {
+      id,
+      status: { in: ["QUOTE_SENT", "AWAITING_PAYMENT"] },
+      quotedAmount: { not: null },
+    },
     data: { paymentToken, paymentTokenExpiry, status: "AWAITING_PAYMENT" },
+  });
+  if (count === 0) {
+    return NextResponse.json(
+      { error: `Cannot send a payment link from status ${existing.status}` },
+      { status: 409 },
+    );
+  }
+
+  const updated = await prisma.booking.findUniqueOrThrow({
+    where: { id },
     include: { user: true, package: true },
   });
 

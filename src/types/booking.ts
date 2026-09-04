@@ -21,9 +21,49 @@ export interface AdminBooking {
   departureDate: string;
   adults: number;
   children: number;
-  totalAmount: number;
+  /** Admin-set quote (pre-GST), when one has been sent. Null before Send Quote. */
   quotedAmount: number | null;
+  /**
+   * The authoritative displayed amount: GST-inclusive charged total when a
+   * quote exists (matches what /api/payments/create-order actually bills),
+   * else the enquiry-time estimate. See chargedTotal() in src/lib/utils.ts.
+   */
+  chargedTotal: number;
   status: DbBookingStatus;
+}
+
+/** Masked traveler view for the admin detail page — never carries raw PAN/passport numbers. */
+export interface AdminTravelerSummary {
+  name: string;
+  isLead: boolean;
+  hasDocument: boolean;
+}
+
+export interface AdminBookingDetail {
+  id: string;
+  bookingRef: string | null;
+  status: DbBookingStatus;
+  createdAt: string;
+  updatedAt: string;
+  user: { name: string | null; email: string; phone: string | null };
+  package: { id: string; title: string; destination: string | null };
+  departureDate: string;
+  returnDate: string | null;
+  adults: number;
+  children: number;
+  infants: number;
+  travelers: AdminTravelerSummary[];
+  occasion: string | null;
+  dietaryRequirements: string[];
+  specialRequests: string | null;
+  quoteNotes: string | null;
+  paymentDueDate: string | null;
+  baseAmount: number;
+  quotedAmount: number | null;
+  discountAmount: number;
+  gstAmount: number;
+  chargedTotal: number;
+  hasPanOnFile: boolean;
 }
 
 export type BookingStep = 1 | 2 | 3 | 4;

@@ -23,6 +23,20 @@ export function calculateGST(amount: number): {
   return { base: amount, gst, total };
 }
 
+// The authoritative "what will/did this booking actually charge" figure.
+// totalAmount is fixed at enquiry time and never updated afterward; once an
+// admin sends a quote, quotedAmount (GST-inclusive via calculateGST) is what
+// /api/payments/create-order actually bills — so it must take priority over
+// totalAmount wherever a booking's charged amount is displayed.
+export function chargedTotal(b: {
+  totalAmount: number;
+  quotedAmount: number | null;
+}): number {
+  return b.quotedAmount != null
+    ? calculateGST(b.quotedAmount).total
+    : b.totalAmount;
+}
+
 export interface PackagePricing {
   pricePerPerson: number;
   childPrice?: number | null;

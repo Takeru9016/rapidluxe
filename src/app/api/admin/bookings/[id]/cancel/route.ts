@@ -15,22 +15,33 @@ export async function POST(
   }
 
   const { id } = await params;
-  const existing = await prisma.booking.findUnique({ where: { id } });
+
+  const existing = await prisma.booking.findUnique({
+    where: { id },
+    select: { status: true },
+  });
   if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  if (existing.status === "CANCELLED") {
-    return NextResponse.json({ error: "Already cancelled" }, { status: 400 });
-  }
 
-  const booking = await prisma.booking.update({
-    where: { id },
+  // Atomic conditional transition: any status except CANCELLED can win —
+  // preserves the existing rule that admin cancel is allowed from any
+  // non-terminal state, unlike the customer's narrower self-cancel.
+  const { count } = await prisma.booking.updateMany({
+    where: { id, status: { not: "CANCELLED" } },
     data: {
       status: "CANCELLED",
       // invalidate any outstanding payment link
       paymentToken: null,
       paymentTokenExpiry: null,
     },
+  });
+  if (count === 0) {
+    return NextResponse.json({ error: "Already cancelled" }, { status: 409 });
+  }
+
+  const booking = await prisma.booking.findUniqueOrThrow({
+    where: { id },
     include: { user: true, package: true },
   });
 

@@ -1,24 +1,9 @@
 import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
-
+import { type NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-
-type BookingStatusParam =
-  | "ENQUIRY"
-  | "QUOTE_SENT"
-  | "AWAITING_PAYMENT"
-  | "PAID"
-  | "CONFIRMED"
-  | "CANCELLED";
-
-const VALID_STATUSES: BookingStatusParam[] = [
-  "ENQUIRY",
-  "QUOTE_SENT",
-  "AWAITING_PAYMENT",
-  "PAID",
-  "CONFIRMED",
-  "CANCELLED",
-];
+import { chargedTotal } from "@/lib/utils";
+import { adminBookingFiltersSchema } from "@/lib/validations/booking";
 
 export async function GET(req: NextRequest) {
   const { sessionClaims } = await auth();
@@ -28,24 +13,61 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = req.nextUrl;
-  const statusParam = searchParams.get("status");
-  const status =
-    statusParam && VALID_STATUSES.includes(statusParam as BookingStatusParam)
-      ? (statusParam as BookingStatusParam)
-      : undefined;
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-  const limit = Math.min(
-    50,
-    Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)),
-  );
+  const parsed = adminBookingFiltersSchema.safeParse({
+    status: searchParams.get("status") ?? undefined,
+    search: searchParams.get("search") ?? undefined,
+    dateFrom: searchParams.get("dateFrom") ?? undefined,
+    dateTo: searchParams.get("dateTo") ?? undefined,
+    page: searchParams.get("page") ?? undefined,
+    limit: searchParams.get("limit") ?? undefined,
+  });
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid filters", details: parsed.error.issues },
+      { status: 400 },
+    );
+  }
+  const { status, search, dateFrom, dateTo, page, limit } = parsed.data;
 
-  const where = status ? { status } : {};
+  const where: Prisma.BookingWhereInput = {
+    ...(status && { status }),
+    ...(search && {
+      OR: [
+        { bookingRef: { contains: search, mode: "insensitive" } },
+        { user: { name: { contains: search, mode: "insensitive" } } },
+        { user: { email: { contains: search, mode: "insensitive" } } },
+      ],
+    }),
+    // Admin Bookings date filtering intentionally operates on departureDate
+    // (the trip date), not createdAt — see adminBookingFiltersSchema.
+    // dateTo is exclusive of the following day's start rather than an
+    // inclusive end-of-day literal, so a booking departing at any time on
+    // the supplied end date is included regardless of its time component.
+    ...((dateFrom || dateTo) && {
+      departureDate: {
+        ...(dateFrom && { gte: new Date(`${dateFrom}T00:00:00.000Z`) }),
+        ...(dateTo && {
+          lt: new Date(
+            new Date(`${dateTo}T00:00:00.000Z`).getTime() + 24 * 60 * 60 * 1000,
+          ),
+        }),
+      },
+    }),
+  };
 
   const [total, bookings] = await Promise.all([
     prisma.booking.count({ where }),
     prisma.booking.findMany({
       where,
-      include: {
+      select: {
+        id: true,
+        bookingRef: true,
+        departureDate: true,
+        adults: true,
+        children: true,
+        status: true,
+        totalAmount: true,
+        quotedAmount: true,
         user: { select: { name: true, email: true } },
         package: { select: { title: true } },
       },
@@ -55,8 +77,14 @@ export async function GET(req: NextRequest) {
     }),
   ]);
 
+  const data = bookings.map(({ totalAmount, quotedAmount, ...rest }) => ({
+    ...rest,
+    quotedAmount,
+    chargedTotal: chargedTotal({ totalAmount, quotedAmount }),
+  }));
+
   return NextResponse.json({
-    data: bookings,
+    data,
     pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
   });
 }

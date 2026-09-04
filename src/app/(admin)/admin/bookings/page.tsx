@@ -1,28 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Download, Search } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CalendarIcon, ChevronDown, Copy, Download } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { Calendar } from "@/components/ui/calendar";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  PaymentLinkDialog,
+  QuoteDialog,
+} from "@/components/admin/BookingActionDialogs";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 
-import { formatPrice, formatDate } from "@/lib/utils";
+import { BOOKING_STATUS_CONFIG } from "@/lib/booking-status";
+import { formatDate, formatPrice } from "@/lib/utils";
 import type { AdminBooking, DbBookingStatus } from "@/types/booking";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -67,324 +58,59 @@ const TABS: { value: TabValue; label: string }[] = [
   { value: "cancelled", label: "Cancelled" },
 ];
 
-interface StatusBadgeConfig {
-  label: string;
-  className: string;
-}
-
-const STATUS_BADGE: Record<DbBookingStatus, StatusBadgeConfig> = {
-  ENQUIRY: {
-    label: "Enquiry",
-    className: "bg-white/5 text-(--color-white-muted)",
-  },
-  QUOTE_SENT: {
-    label: "Quote Sent",
-    className: "bg-(--color-gold)/20 text-(--color-gold)",
-  },
-  AWAITING_PAYMENT: {
-    label: "Awaiting Payment",
-    className: "bg-(--color-coral)/20 text-(--color-coral)",
-  },
-  PAID: {
-    label: "Paid",
-    className: "bg-(--color-teal)/20 text-(--color-teal)",
-  },
-  CONFIRMED: {
-    label: "Confirmed",
-    className: "bg-(--color-teal)/20 text-(--color-teal)",
-  },
-  CANCELLED: {
-    label: "Cancelled",
-    className: "bg-white/5 text-(--color-text-secondary) line-through",
-  },
+// Single authoritative status presentation — mirrors BOOKING_STATUS_CONFIG
+// (used by the customer-facing pages and the admin dashboard) instead of a
+// separately-maintained local map with drifted labels/colors.
+const VARIANT_CLASS: Record<"gold" | "teal" | "coral" | "ghost", string> = {
+  gold: "bg-(--color-gold)/20 text-(--color-gold)",
+  teal: "bg-(--color-teal)/20 text-(--color-teal)",
+  coral: "bg-(--color-coral)/20 text-(--color-coral)",
+  ghost: "bg-white/5 text-(--color-white-muted)",
 };
-
-// ── Quote Dialog ──────────────────────────────────────────────────────────────
-
-function QuoteDialog({
-  booking,
-  onClose,
-  onSuccess,
-}: {
-  booking: AdminBooking;
-  onClose: () => void;
-  onSuccess: () => void;
-}) {
-  const [amount, setAmount] = useState("");
-  const [notes, setNotes] = useState("");
-  const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
-  const [calOpen, setCalOpen] = useState(false);
-  const [isPending, setIsPending] = useState(false);
-
-  async function handleSend() {
-    const parsed = Number(amount);
-    if (!parsed || parsed <= 0) {
-      toast.error("Enter a valid quoted amount.");
-      return;
-    }
-    setIsPending(true);
-    try {
-      const res = await fetch(`/api/admin/bookings/${booking.id}/send-quote`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          quotedAmount: parsed,
-          quoteNotes: notes || undefined,
-          paymentDueDate: dueDate ? dueDate.toISOString() : undefined,
-        }),
-      });
-      if (!res.ok) throw new Error("Failed to send quote");
-      toast.success(`Quote sent to ${booking.user.name ?? booking.user.email}`);
-      onSuccess();
-      onClose();
-    } catch {
-      toast.error("Failed to send quote.");
-    } finally {
-      setIsPending(false);
-    }
-  }
-
-  return (
-    <Dialog
-      open
-      onOpenChange={(open) => {
-        if (!open) onClose();
-      }}
-    >
-      <DialogContent className="bg-(--color-navy-surface) border border-(--color-navy-border) text-white max-w-md">
-        <DialogHeader>
-          <DialogTitle className="font-['Cormorant_Garamond'] text-2xl text-white">
-            Send Quote to {booking.user.name}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-4 py-2">
-          <div>
-            <label className="block font-['DM_Sans'] text-xs text-(--color-text-secondary) mb-1.5">
-              Quoted Amount (INR)
-            </label>
-            <Input
-              type="number"
-              required
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="e.g. 295000"
-              className="bg-(--color-navy) border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40"
-            />
-          </div>
-
-          <div>
-            <label className="block font-['DM_Sans'] text-xs text-(--color-text-secondary) mb-1.5">
-              Quote Notes
-            </label>
-            <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Additional notes for the traveler…"
-              rows={3}
-              className="bg-(--color-navy) border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 resize-none"
-            />
-          </div>
-
-          <div>
-            <label className="block font-['DM_Sans'] text-xs text-(--color-text-secondary) mb-1.5">
-              Payment Due Date
-            </label>
-            <Popover open={calOpen} onOpenChange={setCalOpen}>
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  className="w-full flex items-center gap-2 bg-(--color-navy) border border-(--color-navy-border) rounded-md px-3 py-2.5 text-sm font-['DM_Sans'] text-(--color-white-muted) hover:border-(--color-gold)/40 transition-colors"
-                >
-                  <CalendarIcon
-                    size={14}
-                    className="text-(--color-gold) shrink-0"
-                  />
-                  <span className={dueDate ? "text-white" : ""}>
-                    {dueDate ? formatDate(dueDate) : "Select due date"}
-                  </span>
-                  <ChevronDown
-                    size={14}
-                    className="ml-auto text-(--color-text-secondary)"
-                  />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent
-                className="w-auto p-0 bg-(--color-navy-surface) border-(--color-navy-border)"
-                align="start"
-              >
-                <Calendar
-                  mode="single"
-                  selected={dueDate}
-                  onSelect={(d) => {
-                    setDueDate(d);
-                    setCalOpen(false);
-                  }}
-                  disabled={(d) => d < new Date()}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-        </div>
-
-        <DialogFooter className="gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm hover:border-(--color-gold)/40 hover:text-white transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSend}
-            disabled={isPending}
-            className="px-4 py-2 rounded-lg bg-(--color-coral) text-white font-['DM_Sans'] text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
-          >
-            {isPending ? "Sending…" : "Send Quote"}
-          </button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ── Payment Link Dialog ───────────────────────────────────────────────────────
-
-function PaymentLinkDialog({
-  booking,
-  onClose,
-  onSuccess,
-}: {
-  booking: AdminBooking;
-  onClose: () => void;
-  onSuccess: () => void;
-}) {
-  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
-  const [isPending, setIsPending] = useState(false);
-
-  async function handleSend() {
-    setIsPending(true);
-    try {
-      const res = await fetch(
-        `/api/admin/bookings/${booking.id}/send-payment-link`,
-        {
-          method: "POST",
-        },
-      );
-      if (!res.ok) throw new Error("Failed");
-      const json = (await res.json()) as { data: { paymentUrl: string } };
-      setPaymentUrl(json.data.paymentUrl);
-      toast.success("Payment link sent to customer.");
-      onSuccess();
-    } catch {
-      toast.error("Failed to send payment link.");
-    } finally {
-      setIsPending(false);
-    }
-  }
-
-  function handleCopy() {
-    if (!paymentUrl) return;
-    void navigator.clipboard.writeText(paymentUrl);
-    toast.success("Copied!");
-  }
-
-  return (
-    <Dialog
-      open
-      onOpenChange={(open) => {
-        if (!open) onClose();
-      }}
-    >
-      <DialogContent className="bg-(--color-navy-surface) border border-(--color-navy-border) text-white max-w-md">
-        <DialogHeader>
-          <DialogTitle className="font-['Cormorant_Garamond'] text-2xl text-white">
-            Send Payment Link to {booking.user.name}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-4 py-2">
-          <div className="flex items-center justify-between">
-            <span className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
-              Quoted Amount
-            </span>
-            <span className="font-['JetBrains_Mono'] text-sm text-(--color-gold)">
-              {booking.quotedAmount ? formatPrice(booking.quotedAmount) : "—"}
-            </span>
-          </div>
-
-          <p className="font-['DM_Sans'] text-xs text-(--color-text-secondary)">
-            Link valid for 48 hours from the time of sending.
-          </p>
-
-          {paymentUrl && (
-            <div>
-              <label className="block font-['DM_Sans'] text-xs text-(--color-text-secondary) mb-1.5">
-                Payment Link
-              </label>
-              <div className="flex items-center gap-2 bg-(--color-navy-border)/50 rounded-lg p-3">
-                <span className="font-['JetBrains_Mono'] text-xs text-white flex-1 break-all">
-                  {paymentUrl}
-                </span>
-                <button
-                  type="button"
-                  onClick={handleCopy}
-                  className="shrink-0 p-1 text-(--color-text-secondary) hover:text-(--color-gold) transition-colors"
-                >
-                  <Copy size={14} />
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <DialogFooter className="gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm hover:border-(--color-gold)/40 hover:text-white transition-colors"
-          >
-            {paymentUrl ? "Close" : "Cancel"}
-          </button>
-          {!paymentUrl && (
-            <button
-              type="button"
-              onClick={handleSend}
-              disabled={isPending}
-              className="px-4 py-2 rounded-lg bg-(--color-coral) text-white font-['DM_Sans'] text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
-            >
-              {isPending ? "Sending…" : "Send Payment Link"}
-            </button>
-          )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
+
+const PAGE_SIZE = 20;
 
 export default function AdminBookingsPage() {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<TabValue>("all");
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [page, setPage] = useState(1);
   const [quoteTarget, setQuoteTarget] = useState<AdminBooking | null>(null);
   const [paymentTarget, setPaymentTarget] = useState<AdminBooking | null>(null);
 
-  const { data, isLoading, isError } = useQuery<BookingsResponse>({
-    queryKey: ["admin-bookings"],
-    queryFn: async () => {
-      const res = await fetch("/api/admin/bookings?limit=50");
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: res.statusText }));
-        console.log("[admin/bookings] API error", res.status, err);
-        throw new Error("Failed to fetch bookings");
-      }
-      const json = (await res.json()) as BookingsResponse;
-      console.log("[admin/bookings] API response", json);
-      return json;
-    },
-  });
+  // Debounce the search box so every keystroke doesn't fire a request; reset
+  // to page 1 whenever the debounced value actually changes.
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setSearch(searchInput.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [searchInput]);
+
+  const { data, isLoading, isError, refetch, isFetching } =
+    useQuery<BookingsResponse>({
+      queryKey: ["admin-bookings", tab, search, dateFrom, dateTo, page],
+      queryFn: async () => {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(PAGE_SIZE),
+        });
+        if (tab !== "all") params.set("status", TAB_STATUS_MAP[tab]);
+        if (search) params.set("search", search);
+        if (dateFrom) params.set("dateFrom", dateFrom);
+        if (dateTo) params.set("dateTo", dateTo);
+        const res = await fetch(`/api/admin/bookings?${params.toString()}`);
+        if (!res.ok) {
+          throw new Error("Failed to fetch bookings");
+        }
+        return (await res.json()) as BookingsResponse;
+      },
+    });
 
   const confirmMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -415,10 +141,7 @@ export default function AdminBookingsPage() {
   });
 
   const bookings = data?.data ?? [];
-  const filtered =
-    tab === "all"
-      ? bookings
-      : bookings.filter((b) => b.status === TAB_STATUS_MAP[tab]);
+  const pagination = data?.pagination;
 
   const thCls =
     "px-4 py-3 text-left font-['DM_Sans'] text-xs font-medium uppercase tracking-wide text-(--color-text-secondary) whitespace-nowrap";
@@ -431,16 +154,21 @@ export default function AdminBookingsPage() {
         <h1 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white">
           Bookings
         </h1>
-        <span className="px-2.5 py-0.5 rounded-full bg-(--color-navy-surface) border border-(--color-navy-border) font-['DM_Sans'] text-sm text-(--color-text-secondary)">
-          {filtered.length}
-        </span>
+        {pagination && (
+          <span className="px-2.5 py-0.5 rounded-full bg-(--color-navy-surface) border border-(--color-navy-border) font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+            {pagination.total}
+          </span>
+        )}
       </div>
 
       {/* Filter Tabs */}
       <Tabs
         value={tab}
-        onValueChange={(v) => setTab(v as TabValue)}
-        className="mb-6"
+        onValueChange={(v) => {
+          setTab(v as TabValue);
+          setPage(1);
+        }}
+        className="mb-4"
       >
         <TabsList className="bg-(--color-navy-surface) border border-(--color-navy-border) h-auto p-1 flex flex-wrap gap-1">
           {TABS.map((t) => (
@@ -455,6 +183,79 @@ export default function AdminBookingsPage() {
         </TabsList>
       </Tabs>
 
+      {/* Search + Date Filters */}
+      <div className="flex flex-wrap items-end gap-3 mb-6">
+        <div className="relative w-full sm:w-72">
+          <label htmlFor="booking-search" className="sr-only">
+            Search by reference, customer name, or email
+          </label>
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-(--color-text-secondary)"
+          />
+          <input
+            id="booking-search"
+            type="search"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search reference, name, or email…"
+            className="w-full bg-(--color-navy) border border-(--color-navy-border) rounded-lg pl-9 pr-3 py-2 text-sm font-['DM_Sans'] text-white placeholder:text-(--color-text-secondary) focus:outline-none focus:border-(--color-gold)/60 transition-colors"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="date-from"
+            className="block font-['DM_Sans'] text-xs text-(--color-text-secondary) mb-1.5"
+          >
+            Departing from
+          </label>
+          <input
+            id="date-from"
+            type="date"
+            value={dateFrom}
+            onChange={(e) => {
+              setDateFrom(e.target.value);
+              setPage(1);
+            }}
+            className="bg-(--color-navy) border border-(--color-navy-border) rounded-lg px-3 py-2 text-sm font-['DM_Sans'] text-white focus:outline-none focus:border-(--color-gold)/60 transition-colors"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="date-to"
+            className="block font-['DM_Sans'] text-xs text-(--color-text-secondary) mb-1.5"
+          >
+            Departing to
+          </label>
+          <input
+            id="date-to"
+            type="date"
+            value={dateTo}
+            onChange={(e) => {
+              setDateTo(e.target.value);
+              setPage(1);
+            }}
+            className="bg-(--color-navy) border border-(--color-navy-border) rounded-lg px-3 py-2 text-sm font-['DM_Sans'] text-white focus:outline-none focus:border-(--color-gold)/60 transition-colors"
+          />
+        </div>
+
+        {(dateFrom || dateTo) && (
+          <button
+            type="button"
+            onClick={() => {
+              setDateFrom("");
+              setDateTo("");
+              setPage(1);
+            }}
+            className="px-3 py-2 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-xs hover:border-(--color-gold)/40 hover:text-white transition-colors"
+          >
+            Clear dates
+          </button>
+        )}
+      </div>
+
       {/* Table */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) overflow-x-auto">
         {isLoading ? (
@@ -462,8 +263,17 @@ export default function AdminBookingsPage() {
             Loading…
           </div>
         ) : isError ? (
-          <div className="py-12 text-center font-['DM_Sans'] text-sm text-(--color-coral)">
-            Failed to load bookings — check console for details.
+          <div className="py-12 text-center">
+            <p className="font-['DM_Sans'] text-sm text-(--color-coral) mb-3">
+              Failed to load bookings.
+            </p>
+            <button
+              type="button"
+              onClick={() => void refetch()}
+              className="px-4 py-2 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm hover:border-(--color-gold)/40 hover:text-white transition-colors"
+            >
+              Retry
+            </button>
           </div>
         ) : (
           <table className="w-full min-w-[900px]">
@@ -474,24 +284,26 @@ export default function AdminBookingsPage() {
                 <th className={thCls}>Package</th>
                 <th className={thCls}>Date</th>
                 <th className={thCls}>Travelers</th>
-                <th className={thCls}>Quoted Amount</th>
+                <th className={thCls}>Amount (GST incl.)</th>
                 <th className={thCls}>Status</th>
                 <th className={thCls}>Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-(--color-navy-border)">
-              {filtered.length === 0 ? (
+              {bookings.length === 0 ? (
                 <tr>
                   <td
                     colSpan={8}
                     className="px-4 py-12 text-center font-['DM_Sans'] text-sm text-(--color-text-secondary)"
                   >
-                    No bookings found.
+                    {search || dateFrom || dateTo || tab !== "all"
+                      ? "No bookings match your search/filter."
+                      : "No bookings yet."}
                   </td>
                 </tr>
               ) : (
-                filtered.map((booking) => {
-                  const badge = STATUS_BADGE[booking.status];
+                bookings.map((booking) => {
+                  const meta = BOOKING_STATUS_CONFIG[booking.status];
                   return (
                     <tr
                       key={booking.id}
@@ -499,9 +311,12 @@ export default function AdminBookingsPage() {
                     >
                       {/* Booking ID */}
                       <td className={tdCls}>
-                        <span className="font-['JetBrains_Mono'] text-xs text-(--color-gold)">
-                          {booking.bookingRef ?? "—"}
-                        </span>
+                        <Link
+                          href={`/admin/bookings/${booking.id}`}
+                          className="font-['JetBrains_Mono'] text-xs text-(--color-gold) hover:underline"
+                        >
+                          {booking.bookingRef ?? booking.id.slice(0, 8)}
+                        </Link>
                       </td>
 
                       {/* User */}
@@ -536,21 +351,19 @@ export default function AdminBookingsPage() {
                         </span>
                       </td>
 
-                      {/* Quoted Amount */}
+                      {/* Amount */}
                       <td className={tdCls}>
                         <span className="font-['JetBrains_Mono'] text-sm text-(--color-white-muted)">
-                          {booking.quotedAmount
-                            ? formatPrice(booking.quotedAmount)
-                            : "—"}
+                          {formatPrice(booking.chargedTotal)}
                         </span>
                       </td>
 
                       {/* Status */}
                       <td className={tdCls}>
                         <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full font-['DM_Sans'] text-xs font-medium ${badge.className}`}
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full font-['DM_Sans'] text-xs font-medium ${VARIANT_CLASS[meta.variant]}`}
                         >
-                          {badge.label}
+                          {meta.label}
                         </span>
                       </td>
 
@@ -577,7 +390,8 @@ export default function AdminBookingsPage() {
                                     cancelMutation.mutate(booking.id);
                                   }
                                 }}
-                                className="px-3 py-1.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-xs hover:border-(--color-gold)/40 hover:text-white transition-colors whitespace-nowrap"
+                                disabled={cancelMutation.isPending}
+                                className="px-3 py-1.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-xs hover:border-(--color-gold)/40 hover:text-white transition-colors whitespace-nowrap disabled:opacity-50"
                               >
                                 Cancel
                               </button>
@@ -604,19 +418,20 @@ export default function AdminBookingsPage() {
                                     cancelMutation.mutate(booking.id);
                                   }
                                 }}
-                                className="px-3 py-1.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-xs hover:border-(--color-gold)/40 hover:text-white transition-colors whitespace-nowrap"
+                                disabled={cancelMutation.isPending}
+                                className="px-3 py-1.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-xs hover:border-(--color-gold)/40 hover:text-white transition-colors whitespace-nowrap disabled:opacity-50"
                               >
                                 Cancel
                               </button>
                             </>
                           )}
 
-                          {(booking.status === "AWAITING_PAYMENT" ||
-                            booking.status === "PAID") && (
+                          {booking.status === "PAID" && (
                             <button
                               type="button"
                               onClick={() => confirmMutation.mutate(booking.id)}
-                              className="px-3 py-1.5 rounded-lg border border-(--color-teal)/60 text-(--color-teal) font-['DM_Sans'] text-xs font-semibold hover:bg-(--color-teal)/10 transition-colors whitespace-nowrap"
+                              disabled={confirmMutation.isPending}
+                              className="px-3 py-1.5 rounded-lg border border-(--color-teal)/60 text-(--color-teal) font-['DM_Sans'] text-xs font-semibold hover:bg-(--color-teal)/10 transition-colors whitespace-nowrap disabled:opacity-50"
                             >
                               Mark Confirmed
                             </button>
@@ -635,6 +450,13 @@ export default function AdminBookingsPage() {
                               Invoice
                             </a>
                           )}
+
+                          <Link
+                            href={`/admin/bookings/${booking.id}`}
+                            className="px-3 py-1.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-xs hover:border-(--color-gold)/40 hover:text-white transition-colors whitespace-nowrap"
+                          >
+                            View
+                          </Link>
                         </div>
                       </td>
                     </tr>
@@ -645,6 +467,37 @@ export default function AdminBookingsPage() {
           </table>
         )}
       </div>
+
+      {/* Pagination */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4 font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+          <span>
+            Page {pagination.page} of {pagination.totalPages} —{" "}
+            {pagination.total} booking{pagination.total !== 1 ? "s" : ""}
+            {isFetching ? " · refreshing…" : ""}
+          </span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="px-3 py-1.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) disabled:opacity-40 hover:border-(--color-gold)/40 transition-colors"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                setPage((p) => Math.min(pagination.totalPages, p + 1))
+              }
+              disabled={page >= pagination.totalPages}
+              className="px-3 py-1.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) disabled:opacity-40 hover:border-(--color-gold)/40 transition-colors"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Dialogs */}
       {quoteTarget && (

@@ -15,20 +15,29 @@ export async function POST(
   }
 
   const { id } = await params;
-  const existing = await prisma.booking.findUnique({ where: { id } });
+
+  const existing = await prisma.booking.findUnique({
+    where: { id },
+    select: { status: true },
+  });
   if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  if (existing.status !== "PAID") {
+
+  // Atomic conditional transition: only a booking currently PAID can win.
+  const { count } = await prisma.booking.updateMany({
+    where: { id, status: "PAID" },
+    data: { status: "CONFIRMED" },
+  });
+  if (count === 0) {
     return NextResponse.json(
       { error: "Only paid bookings can be confirmed" },
-      { status: 400 },
+      { status: 409 },
     );
   }
 
-  const booking = await prisma.booking.update({
+  const booking = await prisma.booking.findUniqueOrThrow({
     where: { id },
-    data: { status: "CONFIRMED" },
     include: { user: true, package: true },
   });
 

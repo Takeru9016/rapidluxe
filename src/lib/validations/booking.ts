@@ -45,6 +45,34 @@ export const sendQuoteSchema = z.object({
   paymentDueDate: z.string().datetime().optional(),
 });
 
+// Query params for GET /api/admin/bookings. dateFrom/dateTo intentionally
+// filter on departureDate (the trip date), not createdAt/enquiry date — this
+// is a deliberate, standardized choice for Admin Bookings, not a default.
+// Both are plain YYYY-MM-DD strings from a date input, interpreted as UTC
+// day boundaries (consistent with how the rest of the app doesn't do
+// per-request timezone conversion): dateFrom is >= that date's start;
+// dateTo is < the following date's start (see the where-clause construction
+// in src/app/api/admin/bookings/route.ts), so a booking departing anywhere
+// on the supplied end date is included regardless of its time component.
+export const adminBookingFiltersSchema = z.object({
+  status: z
+    .enum([
+      "ENQUIRY",
+      "QUOTE_SENT",
+      "AWAITING_PAYMENT",
+      "PAID",
+      "CONFIRMED",
+      "CANCELLED",
+    ])
+    .optional(),
+  search: z.string().trim().min(1).max(200).optional(),
+  dateFrom: z.string().date().optional(),
+  dateTo: z.string().date().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
 export type SaveTravelersInput = z.infer<typeof saveTravelersSchema>;
 export type SendQuoteInput = z.infer<typeof sendQuoteSchema>;
+export type AdminBookingFilters = z.infer<typeof adminBookingFiltersSchema>;
