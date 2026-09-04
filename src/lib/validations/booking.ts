@@ -25,6 +25,7 @@ export const createBookingSchema = z.object({
   specialRequests: z.string().optional(),
   travelers: z.array(travelerSchema).min(1),
   panCard: panCardSchema.optional(),
+  idempotencyKey: z.string().uuid(),
 });
 
 export const saveTravelersSchema = z.object({

@@ -749,14 +749,13 @@ export function PackageDetailClient({ slug }: { slug: string }) {
 
               {/* CTA */}
               <div>
-                <Link href={`/book/${pkg.slug}`}>
-                  <Button
-                    variant="coral"
-                    className="w-full font-sans font-medium h-11"
-                  >
-                    Request This Journey
-                  </Button>
-                </Link>
+                <Button
+                  asChild
+                  variant="coral"
+                  className="w-full font-sans font-medium h-11"
+                >
+                  <Link href={`/book/${pkg.slug}`}>Request This Journey</Link>
+                </Button>
                 <p className="font-sans text-xs text-(--color-text-secondary) text-center mt-3 leading-relaxed">
                   No payment required to enquire. We&apos;ll confirm
                   availability and send your quote.
@@ -829,14 +828,13 @@ export function PackageDetailClient({ slug }: { slug: string }) {
           >
             <MessageSquare size={16} />
           </Button>
-          <Link href={`/book/${pkg.slug}`}>
-            <Button
-              variant="coral"
-              className="font-sans font-medium text-sm h-10 px-4"
-            >
-              Request This Journey
-            </Button>
-          </Link>
+          <Button
+            asChild
+            variant="coral"
+            className="font-sans font-medium text-sm h-10 px-4"
+          >
+            <Link href={`/book/${pkg.slug}`}>Request This Journey</Link>
+          </Button>
         </div>
       </div>
     </>

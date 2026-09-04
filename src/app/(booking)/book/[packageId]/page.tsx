@@ -3,17 +3,24 @@
 import { useUser } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
 import {
+  Cake,
+  CalendarDays,
   Check,
   CheckCircle2,
+  Clock,
+  Gem,
   Info,
+  Lightbulb,
   Minus,
   Plus,
+  Sparkles,
   UserCheck,
+  Wine,
   X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -34,6 +41,10 @@ import type { TravelerDetail } from "@/types/booking";
 import type { Coupon } from "@/types/coupon";
 import type { Package } from "@/types/package";
 
+type BookingPackage = Package & {
+  destination: { name: string } | null;
+};
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const STEP_LABELS = [
@@ -44,11 +55,11 @@ const STEP_LABELS = [
 ] as const;
 
 const OCCASIONS = [
-  { value: "leisure", label: "Leisure", emoji: "🎉" },
-  { value: "honeymoon", label: "Honeymoon", emoji: "💍" },
-  { value: "birthday", label: "Birthday", emoji: "🎂" },
-  { value: "anniversary", label: "Anniversary", emoji: "🥂" },
-  { value: "bachelorette", label: "Bachelorette/Bachelor", emoji: "🎊" },
+  { value: "leisure", label: "Leisure", icon: Sparkles },
+  { value: "honeymoon", label: "Honeymoon", icon: Gem },
+  { value: "birthday", label: "Birthday", icon: Cake },
+  { value: "anniversary", label: "Anniversary", icon: Wine },
+  { value: "bachelorette", label: "Bachelorette/Bachelor", icon: Sparkles },
 ] as const;
 
 const DIETARY_OPTIONS = [
@@ -149,7 +160,7 @@ function StepIndicator({ current }: { current: 1 | 2 | 3 | 4 }) {
 
 // ── Booking Sidebar ───────────────────────────────────────────────────────────
 
-function BookingSidebar({ pkg }: { pkg: Package }) {
+function BookingSidebar({ pkg }: { pkg: BookingPackage }) {
   const {
     departureDate,
     adults,
@@ -162,11 +173,7 @@ function BookingSidebar({ pkg }: { pkg: Package }) {
   } = useBookingStore();
 
   const totalTravelers = adults + children + infants;
-  const destLabel = pkg.destinationId
-    .replace(/^dest-/, "")
-    .split("-")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(", ");
+  const destLabel = pkg.destination?.name ?? null;
 
   const { adultTotal, childTotal, infantTotal, toursTotal } =
     calculateBookingBaseAmount(pkg, adults, children, infants);
@@ -188,7 +195,8 @@ function BookingSidebar({ pkg }: { pkg: Package }) {
           {pkg.title}
         </h3>
         <p className="font-['DM_Sans'] text-sm text-(--color-text-secondary) mt-1">
-          {destLabel} · {pkg.durationNights} Nights
+          {destLabel ? `${destLabel} · ` : ""}
+          {pkg.durationNights} Nights
         </p>
       </div>
 
@@ -289,7 +297,7 @@ function BookingSidebar({ pkg }: { pkg: Package }) {
 
 // ── Step 1 — Travel Details ───────────────────────────────────────────────────
 
-function Step1({ pkg }: { pkg: Package }) {
+function Step1({ pkg }: { pkg: BookingPackage }) {
   const {
     adults,
     children,
@@ -411,9 +419,9 @@ function Step1({ pkg }: { pkg: Package }) {
     <div className="space-y-4">
       {/* Card 1 — Who's traveling */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
-        <p className="font-['DM_Sans'] font-semibold text-white text-base mb-5">
+        <h2 className="font-['DM_Sans'] font-semibold text-white text-base mb-5">
           Who&apos;s traveling?
-        </p>
+        </h2>
         <div className="flex flex-wrap gap-8 md:gap-12">
           {travelerGroups.map(({ key, label, age, min }) => {
             const count = counts[key];
@@ -428,7 +436,7 @@ function Step1({ pkg }: { pkg: Package }) {
                     type="button"
                     onClick={() => handleTravelerChange(key, -1)}
                     disabled={atMin}
-                    className={`w-9 h-9 rounded-full border border-(--color-navy-border) flex items-center justify-center transition-colors ${
+                    className={`w-9 h-9 rounded-full border border-(--color-navy-border) flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-(--color-gold)/50 focus-visible:border-(--color-gold) ${
                       atMin
                         ? "opacity-40 cursor-not-allowed text-(--color-white-muted)"
                         : "text-(--color-white-muted) hover:border-(--color-gold) hover:text-(--color-gold)"
@@ -442,7 +450,7 @@ function Step1({ pkg }: { pkg: Package }) {
                   <button
                     type="button"
                     onClick={() => handleTravelerChange(key, 1)}
-                    className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+                    className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-(--color-gold)/50 focus-visible:border-(--color-gold) ${
                       count > 0
                         ? "bg-(--color-gold) text-(--color-navy) hover:opacity-90"
                         : "border border-(--color-gold) text-(--color-gold) hover:bg-(--color-gold)/10"
@@ -462,24 +470,25 @@ function Step1({ pkg }: { pkg: Package }) {
 
       {/* Card 2 — Occasion */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
-        <p className="font-['DM_Sans'] font-semibold text-white text-base mb-1">
+        <h2 className="font-['DM_Sans'] font-semibold text-white text-base mb-1">
           What&apos;s the occasion?
-        </p>
+        </h2>
         <div className="flex flex-wrap gap-3 mt-3">
           {OCCASIONS.map((occ) => {
             const selected = occasion === occ.value;
+            const OccIcon = occ.icon;
             return (
               <button
                 key={occ.value}
                 type="button"
                 onClick={() => setOccasion(occ.value)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-full border text-sm font-['DM_Sans'] transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-full border text-sm font-['DM_Sans'] transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-(--color-gold)/50 ${
                   selected
                     ? "border-(--color-gold) text-(--color-gold) bg-(--color-gold)/10"
                     : "border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/50 hover:text-white"
                 }`}
               >
-                <span>{occ.emoji}</span>
+                <OccIcon size={14} />
                 <span>{occ.label}</span>
                 {selected && <Check size={14} />}
               </button>
@@ -490,31 +499,33 @@ function Step1({ pkg }: { pkg: Package }) {
 
       {/* Card 3 — Date */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
-        <p className="font-['DM_Sans'] font-semibold text-white text-base mb-1">
+        <h2 className="font-['DM_Sans'] font-semibold text-white text-base mb-1">
           When do you want to travel?
-        </p>
+        </h2>
         <div className="flex gap-2 mt-3">
           <button
             type="button"
             onClick={() => setDateMode("exact")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-['DM_Sans'] transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-['DM_Sans'] transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-(--color-gold)/50 ${
               dateMode === "exact"
                 ? "bg-(--color-gold) text-(--color-navy) font-medium"
                 : "border border-(--color-navy-border) text-(--color-white-muted)"
             }`}
           >
-            📅 Exact Dates
+            <CalendarDays size={14} />
+            Exact Dates
           </button>
           <button
             type="button"
             onClick={() => setDateMode("flexible")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-['DM_Sans'] transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-['DM_Sans'] transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-(--color-gold)/50 ${
               dateMode === "flexible"
                 ? "bg-(--color-gold) text-(--color-navy) font-medium"
                 : "border border-(--color-navy-border) text-(--color-white-muted)"
             }`}
           >
-            🕐 I&apos;m Flexible
+            <Clock size={14} />
+            I&apos;m Flexible
           </button>
         </div>
 
@@ -547,7 +558,7 @@ function Step1({ pkg }: { pkg: Package }) {
                     key={d}
                     type="button"
                     onClick={() => applyFlexibleSelection(d, flexibleMonths)}
-                    className={`px-4 py-2 rounded-full text-sm font-['DM_Sans'] transition-colors ${
+                    className={`px-4 py-2 rounded-full text-sm font-['DM_Sans'] transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-(--color-gold)/50 ${
                       flexibleDuration === d
                         ? "bg-(--color-gold) text-(--color-navy) font-medium"
                         : "border border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/50"
@@ -576,7 +587,7 @@ function Step1({ pkg }: { pkg: Package }) {
                           : [...flexibleMonths, key];
                         applyFlexibleSelection(flexibleDuration, next);
                       }}
-                      className={`flex flex-col items-center py-3 px-2 rounded-xl border text-center cursor-pointer transition-colors ${
+                      className={`flex flex-col items-center py-3 px-2 rounded-xl border text-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-(--color-gold)/50 ${
                         selected
                           ? "border-(--color-gold) bg-(--color-gold)/10 text-(--color-gold)"
                           : "border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/40"
@@ -618,8 +629,9 @@ function Step1({ pkg }: { pkg: Package }) {
       </div>
 
       {appliedCoupon && (
-        <p className="mt-2 text-sm font-['DM_Sans'] text-(--color-teal)">
-          ✓ {appliedCoupon.code} applied
+        <p className="mt-2 flex items-center gap-1.5 text-sm font-['DM_Sans'] text-(--color-teal)">
+          <Check size={14} />
+          {appliedCoupon.code} applied
         </p>
       )}
 
@@ -804,72 +816,118 @@ function Step2() {
 
       {/* Lead traveler */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6 space-y-5">
-        <p className="font-['DM_Sans'] font-semibold text-white text-base">
+        <h2 className="font-['DM_Sans'] font-semibold text-white text-base">
           Lead Traveler
-        </p>
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>Full Name</label>
+            <label className={labelClass} htmlFor="leadName">
+              Full Name
+            </label>
             <input
+              id="leadName"
               {...register("leadName", { required: "Required" })}
               className={inputClass}
               placeholder="As on passport"
+              aria-invalid={errors.leadName ? "true" : undefined}
+              aria-describedby={errors.leadName ? "leadName-error" : undefined}
             />
             {errors.leadName && (
-              <p className="text-xs text-(--color-coral) mt-1">
+              <p
+                id="leadName-error"
+                className="text-xs text-(--color-coral) mt-1"
+              >
                 {errors.leadName.message}
               </p>
             )}
           </div>
           <div>
-            <label className={labelClass}>Date of Birth</label>
+            <label className={labelClass} htmlFor="leadDob">
+              Date of Birth
+            </label>
             <input
+              id="leadDob"
               type="date"
               {...register("leadDob", { required: "Required" })}
               className={inputClass}
+              aria-invalid={errors.leadDob ? "true" : undefined}
+              aria-describedby={errors.leadDob ? "leadDob-error" : undefined}
             />
             {errors.leadDob && (
-              <p className="text-xs text-(--color-coral) mt-1">
+              <p
+                id="leadDob-error"
+                className="text-xs text-(--color-coral) mt-1"
+              >
                 {errors.leadDob.message}
               </p>
             )}
           </div>
           <div>
-            <label className={labelClass}>Passport Number</label>
+            <label className={labelClass} htmlFor="leadPassport">
+              Passport Number
+            </label>
             <input
+              id="leadPassport"
               {...register("leadPassport", { required: "Required" })}
               className={`${inputClass} font-['JetBrains_Mono']`}
               placeholder="A1234567"
+              aria-invalid={errors.leadPassport ? "true" : undefined}
+              aria-describedby={
+                errors.leadPassport ? "leadPassport-error" : undefined
+              }
             />
             {errors.leadPassport && (
-              <p className="text-xs text-(--color-coral) mt-1">
+              <p
+                id="leadPassport-error"
+                className="text-xs text-(--color-coral) mt-1"
+              >
                 {errors.leadPassport.message}
               </p>
             )}
           </div>
           <div>
-            <label className={labelClass}>Email</label>
+            <label className={labelClass} htmlFor="leadEmail">
+              Email
+            </label>
             <input
+              id="leadEmail"
               type="email"
               {...register("leadEmail", { required: "Required" })}
               className={inputClass}
               placeholder="you@email.com"
+              aria-invalid={errors.leadEmail ? "true" : undefined}
+              aria-describedby={
+                errors.leadEmail ? "leadEmail-error" : undefined
+              }
             />
             {errors.leadEmail && (
-              <p className="text-xs text-(--color-coral) mt-1">
+              <p
+                id="leadEmail-error"
+                className="text-xs text-(--color-coral) mt-1"
+              >
                 {errors.leadEmail.message}
               </p>
             )}
           </div>
           <div className="md:col-span-2">
-            <label className={labelClass}>Phone Number</label>
+            <label className={labelClass} htmlFor="leadPhone">
+              Phone Number
+            </label>
             <input
+              id="leadPhone"
               {...register("leadPhone", { required: "Required" })}
               className={inputClass}
               placeholder="+91 98765 43210"
+              aria-invalid={errors.leadPhone ? "true" : undefined}
+              aria-describedby={
+                errors.leadPhone ? "leadPhone-error" : undefined
+              }
             />
             {errors.leadPhone && (
-              <p className="text-xs text-(--color-coral) mt-1">
+              <p
+                id="leadPhone-error"
+                className="text-xs text-(--color-coral) mt-1"
+              >
                 {errors.leadPhone.message}
               </p>
             )}
@@ -879,62 +937,127 @@ function Step2() {
 
       {/* Additional travelers */}
       {totalExtra > 0 &&
-        Array.from({ length: totalExtra }).map((_, idx) => (
-          <div
-            key={idx}
-            className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6 space-y-5"
-          >
-            <p className="font-['DM_Sans'] font-semibold text-white text-base">
-              Traveler {idx + 2}
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className={labelClass}>Full Name</label>
-                <input
-                  {...register(`additional.${idx}.name`, {
-                    required: "Required",
-                  })}
-                  className={inputClass}
-                  placeholder="Full name"
-                />
-              </div>
-              <div>
-                <label className={labelClass}>Date of Birth</label>
-                <input
-                  type="date"
-                  {...register(`additional.${idx}.dob`, {
-                    required: "Required",
-                  })}
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className={labelClass}>Passport Number</label>
-                <input
-                  {...register(`additional.${idx}.passportNo`, {
-                    required: "Required",
-                  })}
-                  className={`${inputClass} font-['JetBrains_Mono']`}
-                  placeholder="A1234567"
-                />
+        Array.from({ length: totalExtra }).map((_, idx) => {
+          const nameError = errors.additional?.[idx]?.name;
+          const dobError = errors.additional?.[idx]?.dob;
+          const passportError = errors.additional?.[idx]?.passportNo;
+          return (
+            <div
+              key={idx}
+              className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6 space-y-5"
+            >
+              <h2 className="font-['DM_Sans'] font-semibold text-white text-base">
+                Traveler {idx + 2}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label
+                    className={labelClass}
+                    htmlFor={`additional.${idx}.name`}
+                  >
+                    Full Name
+                  </label>
+                  <input
+                    id={`additional.${idx}.name`}
+                    {...register(`additional.${idx}.name`, {
+                      required: "Required",
+                    })}
+                    className={inputClass}
+                    placeholder="Full name"
+                    aria-invalid={nameError ? "true" : undefined}
+                    aria-describedby={
+                      nameError ? `additional.${idx}.name-error` : undefined
+                    }
+                  />
+                  {nameError && (
+                    <p
+                      id={`additional.${idx}.name-error`}
+                      className="text-xs text-(--color-coral) mt-1"
+                    >
+                      {nameError.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label
+                    className={labelClass}
+                    htmlFor={`additional.${idx}.dob`}
+                  >
+                    Date of Birth
+                  </label>
+                  <input
+                    id={`additional.${idx}.dob`}
+                    type="date"
+                    {...register(`additional.${idx}.dob`, {
+                      required: "Required",
+                    })}
+                    className={inputClass}
+                    aria-invalid={dobError ? "true" : undefined}
+                    aria-describedby={
+                      dobError ? `additional.${idx}.dob-error` : undefined
+                    }
+                  />
+                  {dobError && (
+                    <p
+                      id={`additional.${idx}.dob-error`}
+                      className="text-xs text-(--color-coral) mt-1"
+                    >
+                      {dobError.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label
+                    className={labelClass}
+                    htmlFor={`additional.${idx}.passportNo`}
+                  >
+                    Passport Number
+                  </label>
+                  <input
+                    id={`additional.${idx}.passportNo`}
+                    {...register(`additional.${idx}.passportNo`, {
+                      required: "Required",
+                    })}
+                    className={`${inputClass} font-['JetBrains_Mono']`}
+                    placeholder="A1234567"
+                    aria-invalid={passportError ? "true" : undefined}
+                    aria-describedby={
+                      passportError
+                        ? `additional.${idx}.passportNo-error`
+                        : undefined
+                    }
+                  />
+                  {passportError && (
+                    <p
+                      id={`additional.${idx}.passportNo-error`}
+                      className="text-xs text-(--color-coral) mt-1"
+                    >
+                      {passportError.message}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
       {/* PAN Card — conditional */}
       {showPAN && (
         <div className="bg-(--color-gold)/5 border border-(--color-gold)/30 rounded-xl p-4 space-y-3">
           <div className="flex items-center gap-2">
             <Info size={14} className="text-(--color-gold)" />
-            <p className="font-['DM_Sans'] font-medium text-(--color-gold) text-sm">
+            <label
+              className="font-['DM_Sans'] font-medium text-(--color-gold) text-sm"
+              htmlFor="panCard"
+            >
               PAN Card Number
-            </p>
+            </label>
             <span className="text-xs font-['DM_Sans'] text-(--color-text-secondary) ml-1">
               Required for bookings above ₹2,00,000
             </span>
           </div>
           <input
+            id="panCard"
             {...register("panCard", {
               required: "PAN card is required for this booking",
               pattern: {
@@ -945,9 +1068,11 @@ function Step2() {
             className={`${inputClass} font-['JetBrains_Mono'] uppercase`}
             placeholder="AAAAA9999A"
             maxLength={10}
+            aria-invalid={errors.panCard ? "true" : undefined}
+            aria-describedby={errors.panCard ? "panCard-error" : undefined}
           />
           {errors.panCard && (
-            <p className="text-xs text-(--color-coral) mt-1">
+            <p id="panCard-error" className="text-xs text-(--color-coral) mt-1">
               {errors.panCard.message}
             </p>
           )}
@@ -956,9 +1081,9 @@ function Step2() {
 
       {/* Dietary Requirements */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
-        <p className="font-['DM_Sans'] font-medium text-white text-sm mb-3">
+        <h2 className="font-['DM_Sans'] font-medium text-white text-sm mb-3">
           Any dietary requirements?
-        </p>
+        </h2>
         <div className="flex flex-wrap gap-3">
           {DIETARY_OPTIONS.map((option) => {
             const selected = dietaryRequirements.includes(option);
@@ -967,7 +1092,7 @@ function Step2() {
                 key={option}
                 type="button"
                 onClick={() => toggleDietary(option)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-full border text-sm font-['DM_Sans'] transition-colors ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-full border text-sm font-['DM_Sans'] transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-(--color-gold)/50 ${
                   selected
                     ? "border-(--color-gold) text-(--color-gold) bg-(--color-gold)/10"
                     : "border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/50 hover:text-white"
@@ -983,9 +1108,9 @@ function Step2() {
 
       {/* Special Requests */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
-        <p className="font-['DM_Sans'] font-medium text-white text-sm mb-3">
+        <h2 className="font-['DM_Sans'] font-medium text-white text-sm mb-3">
           Anything else we should know?
-        </p>
+        </h2>
         <textarea
           {...register("specialRequests")}
           rows={3}
@@ -995,14 +1120,20 @@ function Step2() {
       </div>
 
       {showProfilePrompt && (
-        <p className="font-['DM_Sans'] text-xs text-(--color-text-secondary) mt-1">
-          💡 Save your details to your profile for faster booking —{" "}
-          <Link
-            href="/profile?tab=personal"
-            className="text-(--color-gold) hover:underline"
-          >
-            update profile
-          </Link>
+        <p className="font-['DM_Sans'] text-xs text-(--color-text-secondary) mt-1 flex items-start gap-1.5">
+          <Lightbulb
+            size={14}
+            className="text-(--color-gold) shrink-0 mt-0.5"
+          />
+          <span>
+            Save your details to your profile for faster booking —{" "}
+            <Link
+              href="/profile?tab=personal"
+              className="text-(--color-gold) hover:underline"
+            >
+              update profile
+            </Link>
+          </span>
         </p>
       )}
 
@@ -1010,7 +1141,7 @@ function Step2() {
         <button
           type="button"
           onClick={() => setStep(1)}
-          className="px-6 py-3 rounded-xl border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm hover:border-(--color-gold)/40 hover:text-white transition-colors"
+          className="px-6 py-3 rounded-xl border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm hover:border-(--color-gold)/40 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-(--color-gold)/50"
         >
           ← Back
         </button>
@@ -1028,7 +1159,7 @@ function Step2() {
 
 // ── Step 3 — Review & Submit ──────────────────────────────────────────────────
 
-function Step3({ pkg }: { pkg: Package }) {
+function Step3({ pkg }: { pkg: BookingPackage }) {
   const {
     departureDate,
     adults,
@@ -1055,6 +1186,9 @@ function Step3({ pkg }: { pkg: Package }) {
     }
     setSubmitting(true);
     try {
+      // Stable per submission attempt — generated once, reused verbatim by
+      // any retry of this same click/attempt so the server can dedupe.
+      const idempotencyKey = store.ensureIdempotencyKey();
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1070,6 +1204,7 @@ function Step3({ pkg }: { pkg: Package }) {
           couponCode: store.couponCode ?? undefined,
           travelers: store.travelerDetails,
           panCard: store.panCard ?? undefined,
+          idempotencyKey,
         }),
       });
       const json = (await res.json()) as {
@@ -1115,9 +1250,9 @@ function Step3({ pkg }: { pkg: Package }) {
 
       {/* Price breakdown */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6 space-y-3 mt-4">
-        <p className="text-xs font-['DM_Sans'] font-medium uppercase tracking-widest text-(--color-gold) mb-4">
+        <h2 className="text-xs font-['DM_Sans'] font-medium uppercase tracking-widest text-(--color-gold) mb-4">
           Price Breakdown
-        </p>
+        </h2>
         <div className="flex justify-between text-sm">
           <span className="font-['DM_Sans'] text-(--color-text-secondary)">
             Adults ({adults} × {formatPrice(pkg.pricePerPerson)})
@@ -1201,15 +1336,15 @@ function Step3({ pkg }: { pkg: Package }) {
             size={16}
             className="text-(--color-gold) inline mr-2 align-text-bottom"
           />
-          Our team will review your request and contact you within 2 hours via
-          WhatsApp to confirm availability and finalize your quote.
+          Our team will review your request and reach out via WhatsApp to
+          confirm availability and finalize your quote.
         </p>
       </div>
 
       <button
         type="button"
         onClick={() => setStep(2)}
-        className="px-6 py-3 rounded-xl border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm hover:border-(--color-gold)/40 hover:text-white transition-colors mt-2"
+        className="px-6 py-3 rounded-xl border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm hover:border-(--color-gold)/40 hover:text-white transition-colors mt-2 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-(--color-gold)/50"
       >
         ← Back
       </button>
@@ -1251,13 +1386,14 @@ function Step4() {
         {bookingRef ?? "RL-XXXXXX"}
       </p>
       <p className="font-['DM_Sans'] text-(--color-white-muted) mt-3 max-w-md">
-        We&apos;ll WhatsApp you within 2 hours to confirm your trip.
+        We&apos;ll WhatsApp you to confirm your trip.
       </p>
 
       {/* Status timeline */}
       <div className="mt-10 max-w-lg mx-auto w-full flex items-center overflow-x-auto">
-        <span className="font-['DM_Sans'] text-sm text-(--color-teal) whitespace-nowrap">
-          Enquiry Received ✓
+        <span className="font-['DM_Sans'] text-sm text-(--color-teal) whitespace-nowrap inline-flex items-center gap-1.5">
+          Enquiry Received
+          <Check size={14} />
         </span>
         <div className="h-px bg-(--color-navy-border) flex-1 mx-3 shrink-0 min-w-4" />
         <span className="font-['DM_Sans'] text-sm text-(--color-gold) animate-pulse whitespace-nowrap">
@@ -1302,27 +1438,37 @@ export default function BookingPage({
   const { packageId: slug } = use(params);
   const { data: pkgData, isLoading, isError } = usePackage(slug);
 
-  const { currentStep, updateAmounts, adults, children, infants } =
-    useBookingStore();
+  const { currentStep } = useBookingStore();
 
-  const pkg: Package | undefined = pkgData?.data
+  const pkg: BookingPackage | undefined = pkgData?.data
     ? ({
         ...pkgData.data,
         createdAt: new Date(pkgData.data.createdAt),
         updatedAt: new Date(pkgData.data.updatedAt),
-      } as Package)
+      } as BookingPackage)
     : undefined;
 
+  const prevPkgIdRef = useRef<string | undefined>(undefined);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: must only re-run when the package identity changes, not on every re-render's new pkg object
   useEffect(() => {
     if (!pkg) return;
+    if (prevPkgIdRef.current !== undefined && prevPkgIdRef.current !== pkg.id) {
+      // A different Journey was opened via client-side navigation — the
+      // wizard's zustand store is a module-level singleton and would
+      // otherwise leak the previous Journey's step/travelers/bookingRef.
+      useBookingStore.getState().reset();
+    }
+    prevPkgIdRef.current = pkg.id;
+
+    const state = useBookingStore.getState();
     const { baseAmount } = calculateBookingBaseAmount(
       pkg,
-      adults,
-      children,
-      infants,
+      state.adults,
+      state.children,
+      state.infants,
     );
-    updateAmounts(baseAmount);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    state.updateAmounts(baseAmount);
   }, [pkg?.id]);
 
   if (isLoading) {
@@ -1348,6 +1494,9 @@ export default function BookingPage({
   return (
     <main className="min-h-screen bg-(--color-navy) pt-24">
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-12">
+        {currentStep !== 4 && (
+          <h1 className="sr-only">{STEP_LABELS[currentStep - 1]}</h1>
+        )}
         <StepIndicator current={currentStep} />
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">

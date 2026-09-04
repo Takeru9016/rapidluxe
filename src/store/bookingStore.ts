@@ -1,8 +1,9 @@
 "use client";
 
 import { create } from "zustand";
-import type { Coupon } from "@/types/coupon";
+import { calculateGST } from "@/lib/utils";
 import type { TravelerDetail } from "@/types/booking";
+import type { Coupon } from "@/types/coupon";
 
 interface BookingStore {
   currentStep: 1 | 2 | 3 | 4;
@@ -32,6 +33,8 @@ interface BookingStore {
   // Result
   bookingId: string | null;
   bookingRef: string | null;
+  // Idempotency — one stable key per Step 3 submission attempt
+  idempotencyKey: string | null;
   // Actions
   setStep: (step: 1 | 2 | 3 | 4) => void;
   setTravelers: (adults: number, children: number, infants: number) => void;
@@ -43,9 +46,16 @@ interface BookingStore {
   setDietaryRequirements: (requirements: string[]) => void;
   setPanCard: (pan: string) => void;
   setSpecialRequests: (requests: string) => void;
-  setCoupon: (code: string | null, coupon: Coupon | null, discount: number) => void;
+  setCoupon: (
+    code: string | null,
+    coupon: Coupon | null,
+    discount: number,
+  ) => void;
   updateAmounts: (base: number) => void;
   setBookingResult: (bookingId: string, bookingRef: string) => void;
+  /** Returns the current attempt's idempotency key, generating and storing
+   *  one on first call so retries of the same submission reuse it. */
+  ensureIdempotencyKey: () => string;
   reset: () => void;
 }
 
@@ -73,6 +83,7 @@ const DEFAULT_STATE = {
   totalAmount: 0,
   bookingId: null,
   bookingRef: null,
+  idempotencyKey: null,
 };
 
 export const useBookingStore = create<BookingStore>((set, get) => ({
@@ -104,19 +115,35 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
 
   setCoupon: (code, coupon, discount) => {
     const { baseAmount } = get();
-    const gstAmount = Math.round(baseAmount * 0.05 * 100) / 100;
-    const totalAmount = Math.round((baseAmount + gstAmount - discount) * 100) / 100;
-    set({ couponCode: code, appliedCoupon: coupon, discountAmount: discount, gstAmount, totalAmount });
+    const { gst, total } = calculateGST(baseAmount - discount);
+    set({
+      couponCode: code,
+      appliedCoupon: coupon,
+      discountAmount: discount,
+      gstAmount: gst,
+      totalAmount: total,
+    });
   },
 
   updateAmounts: (base) => {
     const { discountAmount } = get();
-    const gstAmount = Math.round(base * 0.05 * 100) / 100;
-    const totalAmount = Math.round((base + gstAmount - discountAmount) * 100) / 100;
-    set({ baseAmount: base, gstAmount, totalAmount });
+    const { gst, total } = calculateGST(base - discountAmount);
+    set({ baseAmount: base, gstAmount: gst, totalAmount: total });
   },
 
-  setBookingResult: (bookingId, bookingRef) => set({ bookingId, bookingRef }),
+  setBookingResult: (bookingId, bookingRef) => {
+    // The attempt this key represented is now complete — clear it so any
+    // future submission (a different enquiry) gets its own fresh key.
+    set({ bookingId, bookingRef, idempotencyKey: null });
+  },
+
+  ensureIdempotencyKey: () => {
+    const existing = get().idempotencyKey;
+    if (existing) return existing;
+    const key = crypto.randomUUID();
+    set({ idempotencyKey: key });
+    return key;
+  },
 
   reset: () => set(DEFAULT_STATE),
 }));

@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { type NextRequest, NextResponse } from "next/server";
 
-import type { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 import { sendEnquiryReceivedEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import {
@@ -155,31 +155,80 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    const departureDateValue = new Date(data.departureDate);
+
+    // Idempotency: the client sends one stable UUID for the whole Step 3
+    // submission attempt, reused verbatim on any retry (timeout, double
+    // click). (userId, idempotencyKey) has a DB-level unique constraint
+    // (see the booking_idempotency_key migration), so a retry that races
+    // the original request is resolved by the database, not by a
+    // check-then-act read here — see the P2002 handling below.
+    const existingByKey = await prisma.booking.findFirst({
+      where: { userId: dbUser.id, idempotencyKey: data.idempotencyKey },
+    });
+    if (existingByKey?.bookingRef) {
+      return NextResponse.json(
+        {
+          data: {
+            bookingRef: existingByKey.bookingRef,
+            bookingId: existingByKey.id,
+          },
+        },
+        { status: 200 },
+      );
+    }
+
     const bookingRef = `RL-${Date.now().toString(36).toUpperCase().slice(-6)}`;
 
-    const booking = await prisma.booking.create({
-      data: {
-        userId: dbUser.id,
-        packageId: data.packageId,
-        departureDate: new Date(data.departureDate),
-        adults: data.adults,
-        children: data.children,
-        infants: data.infants ?? 0,
-        occasion: data.occasion ?? null,
-        dietaryRequirements: data.dietaryRequirements ?? [],
-        specialRequests: data.specialRequests ?? "",
-        travelers: data.travelers as Prisma.InputJsonValue,
-        panCard: data.panCard ?? null,
-        baseAmount,
-        gstAmount: gst,
-        discountAmount,
-        totalAmount: total,
-        couponCode: data.couponCode ?? null,
-        bookingRef,
-        status: "ENQUIRY",
-      },
-      include: { user: true, package: { include: { destination: true } } },
-    });
+    let booking: Prisma.BookingGetPayload<{
+      include: { user: true; package: { include: { destination: true } } };
+    }>;
+    try {
+      booking = await prisma.booking.create({
+        data: {
+          userId: dbUser.id,
+          packageId: data.packageId,
+          departureDate: departureDateValue,
+          adults: data.adults,
+          children: data.children,
+          infants: data.infants ?? 0,
+          occasion: data.occasion ?? null,
+          dietaryRequirements: data.dietaryRequirements ?? [],
+          specialRequests: data.specialRequests ?? "",
+          travelers: data.travelers as Prisma.InputJsonValue,
+          panCard: data.panCard ?? null,
+          baseAmount,
+          gstAmount: gst,
+          discountAmount,
+          totalAmount: total,
+          couponCode: data.couponCode ?? null,
+          bookingRef,
+          idempotencyKey: data.idempotencyKey,
+          status: "ENQUIRY",
+        },
+        include: { user: true, package: { include: { destination: true } } },
+      });
+    } catch (error) {
+      // Two requests for the same attempt raced past the findFirst check
+      // above and both reached create(); the unique constraint on
+      // (userId, idempotencyKey) lets exactly one succeed. The loser
+      // re-reads and returns the winner's booking instead of erroring.
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        const winner = await prisma.booking.findFirst({
+          where: { userId: dbUser.id, idempotencyKey: data.idempotencyKey },
+        });
+        if (winner?.bookingRef) {
+          return NextResponse.json(
+            { data: { bookingRef: winner.bookingRef, bookingId: winner.id } },
+            { status: 200 },
+          );
+        }
+      }
+      throw error;
+    }
 
     // Coupon usedCount is consumed on successful payment (see
     // /api/payments/verify and /api/webhooks/razorpay), not here — an
