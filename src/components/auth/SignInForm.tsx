@@ -137,6 +137,16 @@ const inputBase =
   "focus:border-(--color-gold) focus:ring-2 focus:ring-(--color-gold)/20 " +
   "aria-[invalid=true]:border-[#E07A5F] aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-[#E07A5F]/20";
 
+// Only a same-origin relative path is a safe post-login destination — an
+// absolute or protocol-relative URL from ?redirect_url would let this page
+// bounce a signed-in session to an arbitrary external site.
+function getSafeRedirectTarget(): string {
+  if (typeof window === "undefined") return "/";
+  const raw = new URLSearchParams(window.location.search).get("redirect_url");
+  if (!raw || !/^\/(?!\/|\\)[^\s\\]*$/.test(raw)) return "/";
+  return raw;
+}
+
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function SignInForm() {
@@ -165,7 +175,7 @@ export function SignInForm() {
       });
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
-        router.push("/");
+        router.push(getSafeRedirectTarget());
       }
     } catch (err) {
       if (isClerkAPIResponseError(err)) {
@@ -183,7 +193,7 @@ export function SignInForm() {
       await signIn.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/",
+        redirectUrlComplete: getSafeRedirectTarget(),
       });
     } catch {
       setOauthProvider(null);

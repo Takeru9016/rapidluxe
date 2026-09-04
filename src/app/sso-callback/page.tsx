@@ -18,7 +18,14 @@ export default function SSOCallbackPage() {
           Completing sign in…
         </p>
       </div>
-      <AuthenticateWithRedirectCallback />
+      {/* signIn/signUpFallbackRedirectUrl only apply if the initiating
+          authenticateWithRedirect() call didn't set a forceRedirectUrl
+          (redirectUrlComplete) — SignInForm/SignUpForm always do, so this
+          is a defensive fallback, not the primary redirect mechanism. */}
+      <AuthenticateWithRedirectCallback
+        signInFallbackRedirectUrl="/"
+        signUpFallbackRedirectUrl="/"
+      />
     </div>
   );
 }

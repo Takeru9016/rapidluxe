@@ -158,6 +158,16 @@ const inputBase =
 
 const ctaBase = "w-full h-12 font-semibold text-sm tracking-wide gap-2";
 
+// Only a same-origin relative path is a safe post-signup destination — an
+// absolute or protocol-relative URL from ?redirect_url would let this page
+// bounce a signed-in session to an arbitrary external site.
+function getSafeRedirectTarget(): string {
+  if (typeof window === "undefined") return "/";
+  const raw = new URLSearchParams(window.location.search).get("redirect_url");
+  if (!raw || !/^\/(?!\/|\\)[^\s\\]*$/.test(raw)) return "/";
+  return raw;
+}
+
 // ── OTP Step ──────────────────────────────────────────────────────────────────
 
 function OtpStep({
@@ -350,7 +360,7 @@ export function SignUpForm() {
     const result = await signUp.attemptEmailAddressVerification({ code });
     if (result.status === "complete") {
       await setActive({ session: result.createdSessionId });
-      router.push("/");
+      router.push(getSafeRedirectTarget());
     }
   };
 
@@ -368,7 +378,7 @@ export function SignUpForm() {
       await signUp.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/",
+        redirectUrlComplete: getSafeRedirectTarget(),
       });
     } catch {
       setOauthProvider(null);

@@ -12,11 +12,14 @@ const isUserRoute = createRouteMatcher([
 
 export default clerkMiddleware(async (auth, req) => {
   if (isAdminRoute(req)) {
-    const { sessionClaims } = await auth();
-    if (sessionClaims?.metadata?.role !== "admin") {
+    const { userId, sessionClaims } = await auth();
+    if (!userId) {
       const url = new URL("/sign-in", req.url);
       url.searchParams.set("redirect_url", req.url);
       return NextResponse.redirect(url);
+    }
+    if (sessionClaims?.metadata?.role !== "admin") {
+      return NextResponse.redirect(new URL("/unauthorized", req.url));
     }
   }
   if (isUserRoute(req)) {
