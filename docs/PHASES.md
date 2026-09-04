@@ -337,6 +337,8 @@ model Booking {
 
 ### Phase 3C — Performance + Final QA
 
+**RapidLuxe 2.0 Stage 6 Final QA: PASS.** Commercial/booking-flow QA (Deal→Coupon→GST pricing, traveler-count recalculation, CTA propagation, payment-link generation, `/pay/[token]` noindex) verified end-to-end in-browser against the isolated `qa-stage6` Neon branch. P0 Deal-booking render loop resolved, commit `e6251f6`: the booking page's Deal-resolution `useEffect` now depends on stable package identity (`pkg?.id`) instead of an object literal rebuilt every render, and explicitly clears stale Deal state for invalid/missing `?deal=` parameters. Deferred, non-blocking: F2 (P1 UX — coupon input stays visually populated after a traveler-count change clears the applied coupon), F3 (P2 — lead-capture modal intermittently intercepts controls/inconsistent Escape dismissal), F4 (P2 — intermittent Unsplash/next-image hero 404). `/admin/content` is not an actual route; real content-management routes are `/admin/pages`, `/admin/blog`, `/admin/blog/authors`, `/admin/blog/categories`, `/admin/testimonials`. The Lighthouse/bundle-analyzer/cross-device items below remain unchecked — out of Stage 6's booking/commercial QA scope, not yet verified.
+
 - [ ] `@next/bundle-analyzer` — identify and eliminate large dependencies
 - [ ] Edge runtime on eligible route handlers (no Prisma — fetch only)
 - [ ] Image audit: ensure `priority` only on first above-fold image per page
