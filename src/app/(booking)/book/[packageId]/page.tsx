@@ -1515,19 +1515,24 @@ export default function BookingPage({
   // that have an existing discount, so any match here is display-eligible.
   // The server independently re-verifies the deal at submission time; this
   // is only what drives the wizard's displayed numbers.
+  //
+  // `pkg` is rebuilt as a new object literal every render, so depending on
+  // it directly would re-run this effect (and call setDeal, which updates
+  // the store and re-renders the page) on every single render, looping
+  // forever — depend on pkg.id instead, same as the effect above.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: see comment above — must depend on pkg.id, not pkg
   useEffect(() => {
     if (!pkg) return;
     const dealId = searchParams.get("deal");
-    if (!dealId) return;
-    const deal = (dealsData?.data ?? []).find(
-      (d) => d.id === dealId && d.packageId === pkg.id,
-    );
-    if (deal) {
-      useBookingStore
-        .getState()
-        .setDeal({ id: deal.id, discountPct: deal.discountPct });
-    }
-  }, [pkg, searchParams, dealsData]);
+    const deal = dealId
+      ? (dealsData?.data ?? []).find(
+          (d) => d.id === dealId && d.packageId === pkg.id,
+        )
+      : undefined;
+    useBookingStore
+      .getState()
+      .setDeal(deal ? { id: deal.id, discountPct: deal.discountPct } : null);
+  }, [pkg?.id, searchParams, dealsData]);
 
   if (isLoading) {
     return (
