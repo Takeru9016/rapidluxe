@@ -44,6 +44,8 @@ export async function GET(_req: NextRequest) {
         adults: true,
         children: true,
         totalAmount: true,
+        baseAmount: true,
+        quotedAmount: true,
         package: {
           select: {
             title: true,

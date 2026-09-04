@@ -11,7 +11,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { BookingCardSkeleton } from "@/components/shared/Skeletons";
 import { useBookings, usePayBooking } from "@/hooks/api/useBookings";
 import { BOOKING_STATUS_CONFIG } from "@/lib/booking-status";
-import { formatDateRange, formatPrice } from "@/lib/utils";
+import { calculateGST, formatDateRange, formatPrice } from "@/lib/utils";
 import type { DisplayStatus, UserBooking } from "@/types/booking";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -101,7 +101,9 @@ function BookingCard({ booking }: { booking: UserBooking }) {
         </div>
         <div className="flex items-center justify-between mt-auto pt-1 gap-3">
           <span className="font-['JetBrains_Mono'] text-(--color-gold) text-base">
-            {formatPrice(booking.totalAmount)}
+            {formatPrice(
+              calculateGST(booking.quotedAmount ?? booking.baseAmount).total,
+            )}
           </span>
           <div className="flex items-center gap-4 shrink-0">
             {booking.status === "AWAITING_PAYMENT" && (

@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       const { count } = await prisma.booking.updateMany({
         where: {
           razorpayOrderId: order_id,
-          status: { notIn: ["PAID", "CONFIRMED"] },
+          status: { notIn: ["PAID", "CONFIRMED", "CANCELLED"] },
         },
         data: { status: "PAID", razorpayPaymentId: id },
       });

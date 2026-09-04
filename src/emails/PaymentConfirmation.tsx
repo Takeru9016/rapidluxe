@@ -10,7 +10,7 @@ import {
   Text,
 } from "@react-email/components";
 
-import { formatPrice } from "@/lib/utils";
+import { calculateGST, formatPrice } from "@/lib/utils";
 import type { BookingEmailPayload } from "@/types/email";
 
 interface Props {
@@ -18,7 +18,9 @@ interface Props {
 }
 
 export function PaymentConfirmation({ booking }: Props) {
-  const amountPaid = (booking.quotedAmount ?? booking.totalAmount) * 1.05;
+  const { total: amountPaid } = calculateGST(
+    booking.quotedAmount ?? booking.baseAmount,
+  );
   const whatsapp = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? "";
   const supportEmail =
     process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "info@rapidluxe.com";

@@ -97,7 +97,12 @@ export interface UserBooking {
   returnDate: string | null;
   adults: number;
   children: number;
+  /** Stale once a quote exists — do not use for display; kept for existing readers. */
   totalAmount: number;
+  /** Enquiry-time base amount (pre-GST). Authoritative only when no quote exists. */
+  baseAmount: number;
+  /** Admin-set quote (pre-GST). Authoritative once set — supersedes baseAmount. */
+  quotedAmount: number | null;
   package: {
     title: string;
     images: string[];

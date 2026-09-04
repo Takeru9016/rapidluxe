@@ -10,7 +10,7 @@ import {
   Text,
 } from "@react-email/components";
 
-import { formatPrice } from "@/lib/utils";
+import { calculateGST, formatPrice } from "@/lib/utils";
 import type { BookingEmailPayload } from "@/types/email";
 
 interface Props {
@@ -18,6 +18,9 @@ interface Props {
 }
 
 export function BookingConfirmed({ booking }: Props) {
+  const { total: amountPaid } = calculateGST(
+    booking.quotedAmount ?? booking.baseAmount,
+  );
   const whatsapp = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? "";
   const supportEmail =
     process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "info@rapidluxe.com";
@@ -74,9 +77,7 @@ export function BookingConfirmed({ booking }: Props) {
             />
             <Row
               label="Amount Paid"
-              value={formatPrice(
-                (booking.quotedAmount ?? booking.totalAmount) * 1.05,
-              )}
+              value={formatPrice(amountPaid)}
               highlight
             />
           </Section>
@@ -84,14 +85,13 @@ export function BookingConfirmed({ booking }: Props) {
           <Section style={nextStepsCard}>
             <Text style={sectionTitle}>What happens next</Text>
             <Text style={stepText}>
-              1. Our team will send you a detailed itinerary within 48 hours.
+              1. Our team will send you a detailed itinerary.
             </Text>
             <Text style={stepText}>
               2. You&apos;ll receive visa & documentation guidance if required.
             </Text>
             <Text style={stepText}>
-              3. We&apos;ll be in touch 7 days before departure with final
-              details.
+              3. We&apos;ll be in touch ahead of departure with final details.
             </Text>
           </Section>
 

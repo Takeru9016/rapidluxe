@@ -11,7 +11,7 @@ import {
   Text,
 } from "@react-email/components";
 
-import { formatPrice } from "@/lib/utils";
+import { calculateGST, formatPrice } from "@/lib/utils";
 import type { BookingEmailPayload } from "@/types/email";
 
 interface Props {
@@ -20,7 +20,8 @@ interface Props {
 }
 
 export function PaymentLinkSent({ booking, paymentUrl }: Props) {
-  const totalDue = (booking.quotedAmount ?? booking.totalAmount) * 1.05;
+  const quoteAmount = booking.quotedAmount ?? booking.baseAmount;
+  const { gst, total: totalDue } = calculateGST(quoteAmount);
   const whatsapp = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? "";
   const supportEmail =
     process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "info@rapidluxe.com";
@@ -70,15 +71,9 @@ export function PaymentLinkSent({ booking, paymentUrl }: Props) {
 
           <Section style={amountCard}>
             <Text style={amountLabel}>Quoted Amount</Text>
-            <Text style={amountValue}>
-              {formatPrice(booking.quotedAmount ?? booking.totalAmount)}
-            </Text>
+            <Text style={amountValue}>{formatPrice(quoteAmount)}</Text>
             <Text style={amountLabel}>GST (5%)</Text>
-            <Text style={amountSecondary}>
-              {formatPrice(
-                (booking.quotedAmount ?? booking.totalAmount) * 0.05,
-              )}
-            </Text>
+            <Text style={amountSecondary}>{formatPrice(gst)}</Text>
             <Text style={amountLabel}>Total Due</Text>
             <Text style={totalAmount}>{formatPrice(totalDue)}</Text>
           </Section>

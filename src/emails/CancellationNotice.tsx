@@ -52,9 +52,9 @@ export function CancellationNotice({ booking }: Props) {
           <Section style={policyCard}>
             <Text style={policyTitle}>Refund Policy</Text>
             <Text style={policyText}>
-              If payment was made, our team will process your refund within 7–10
-              business days to the original payment method. Please contact us if
-              you haven&apos;t received your refund after this period.
+              If payment was made, our team will process your refund to the
+              original payment method. Please contact us if you have any
+              questions about your refund.
             </Text>
           </Section>
 

@@ -1,5 +1,7 @@
 import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 
+import { calculateGST } from "@/lib/utils";
+
 const styles = StyleSheet.create({
   page: {
     fontFamily: "Helvetica",
@@ -253,6 +255,7 @@ function formatDate(value: Date | string): string {
 export interface InvoiceBooking {
   bookingRef: string | null;
   quotedAmount: number | null;
+  baseAmount: number;
   discountAmount: number;
   couponCode: string | null;
   razorpayPaymentId: string | null;
@@ -284,33 +287,49 @@ interface Props {
 export function InvoiceDocument({ booking }: Props) {
   const { package: pkg } = booking;
 
+  // ── Authoritative amount ────────────────────────────────────────────────────
+  // The invoice must reflect the persisted transaction, not a reconstruction
+  // from the Package's current (mutable) price fields. Once a quote exists it
+  // is the amount actually charged via Razorpay; the enquiry-time baseAmount
+  // is used only when no quote was ever issued. This mirrors Booking Detail's
+  // amount source exactly, so the two views can never disagree.
+  const isQuoted = booking.quotedAmount != null;
+  const amount = booking.quotedAmount ?? booking.baseAmount;
+  const { gst, total } = calculateGST(amount);
+  const subtotal = amount;
+
   // ── Line-item amounts ───────────────────────────────────────────────────────
+  // The per-traveler-type breakdown below is only an accurate decomposition
+  // of `amount` when no quote overrides it — a quotedAmount is a single
+  // admin-set figure with no per-traveler-type structure, so it is shown as
+  // one line rather than fabricating a breakdown that may not sum to it.
   const pricePerAdult = pkg.pricePerPerson;
   const adultTotal = pricePerAdult * booking.adults;
 
   const showChildRow =
-    booking.children > 0 && pkg.childPrice != null && pkg.childPrice > 0;
+    !isQuoted &&
+    booking.children > 0 &&
+    pkg.childPrice != null &&
+    pkg.childPrice > 0;
   const childTotal = showChildRow
     ? (pkg.childPrice ?? 0) * booking.children
     : 0;
 
   const showInfantRow =
-    booking.infants > 0 && pkg.infantPrice != null && pkg.infantPrice > 0;
+    !isQuoted &&
+    booking.infants > 0 &&
+    pkg.infantPrice != null &&
+    pkg.infantPrice > 0;
   const infantTotal = showInfantRow
     ? (pkg.infantPrice ?? 0) * booking.infants
     : 0;
 
-  const showToursRow = pkg.toursPrice != null;
+  const showToursRow = !isQuoted && pkg.toursPrice != null;
   const toursPersons = booking.adults + booking.children;
   const toursTotal = showToursRow ? (pkg.toursPrice ?? 0) * toursPersons : 0;
 
-  const showDiscount = booking.discountAmount > 0;
+  const showDiscount = !isQuoted && booking.discountAmount > 0;
   const discount = booking.discountAmount;
-
-  const subtotal =
-    adultTotal + childTotal + infantTotal + toursTotal - discount;
-  const gst = subtotal * 0.05;
-  const total = subtotal + gst;
 
   const totalTravellers = booking.adults + booking.children + booking.infants;
   const destination = pkg.destination;
@@ -455,21 +474,37 @@ export function InvoiceDocument({ booking }: Props) {
               </Text>
             </View>
 
-            {/* Row 1 — Adults (always present) */}
-            <View style={styles.tableRow}>
-              <Text style={[styles.tableCell, styles.colDesc]}>
-                Package — {pkg.title} (Adults)
-              </Text>
-              <Text style={[styles.tableCell, styles.colRate]}>
-                {formatINR(pricePerAdult)}
-              </Text>
-              <Text style={[styles.tableCell, styles.colQty]}>
-                {booking.adults} adult{booking.adults !== 1 ? "s" : ""}
-              </Text>
-              <Text style={[styles.tableCell, styles.colAmount]}>
-                {formatINR(adultTotal)}
-              </Text>
-            </View>
+            {/* Row 1 — quoted lump sum, or the adults line item when no
+                quote exists to override the package-derived breakdown */}
+            {isQuoted ? (
+              <View style={styles.tableRow}>
+                <Text style={[styles.tableCell, styles.colDesc]}>
+                  Package — {pkg.title} (Quoted Price)
+                </Text>
+                <Text style={[styles.tableCell, styles.colRate]}>—</Text>
+                <Text style={[styles.tableCell, styles.colQty]}>
+                  {totalTravellers} traveller{totalTravellers !== 1 ? "s" : ""}
+                </Text>
+                <Text style={[styles.tableCell, styles.colAmount]}>
+                  {formatINR(subtotal)}
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.tableRow}>
+                <Text style={[styles.tableCell, styles.colDesc]}>
+                  Package — {pkg.title} (Adults)
+                </Text>
+                <Text style={[styles.tableCell, styles.colRate]}>
+                  {formatINR(pricePerAdult)}
+                </Text>
+                <Text style={[styles.tableCell, styles.colQty]}>
+                  {booking.adults} adult{booking.adults !== 1 ? "s" : ""}
+                </Text>
+                <Text style={[styles.tableCell, styles.colAmount]}>
+                  {formatINR(adultTotal)}
+                </Text>
+              </View>
+            )}
 
             {/* Row 2 — Children */}
             {showChildRow && (
@@ -572,7 +607,7 @@ export function InvoiceDocument({ booking }: Props) {
             <View style={styles.row}>
               <Text style={styles.label}>Amount Paid</Text>
               <Text style={[styles.value, { fontFamily: "Helvetica-Bold" }]}>
-                {formatINR(booking.quotedAmount ?? total)}
+                {formatINR(total)}
               </Text>
             </View>
             <View style={styles.row}>
