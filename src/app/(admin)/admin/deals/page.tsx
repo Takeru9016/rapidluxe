@@ -137,6 +137,7 @@ function buildColumns(
       header: "Status",
       cell: ({ row }) => (
         <button
+          type="button"
           onClick={() => onToggle(row.original.id)}
           className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
             row.original.isActive
@@ -154,6 +155,7 @@ function buildColumns(
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={() => onEdit(row.original)}
             className="p-1.5 rounded-md text-(--color-text-secondary) hover:text-(--color-gold) transition-colors"
             aria-label="Edit deal"
@@ -161,6 +163,7 @@ function buildColumns(
             <Pencil size={14} />
           </button>
           <button
+            type="button"
             onClick={() => {
               if (window.confirm("Delete this deal? This cannot be undone.")) {
                 onDelete(row.original.id);
@@ -324,6 +327,7 @@ export default function AdminDealsPage() {
           Deals
         </h1>
         <button
+          type="button"
           onClick={() => (showForm ? resetForm() : setShowForm(true))}
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-(--color-coral) text-white text-sm font-['DM_Sans'] font-medium hover:bg-(--color-coral)/90 transition-colors"
         >
@@ -352,10 +356,14 @@ export default function AdminDealsPage() {
           >
             {/* Package */}
             <div className="flex flex-col gap-1.5 md:col-span-2">
-              <label className="text-xs font-['DM_Sans'] text-(--color-text-secondary)">
+              <label
+                htmlFor="deal-package"
+                className="text-xs font-['DM_Sans'] text-(--color-text-secondary)"
+              >
                 Package
               </label>
               <select
+                id="deal-package"
                 value={form.packageId}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, packageId: e.target.value }))
@@ -375,10 +383,14 @@ export default function AdminDealsPage() {
 
             {/* Type */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-['DM_Sans'] text-(--color-text-secondary)">
+              <label
+                htmlFor="deal-type"
+                className="text-xs font-['DM_Sans'] text-(--color-text-secondary)"
+              >
                 Deal Type
               </label>
               <select
+                id="deal-type"
                 value={form.type}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, type: e.target.value as DealType }))
@@ -395,10 +407,14 @@ export default function AdminDealsPage() {
 
             {/* Discount % */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-['DM_Sans'] text-(--color-text-secondary)">
+              <label
+                htmlFor="deal-discount-pct"
+                className="text-xs font-['DM_Sans'] text-(--color-text-secondary)"
+              >
                 Discount %
               </label>
               <input
+                id="deal-discount-pct"
                 type="number"
                 min={1}
                 max={100}
@@ -428,10 +444,14 @@ export default function AdminDealsPage() {
 
             {/* Expiry */}
             <div className="flex flex-col gap-1.5 md:col-span-2">
-              <label className="text-xs font-['DM_Sans'] text-(--color-text-secondary)">
+              <label
+                htmlFor="deal-expires-at"
+                className="text-xs font-['DM_Sans'] text-(--color-text-secondary)"
+              >
                 Expires At
               </label>
               <input
+                id="deal-expires-at"
                 type="datetime-local"
                 value={form.expiresAt}
                 onChange={(e) =>

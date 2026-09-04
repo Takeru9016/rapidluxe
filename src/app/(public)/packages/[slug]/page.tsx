@@ -37,9 +37,17 @@ export async function generateMetadata({
   const description = pkg.metaDescription ?? pkg.description.slice(0, 155);
   const image = pkg.images[0];
 
+  // Canonical always points at the bare package URL — the ?deal= query
+  // param only changes displayed price/banner, not the underlying content,
+  // so it must not be treated as a separate indexable page.
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://rapidluxe.com";
+
   return {
     title,
     description,
+    alternates: {
+      canonical: `${appUrl}/packages/${slug}`,
+    },
     openGraph: {
       title,
       description,

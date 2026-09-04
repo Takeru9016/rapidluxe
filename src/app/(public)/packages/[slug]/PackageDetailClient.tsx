@@ -836,7 +836,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
             variant="coral"
             className="font-sans font-medium text-sm h-10 px-4"
           >
-            <Link href={`/book/${pkg.slug}`}>Request This Journey</Link>
+            <Link href={bookingHref}>Request This Journey</Link>
           </Button>
         </div>
       </div>

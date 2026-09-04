@@ -129,7 +129,7 @@ function StepIndicator({ current }: { current: 1 | 2 | 3 | 4 }) {
                   <span
                     className={`text-xs font-['DM_Sans'] ${
                       active || done
-                        ? "text-white"
+                        ? "text-(--color-white)"
                         : "text-(--color-text-secondary)"
                     }`}
                   >
@@ -194,7 +194,7 @@ function BookingSidebar({ pkg }: { pkg: BookingPackage }) {
       </div>
 
       <div>
-        <h3 className="font-['Cormorant_Garamond'] text-xl text-white leading-tight">
+        <h3 className="font-['Cormorant_Garamond'] text-xl text-(--color-white) leading-tight">
           {pkg.title}
         </h3>
         <p className="font-['DM_Sans'] text-sm text-(--color-text-secondary) mt-1">
@@ -298,7 +298,7 @@ function BookingSidebar({ pkg }: { pkg: BookingPackage }) {
         )}
         <Separator className="bg-(--color-navy-border) my-1" />
         <div className="flex justify-between items-center">
-          <span className="font-['DM_Sans'] font-semibold text-white text-sm">
+          <span className="font-['DM_Sans'] font-semibold text-(--color-white) text-sm">
             Total
           </span>
           <span className="font-['JetBrains_Mono'] text-xl text-(--color-gold)">
@@ -435,7 +435,7 @@ function Step1({ pkg }: { pkg: BookingPackage }) {
     <div className="space-y-4">
       {/* Card 1 — Who's traveling */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
-        <h2 className="font-['DM_Sans'] font-semibold text-white text-base mb-5">
+        <h2 className="font-['DM_Sans'] font-semibold text-(--color-white) text-base mb-5">
           Who&apos;s traveling?
         </h2>
         <div className="flex flex-wrap gap-8 md:gap-12">
@@ -444,7 +444,7 @@ function Step1({ pkg }: { pkg: BookingPackage }) {
             const atMin = count <= min;
             return (
               <div key={key} className="flex flex-col gap-1">
-                <span className="font-['DM_Sans'] font-medium text-white text-sm">
+                <span className="font-['DM_Sans'] font-medium text-(--color-white) text-sm">
                   {label}
                 </span>
                 <div className="flex items-center gap-4">
@@ -452,6 +452,7 @@ function Step1({ pkg }: { pkg: BookingPackage }) {
                     type="button"
                     onClick={() => handleTravelerChange(key, -1)}
                     disabled={atMin}
+                    aria-label={`Decrease ${label.toLowerCase()}`}
                     className={`w-9 h-9 rounded-full border border-(--color-navy-border) flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-(--color-gold)/50 focus-visible:border-(--color-gold) ${
                       atMin
                         ? "opacity-40 cursor-not-allowed text-(--color-white-muted)"
@@ -460,12 +461,13 @@ function Step1({ pkg }: { pkg: BookingPackage }) {
                   >
                     <Minus size={16} />
                   </button>
-                  <span className="font-['DM_Sans'] font-medium text-white text-xl min-w-8 text-center">
+                  <span className="font-['DM_Sans'] font-medium text-(--color-white) text-xl min-w-8 text-center">
                     {count}
                   </span>
                   <button
                     type="button"
                     onClick={() => handleTravelerChange(key, 1)}
+                    aria-label={`Increase ${label.toLowerCase()}`}
                     className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-(--color-gold)/50 focus-visible:border-(--color-gold) ${
                       count > 0
                         ? "bg-(--color-gold) text-(--color-navy) hover:opacity-90"
@@ -486,7 +488,7 @@ function Step1({ pkg }: { pkg: BookingPackage }) {
 
       {/* Card 2 — Occasion */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
-        <h2 className="font-['DM_Sans'] font-semibold text-white text-base mb-1">
+        <h2 className="font-['DM_Sans'] font-semibold text-(--color-white) text-base mb-1">
           What&apos;s the occasion?
         </h2>
         <div className="flex flex-wrap gap-3 mt-3">
@@ -501,7 +503,7 @@ function Step1({ pkg }: { pkg: BookingPackage }) {
                 className={`flex items-center gap-2 px-3 py-2 rounded-full border text-sm font-['DM_Sans'] transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-(--color-gold)/50 ${
                   selected
                     ? "border-(--color-gold) text-(--color-gold) bg-(--color-gold)/10"
-                    : "border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/50 hover:text-white"
+                    : "border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/50 hover:text-(--color-white)"
                 }`}
               >
                 <OccIcon size={14} />
@@ -515,7 +517,7 @@ function Step1({ pkg }: { pkg: BookingPackage }) {
 
       {/* Card 3 — Date */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
-        <h2 className="font-['DM_Sans'] font-semibold text-white text-base mb-1">
+        <h2 className="font-['DM_Sans'] font-semibold text-(--color-white) text-base mb-1">
           When do you want to travel?
         </h2>
         <div className="flex gap-2 mt-3">
@@ -565,7 +567,7 @@ function Step1({ pkg }: { pkg: BookingPackage }) {
         {dateMode === "flexible" && (
           <div className="mt-4 space-y-6">
             <div>
-              <p className="font-['DM_Sans'] font-medium text-white text-sm mt-4 mb-3">
+              <p className="font-['DM_Sans'] font-medium text-(--color-white) text-sm mt-4 mb-3">
                 How long do you want to stay?
               </p>
               <div className="flex gap-3">
@@ -586,7 +588,7 @@ function Step1({ pkg }: { pkg: BookingPackage }) {
               </div>
             </div>
             <div>
-              <p className="font-['DM_Sans'] font-medium text-white text-sm mt-6 mb-3">
+              <p className="font-['DM_Sans'] font-medium text-(--color-white) text-sm mt-6 mb-3">
                 When do you want to go?
               </p>
               <div className="grid grid-cols-4 gap-2">
@@ -631,7 +633,7 @@ function Step1({ pkg }: { pkg: BookingPackage }) {
           value={couponInput}
           onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
           placeholder="Promo code"
-          className="flex-1 bg-(--color-navy-surface) border border-(--color-navy-border) rounded-lg px-3 py-2.5 text-sm font-['JetBrains_Mono'] text-white placeholder:text-(--color-text-secondary) focus:outline-none focus:border-(--color-gold) transition-colors"
+          className="flex-1 bg-(--color-navy-surface) border border-(--color-navy-border) rounded-lg px-3 py-2.5 text-sm font-['JetBrains_Mono'] text-(--color-white) placeholder:text-(--color-text-secondary) focus:outline-none focus:border-(--color-gold) transition-colors"
         />
         <Button
           type="button"
@@ -782,7 +784,7 @@ function Step2() {
   }
 
   const inputClass =
-    "w-full bg-(--color-navy-surface) border border-(--color-navy-border) rounded-lg px-3 py-2.5 text-sm font-['DM_Sans'] text-white placeholder:text-(--color-text-secondary) focus:outline-none focus:border-(--color-gold) transition-colors";
+    "w-full bg-(--color-navy-surface) border border-(--color-navy-border) rounded-lg px-3 py-2.5 text-sm font-['DM_Sans'] text-(--color-white) placeholder:text-(--color-text-secondary) focus:outline-none focus:border-(--color-gold) transition-colors";
   const labelClass =
     "block text-xs font-['DM_Sans'] font-medium uppercase tracking-wide text-(--color-white-muted) mb-1.5";
 
@@ -793,7 +795,7 @@ function Step2() {
         <div className="relative bg-(--color-gold)/10 border border-(--color-gold)/30 rounded-xl p-4 mb-6 flex items-start gap-3">
           <UserCheck className="text-(--color-gold) w-5 h-5 mt-0.5 shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="font-['DM_Sans'] font-medium text-white">
+            <p className="font-['DM_Sans'] font-medium text-(--color-white)">
               Pre-fill with your saved details?
             </p>
             <p className="font-['DM_Sans'] text-sm text-(--color-white-muted) mt-0.5">
@@ -813,7 +815,7 @@ function Step2() {
               <button
                 type="button"
                 onClick={() => setAutofillDismissed(true)}
-                className="h-8 px-3 rounded-lg text-(--color-white-muted) text-sm font-['DM_Sans'] hover:text-white transition-colors"
+                className="h-8 px-3 rounded-lg text-(--color-white-muted) text-sm font-['DM_Sans'] hover:text-(--color-white) transition-colors"
               >
                 No thanks
               </button>
@@ -823,7 +825,7 @@ function Step2() {
             type="button"
             onClick={() => setAutofillDismissed(true)}
             aria-label="Dismiss"
-            className="absolute top-3 right-3 text-(--color-text-secondary) hover:text-white transition-colors"
+            className="absolute top-3 right-3 text-(--color-text-secondary) hover:text-(--color-white) transition-colors"
           >
             <X size={16} />
           </button>
@@ -832,7 +834,7 @@ function Step2() {
 
       {/* Lead traveler */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6 space-y-5">
-        <h2 className="font-['DM_Sans'] font-semibold text-white text-base">
+        <h2 className="font-['DM_Sans'] font-semibold text-(--color-white) text-base">
           Lead Traveler
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -962,7 +964,7 @@ function Step2() {
               key={idx}
               className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6 space-y-5"
             >
-              <h2 className="font-['DM_Sans'] font-semibold text-white text-base">
+              <h2 className="font-['DM_Sans'] font-semibold text-(--color-white) text-base">
                 Traveler {idx + 2}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1097,7 +1099,7 @@ function Step2() {
 
       {/* Dietary Requirements */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
-        <h2 className="font-['DM_Sans'] font-medium text-white text-sm mb-3">
+        <h2 className="font-['DM_Sans'] font-medium text-(--color-white) text-sm mb-3">
           Any dietary requirements?
         </h2>
         <div className="flex flex-wrap gap-3">
@@ -1111,7 +1113,7 @@ function Step2() {
                 className={`flex items-center gap-2 px-3 py-2 rounded-full border text-sm font-['DM_Sans'] transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-(--color-gold)/50 ${
                   selected
                     ? "border-(--color-gold) text-(--color-gold) bg-(--color-gold)/10"
-                    : "border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/50 hover:text-white"
+                    : "border-(--color-navy-border) text-(--color-white-muted) hover:border-(--color-gold)/50 hover:text-(--color-white)"
                 }`}
               >
                 {option}
@@ -1124,7 +1126,7 @@ function Step2() {
 
       {/* Special Requests */}
       <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
-        <h2 className="font-['DM_Sans'] font-medium text-white text-sm mb-3">
+        <h2 className="font-['DM_Sans'] font-medium text-(--color-white) text-sm mb-3">
           Anything else we should know?
         </h2>
         <textarea
@@ -1157,7 +1159,7 @@ function Step2() {
         <button
           type="button"
           onClick={() => setStep(1)}
-          className="px-6 py-3 rounded-xl border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm hover:border-(--color-gold)/40 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-(--color-gold)/50"
+          className="px-6 py-3 rounded-xl border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm hover:border-(--color-gold)/40 hover:text-(--color-white) transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-(--color-gold)/50"
         >
           ← Back
         </button>
@@ -1262,7 +1264,7 @@ function Step3({ pkg }: { pkg: BookingPackage }) {
           />
         </div>
         <div className="flex flex-col justify-center gap-1">
-          <p className="font-['Cormorant_Garamond'] text-xl text-white leading-tight">
+          <p className="font-['Cormorant_Garamond'] text-xl text-(--color-white) leading-tight">
             {pkg.title}
           </p>
           <p className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
@@ -1282,7 +1284,7 @@ function Step3({ pkg }: { pkg: BookingPackage }) {
           <span className="font-['DM_Sans'] text-(--color-text-secondary)">
             Adults ({adults} × {formatPrice(pkg.pricePerPerson)})
           </span>
-          <span className="font-['JetBrains_Mono'] text-white">
+          <span className="font-['JetBrains_Mono'] text-(--color-white)">
             {formatPrice(adultTotal)}
           </span>
         </div>
@@ -1291,7 +1293,7 @@ function Step3({ pkg }: { pkg: BookingPackage }) {
             <span className="font-['DM_Sans'] text-(--color-text-secondary)">
               Children ({children} × {formatPrice(pkg.childPrice ?? 0)})
             </span>
-            <span className="font-['JetBrains_Mono'] text-white">
+            <span className="font-['JetBrains_Mono'] text-(--color-white)">
               {formatPrice(childTotal)}
             </span>
           </div>
@@ -1301,7 +1303,7 @@ function Step3({ pkg }: { pkg: BookingPackage }) {
             <span className="font-['DM_Sans'] text-(--color-text-secondary)">
               Infants ({infants} × {formatPrice(pkg.infantPrice ?? 0)})
             </span>
-            <span className="font-['JetBrains_Mono'] text-white">
+            <span className="font-['JetBrains_Mono'] text-(--color-white)">
               {formatPrice(infantTotal)}
             </span>
           </div>
@@ -1311,7 +1313,7 @@ function Step3({ pkg }: { pkg: BookingPackage }) {
             <span className="font-['DM_Sans'] text-(--color-text-secondary)">
               Tours &amp; Transfers
             </span>
-            <span className="font-['JetBrains_Mono'] text-white">
+            <span className="font-['JetBrains_Mono'] text-(--color-white)">
               {formatPrice(toursTotal)}
             </span>
           </div>
@@ -1321,7 +1323,7 @@ function Step3({ pkg }: { pkg: BookingPackage }) {
           <span className="font-['DM_Sans'] text-(--color-text-secondary)">
             Subtotal
           </span>
-          <span className="font-['JetBrains_Mono'] text-white">
+          <span className="font-['JetBrains_Mono'] text-(--color-white)">
             {formatPrice(baseAmount)}
           </span>
         </div>
@@ -1355,7 +1357,7 @@ function Step3({ pkg }: { pkg: BookingPackage }) {
         )}
         <Separator className="bg-(--color-navy-border) my-2" />
         <div className="flex justify-between items-center">
-          <span className="font-['DM_Sans'] font-semibold text-white">
+          <span className="font-['DM_Sans'] font-semibold text-(--color-white)">
             Estimated Total
           </span>
           <span className="font-['JetBrains_Mono'] text-2xl font-bold text-(--color-gold)">
@@ -1379,7 +1381,7 @@ function Step3({ pkg }: { pkg: BookingPackage }) {
       <button
         type="button"
         onClick={() => setStep(2)}
-        className="px-6 py-3 rounded-xl border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm hover:border-(--color-gold)/40 hover:text-white transition-colors mt-2 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-(--color-gold)/50"
+        className="px-6 py-3 rounded-xl border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm hover:border-(--color-gold)/40 hover:text-(--color-white) transition-colors mt-2 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-(--color-gold)/50"
       >
         ← Back
       </button>
@@ -1414,7 +1416,7 @@ function Step4() {
         <CheckCircle2 size={64} className="text-(--color-teal) mb-6" />
       </div>
 
-      <h1 className="font-['Cormorant_Garamond'] text-4xl text-white mt-6">
+      <h1 className="font-['Cormorant_Garamond'] text-4xl text-(--color-white) mt-6">
         Request Received!
       </h1>
       <p className="font-['JetBrains_Mono'] text-2xl text-(--color-gold) mt-2">
@@ -1454,7 +1456,7 @@ function Step4() {
         </Button>
         <Link
           href="/packages"
-          className="px-6 py-3 rounded-xl border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm hover:border-(--color-gold)/40 hover:text-white transition-colors"
+          className="px-6 py-3 rounded-xl border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-sm hover:border-(--color-gold)/40 hover:text-(--color-white) transition-colors"
         >
           Browse More Packages
         </Link>
