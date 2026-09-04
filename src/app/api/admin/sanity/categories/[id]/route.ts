@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { sanityWriteClient } from "@/lib/sanity";
+import { countReferencingPosts, sanityWriteClient } from "@/lib/sanity";
 
 async function requireAdmin() {
   const { sessionClaims } = await auth();
@@ -17,6 +17,20 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { id } = await params;
+
+  // Checked immediately before the delete call, with no intervening
+  // user-driven delay, to keep the race window as small as practical —
+  // Sanity has no atomic "delete if unreferenced" transaction primitive.
+  const referencingPosts = await countReferencingPosts(id);
+  if (referencingPosts > 0) {
+    return NextResponse.json(
+      {
+        error: `Cannot delete: referenced by ${referencingPosts} post${referencingPosts === 1 ? "" : "s"}.`,
+      },
+      { status: 409 },
+    );
+  }
+
   await sanityWriteClient.delete(id);
   return NextResponse.json({ data: { id } });
 }

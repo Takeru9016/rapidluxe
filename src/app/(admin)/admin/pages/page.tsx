@@ -1,10 +1,26 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Edit, FileText } from "lucide-react";
+import { Edit, ExternalLink, FileText } from "lucide-react";
 import Link from "next/link";
 
 import { formatDate } from "@/lib/utils";
+
+// FAQ and Site Content are deliberately not given dedicated editors in this
+// milestone — Sanity Studio remains their editing surface. This is only a
+// navigation aid pointing there, not a duplicate editor.
+const STUDIO_ONLY_CONTENT = [
+  {
+    typeName: "faqPage",
+    label: "FAQ",
+    description: "Categories and questions shown on /faqs",
+  },
+  {
+    typeName: "siteContent",
+    label: "Site Content",
+    description: "Homepage How It Works, Why RapidLuxe & Trust Bar",
+  },
+];
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -123,6 +139,47 @@ export default function AdminPagesPage() {
           })}
         </div>
       )}
+
+      {/* Studio-only content — navigation link, not a duplicate editor */}
+      <div className="mt-10">
+        <h2 className="font-['DM_Sans'] text-xs font-semibold uppercase tracking-widest text-(--color-text-secondary) mb-3">
+          Managed in Sanity Studio
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {STUDIO_ONLY_CONTENT.map(({ typeName, label, description }) => (
+            <a
+              key={typeName}
+              href={`/studio/structure/${typeName}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center justify-between p-5 bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) hover:border-(--color-gold)/30 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
+                  <FileText size={18} className="text-(--color-white-muted)" />
+                </div>
+                <div>
+                  <p className="font-['DM_Sans'] text-sm font-medium text-white">
+                    {label}
+                  </p>
+                  <p className="font-['DM_Sans'] text-xs text-(--color-text-secondary) mt-0.5">
+                    {description}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="font-['DM_Sans'] text-xs text-(--color-text-secondary) hidden sm:block">
+                  Manage in Studio
+                </span>
+                <ExternalLink
+                  size={14}
+                  className="text-(--color-white-muted) group-hover:text-(--color-gold) transition-colors"
+                />
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

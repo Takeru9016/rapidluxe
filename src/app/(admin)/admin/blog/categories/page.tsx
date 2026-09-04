@@ -83,10 +83,14 @@ function NewCategoryForm({ onClose }: { onClose: () => void }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
+            <label
+              htmlFor="category-title"
+              className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5"
+            >
               Title *
             </label>
             <input
+              id="category-title"
               value={title}
               onChange={(e) => handleTitleChange(e.target.value)}
               placeholder="e.g. Destination Guide"
@@ -95,10 +99,14 @@ function NewCategoryForm({ onClose }: { onClose: () => void }) {
             />
           </div>
           <div>
-            <label className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
+            <label
+              htmlFor="category-slug"
+              className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5"
+            >
               Slug
             </label>
             <input
+              id="category-slug"
               value={slug}
               onChange={(e) => {
                 setSlugManual(true);
@@ -109,10 +117,14 @@ function NewCategoryForm({ onClose }: { onClose: () => void }) {
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
+            <label
+              htmlFor="category-description"
+              className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5"
+            >
               Description
             </label>
             <textarea
+              id="category-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
@@ -166,11 +178,18 @@ export default function AdminBlogCategoriesPage() {
       const res = await fetch(`/api/admin/sanity/categories/${id}`, {
         method: "DELETE",
       });
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) {
+        const err = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        throw new Error(err?.error ?? "Failed to delete category");
+      }
       toast.success("Category deleted");
       await qc.invalidateQueries({ queryKey: ["admin-categories"] });
-    } catch {
-      toast.error("Failed to delete category");
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : "Failed to delete category",
+      );
     }
   };
 

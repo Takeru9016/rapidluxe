@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { sanityWriteClient } from "@/lib/sanity";
+import { sanityWriteClient, uploadSanityImageFromUrl } from "@/lib/sanity";
 import type { AdminPostPayload } from "@/types/blog";
 
 async function requireAdmin() {
@@ -10,24 +10,13 @@ async function requireAdmin() {
   return role === "admin";
 }
 
-async function uploadImageFromUrl(url: string) {
-  const res = await fetch(url);
-  if (!res.ok) return undefined;
-  const buffer = Buffer.from(await res.arrayBuffer());
-  const asset = await sanityWriteClient.assets.upload("image", buffer);
-  return {
-    _type: "image" as const,
-    asset: { _type: "reference" as const, _ref: asset._id },
-  };
-}
-
 async function uploadBodyImages(body: AdminPostPayload["body"]) {
   if (!body) return body;
   return Promise.all(
     body.map(async (block) => {
       const b = block as { _type?: string; url?: string };
       if (b._type === "image" && b.url) {
-        const image = await uploadImageFromUrl(b.url);
+        const image = await uploadSanityImageFromUrl(b.url);
         if (image) {
           const next: Record<string, unknown> = { ...b, ...image };
           delete next.url;
@@ -60,7 +49,7 @@ async function buildDoc(data: AdminPostPayload) {
     };
   }
   if (data.mainImageUrl) {
-    const image = await uploadImageFromUrl(data.mainImageUrl);
+    const image = await uploadSanityImageFromUrl(data.mainImageUrl);
     if (image) doc.mainImage = image;
   }
 

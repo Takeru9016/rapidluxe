@@ -1,7 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
-import { type NextRequest, NextResponse } from "next/server";
 import type { PortableTextBlock } from "@portabletext/react";
+import { type NextRequest, NextResponse } from "next/server";
 
+import { isCanonicalStaticPageSlug } from "@/lib/queries/pages";
 import { sanityWriteClient } from "@/lib/sanity";
 
 async function requireAdmin() {
@@ -58,22 +59,40 @@ export async function PATCH(
     body?: PortableTextBlock[];
   };
 
+  const fields = {
+    ...(body.title !== undefined ? { title: body.title } : {}),
+    ...(body.subtitle !== undefined ? { subtitle: body.subtitle } : {}),
+    ...(body.body !== undefined ? { body: body.body } : {}),
+    lastUpdated: new Date().toISOString(),
+  };
+
   const page = await sanityWriteClient.fetch<{ _id: string } | null>(
     `*[_type == "staticPage" && slug.current == $slug][0] { _id }`,
     { slug },
   );
 
-  if (!page) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (page) {
+    const updated = await sanityWriteClient
+      .patch(page._id)
+      .set(fields)
+      .commit();
+    return NextResponse.json({ data: updated });
+  }
 
-  const updated = await sanityWriteClient
-    .patch(page._id)
-    .set({
-      ...(body.title !== undefined ? { title: body.title } : {}),
-      ...(body.subtitle !== undefined ? { subtitle: body.subtitle } : {}),
-      ...(body.body !== undefined ? { body: body.body } : {}),
-      lastUpdated: new Date().toISOString(),
-    })
-    .commit();
+  // No document exists yet for this slug — only create one for a canonical
+  // static-page slug (i.e. one with an actual public route to render it).
+  // Any other slug would just be an orphaned document.
+  if (!isCanonicalStaticPageSlug(slug)) {
+    return NextResponse.json(
+      { error: `"${slug}" is not a recognized static page slug` },
+      { status: 400 },
+    );
+  }
 
-  return NextResponse.json({ data: updated });
+  const created = await sanityWriteClient.create({
+    _type: "staticPage",
+    slug: { _type: "slug", current: slug },
+    ...fields,
+  });
+  return NextResponse.json({ data: created }, { status: 201 });
 }

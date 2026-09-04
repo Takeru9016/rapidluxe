@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import { PortableTextBody } from "@/components/shared/PortableTextBody";
 import { STATIC_PAGE_QUERY } from "@/lib/queries/pages";
 import { sanityReadClient } from "@/lib/sanity";
@@ -9,16 +10,26 @@ export const revalidate = 3600;
 
 const SLUG = "terms";
 
-export async function generateMetadata(): Promise<Metadata> {
-  let page: StaticPageData | null = null;
+interface TermsFetchResult {
+  page: StaticPageData | null;
+  failed: boolean;
+}
+
+const getTermsData = cache(async (): Promise<TermsFetchResult> => {
   try {
-    page = await sanityReadClient.fetch<StaticPageData | null>(
+    const page = await sanityReadClient.fetch<StaticPageData | null>(
       STATIC_PAGE_QUERY,
       { slug: SLUG },
     );
+    return { page, failed: false };
   } catch (err) {
     console.error("terms page sanity fetch error:", err);
+    return { page: null, failed: true };
   }
+});
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { page } = await getTermsData();
 
   return {
     title: page?.seo?.metaTitle ?? page?.title ?? "Terms & Conditions",
@@ -27,17 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TermsPage() {
-  let page: StaticPageData | null = null;
-  let fetchFailed = false;
-  try {
-    page = await sanityReadClient.fetch<StaticPageData | null>(
-      STATIC_PAGE_QUERY,
-      { slug: SLUG },
-    );
-  } catch (err) {
-    console.error("terms page sanity fetch error:", err);
-    fetchFailed = true;
-  }
+  const { page, failed: fetchFailed } = await getTermsData();
 
   return (
     <section className="bg-(--color-navy) min-h-screen">

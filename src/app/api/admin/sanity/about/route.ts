@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
-import { type NextRequest, NextResponse } from "next/server";
 import type { PortableTextBlock } from "@portabletext/react";
+import { type NextRequest, NextResponse } from "next/server";
 
 import { sanityWriteClient } from "@/lib/sanity";
 

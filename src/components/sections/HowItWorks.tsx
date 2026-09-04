@@ -11,33 +11,10 @@ gsap.registerPlugin(ScrollTrigger);
 
 const STEP_ICONS: LucideIcon[] = [Search, MessageSquare, Plane];
 
-const FALLBACK_STEPS = [
-  {
-    stepNumber: "01",
-    title: "Enquire",
-    description:
-      "Browse curated packages across 50+ destinations. Submit a booking request with your travel dates — no payment required.",
-  },
-  {
-    stepNumber: "02",
-    title: "Get Your Quote",
-    description:
-      "Our travel experts review your request and contact you within 2 hours via WhatsApp to confirm availability and provide a tailored quote.",
-  },
-  {
-    stepNumber: "03",
-    title: "Travel",
-    description:
-      "Once happy with the quote, complete payment securely via the link we send. Then sit back and look forward to your trip.",
-  },
-];
-
 export function HowItWorks() {
   const stepsRef = useRef<HTMLDivElement>(null);
-  const { data } = useSiteContent();
-  const steps = data?.howItWorksSteps?.length
-    ? data.howItWorksSteps
-    : FALLBACK_STEPS;
+  const { data, isLoading } = useSiteContent();
+  const steps = data?.howItWorksSteps ?? [];
 
   useEffect(() => {
     const prefersReduced = window.matchMedia(
@@ -65,6 +42,8 @@ export function HowItWorks() {
       },
     );
   }, []);
+
+  if (!isLoading && steps.length === 0) return null;
 
   return (
     <div className="max-w-4xl mx-auto px-4 md:px-8">

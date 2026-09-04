@@ -72,10 +72,14 @@ function NewAuthorForm({ onClose }: { onClose: () => void }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
+            <label
+              htmlFor="author-name"
+              className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5"
+            >
               Name *
             </label>
             <input
+              id="author-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Siddhesh Sood"
@@ -84,10 +88,14 @@ function NewAuthorForm({ onClose }: { onClose: () => void }) {
             />
           </div>
           <div>
-            <label className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
+            <label
+              htmlFor="author-role"
+              className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5"
+            >
               Role
             </label>
             <input
+              id="author-role"
               value={role}
               onChange={(e) => setRole(e.target.value)}
               placeholder="e.g. Founder & CEO"
@@ -95,10 +103,14 @@ function NewAuthorForm({ onClose }: { onClose: () => void }) {
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
+            <label
+              htmlFor="author-bio"
+              className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5"
+            >
               Bio
             </label>
             <textarea
+              id="author-bio"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               rows={3}
@@ -107,9 +119,9 @@ function NewAuthorForm({ onClose }: { onClose: () => void }) {
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
+            <span className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
               Photo
-            </label>
+            </span>
             <CloudinaryUpload
               folder="rapidluxe/authors"
               currentUrl={imageUrl}
@@ -164,11 +176,16 @@ export default function AdminBlogAuthorsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
       });
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) {
+        const err = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        throw new Error(err?.error ?? "Failed to delete author");
+      }
       toast.success("Author deleted");
       await qc.invalidateQueries({ queryKey: ["admin-authors"] });
-    } catch {
-      toast.error("Failed to delete author");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to delete author");
     }
   };
 

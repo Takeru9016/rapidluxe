@@ -150,9 +150,9 @@ export default function AdminTestimonialsPage() {
           className="bg-(--color-navy-surface) border border-(--color-navy-border) rounded-xl p-6 mb-6 grid grid-cols-1 md:grid-cols-2 gap-4"
         >
           <div className="md:col-span-2">
-            <label className="text-xs font-['DM_Sans'] text-(--color-text-secondary) block mb-1.5">
+            <span className="text-xs font-['DM_Sans'] text-(--color-text-secondary) block mb-1.5">
               Client Photo
-            </label>
+            </span>
             <CloudinaryUpload
               folder="rapidluxe/testimonials"
               currentUrl={watch("imageUrl")}
@@ -161,50 +161,70 @@ export default function AdminTestimonialsPage() {
             />
           </div>
           <div className="md:col-span-2">
-            <label className="text-xs font-['DM_Sans'] text-(--color-text-secondary) block mb-1.5">
+            <label
+              htmlFor="testimonial-clientName"
+              className="text-xs font-['DM_Sans'] text-(--color-text-secondary) block mb-1.5"
+            >
               Client Name *
             </label>
             <input
+              id="testimonial-clientName"
               {...register("clientName", { required: true })}
               placeholder="Priya & Rajan Sharma"
               className={INPUT_CLASS}
             />
           </div>
           <div>
-            <label className="text-xs font-['DM_Sans'] text-(--color-text-secondary) block mb-1.5">
+            <label
+              htmlFor="testimonial-clientTitle"
+              className="text-xs font-['DM_Sans'] text-(--color-text-secondary) block mb-1.5"
+            >
               Client Title
             </label>
             <input
+              id="testimonial-clientTitle"
               {...register("clientTitle")}
               placeholder="Couple from Mumbai"
               className={INPUT_CLASS}
             />
           </div>
           <div>
-            <label className="text-xs font-['DM_Sans'] text-(--color-text-secondary) block mb-1.5">
+            <label
+              htmlFor="testimonial-destination"
+              className="text-xs font-['DM_Sans'] text-(--color-text-secondary) block mb-1.5"
+            >
               Destination
             </label>
             <input
+              id="testimonial-destination"
               {...register("destination")}
               placeholder="Bali, 7 nights"
               className={INPUT_CLASS}
             />
           </div>
           <div>
-            <label className="text-xs font-['DM_Sans'] text-(--color-text-secondary) block mb-1.5">
+            <label
+              htmlFor="testimonial-tripDate"
+              className="text-xs font-['DM_Sans'] text-(--color-text-secondary) block mb-1.5"
+            >
               Trip Date
             </label>
             <input
+              id="testimonial-tripDate"
               {...register("tripDate")}
               placeholder="March 2026"
               className={INPUT_CLASS}
             />
           </div>
           <div>
-            <label className="text-xs font-['DM_Sans'] text-(--color-text-secondary) block mb-1.5">
+            <label
+              htmlFor="testimonial-rating"
+              className="text-xs font-['DM_Sans'] text-(--color-text-secondary) block mb-1.5"
+            >
               Rating (1–5)
             </label>
             <input
+              id="testimonial-rating"
               {...register("rating")}
               type="number"
               min={1}
@@ -213,10 +233,14 @@ export default function AdminTestimonialsPage() {
             />
           </div>
           <div className="md:col-span-2">
-            <label className="text-xs font-['DM_Sans'] text-(--color-text-secondary) block mb-1.5">
+            <label
+              htmlFor="testimonial-quote"
+              className="text-xs font-['DM_Sans'] text-(--color-text-secondary) block mb-1.5"
+            >
               Quote *
             </label>
             <textarea
+              id="testimonial-quote"
               {...register("quote", { required: true })}
               rows={3}
               placeholder="The trip was absolutely magical..."

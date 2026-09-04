@@ -88,10 +88,14 @@ function TeamMemberRow({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
+          <label
+            htmlFor={`team-name-${index}`}
+            className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5"
+          >
             Name
           </label>
           <input
+            id={`team-name-${index}`}
             value={member.name}
             onChange={(e) =>
               onChange(index, { ...member, name: e.target.value })
@@ -101,10 +105,14 @@ function TeamMemberRow({
           />
         </div>
         <div>
-          <label className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
+          <label
+            htmlFor={`team-role-${index}`}
+            className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5"
+          >
             Role
           </label>
           <input
+            id={`team-role-${index}`}
             value={member.role}
             onChange={(e) =>
               onChange(index, { ...member, role: e.target.value })
@@ -114,10 +122,14 @@ function TeamMemberRow({
           />
         </div>
         <div className="sm:col-span-2">
-          <label className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
+          <label
+            htmlFor={`team-bio-${index}`}
+            className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5"
+          >
             Bio
           </label>
           <textarea
+            id={`team-bio-${index}`}
             value={member.bio}
             onChange={(e) =>
               onChange(index, { ...member, bio: e.target.value })
@@ -128,9 +140,9 @@ function TeamMemberRow({
           />
         </div>
         <div className="sm:col-span-2">
-          <label className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
+          <span className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
             Photo
-          </label>
+          </span>
           {member.imageUrl && (
             <div className="relative w-16 h-16 rounded-full overflow-hidden mb-2">
               <Image
@@ -319,10 +331,14 @@ export default function AdminAboutPage() {
           <SectionCard title="Hero">
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
+                <label
+                  htmlFor="about-headline"
+                  className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5"
+                >
                   Headline
                 </label>
                 <input
+                  id="about-headline"
                   value={headline}
                   onChange={(e) => setHeadline(e.target.value)}
                   placeholder="Your Next Journey Awaits"
@@ -330,10 +346,14 @@ export default function AdminAboutPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
+                <label
+                  htmlFor="about-subheadline"
+                  className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5"
+                >
                   Subheadline
                 </label>
                 <input
+                  id="about-subheadline"
                   value={subheadline}
                   onChange={(e) => setSubheadline(e.target.value)}
                   placeholder="Bespoke luxury travel from India"
@@ -341,9 +361,9 @@ export default function AdminAboutPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
+                <span className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
                   Hero Image
-                </label>
+                </span>
                 <CloudinaryUpload
                   folder="rapidluxe/about"
                   currentUrl={heroImageUrl}
@@ -362,10 +382,14 @@ export default function AdminAboutPage() {
           <SectionCard title="Mission Statement">
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
+                <label
+                  htmlFor="about-mission-title"
+                  className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5"
+                >
                   Title
                 </label>
                 <input
+                  id="about-mission-title"
                   value={missionTitle}
                   onChange={(e) => setMissionTitle(e.target.value)}
                   placeholder="Our mission"
@@ -373,9 +397,9 @@ export default function AdminAboutPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
+                <span className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
                   Body
-                </label>
+                </span>
                 <RichTextEditor
                   key={missionKey}
                   value={missionBody}

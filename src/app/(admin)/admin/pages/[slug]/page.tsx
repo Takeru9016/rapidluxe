@@ -1,14 +1,15 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import type { PortableTextBlock } from "@portabletext/react";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ExternalLink } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { use, useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { PortableTextBlock } from "@portabletext/react";
 
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
+import { isCanonicalStaticPageSlug } from "@/lib/queries/pages";
 import { formatDate } from "@/lib/utils";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -60,12 +61,19 @@ export default function StaticPageEditorPage({
   const [editorKey, setEditorKey] = useState(0);
   const [saving, setSaving] = useState(false);
 
-  const { data, isLoading, isError } = useQuery<{ data: StaticPageData }>({
+  const isCanonicalSlug = isCanonicalStaticPageSlug(slug);
+
+  const { data, isLoading, isError } = useQuery<{
+    data: StaticPageData | null;
+  }>({
     queryKey: ["admin-static-page", slug],
     queryFn: async () => {
       const res = await fetch(`/api/admin/sanity/pages/${slug}`);
-      if (!res.ok) throw new Error("Not found");
-      return res.json() as Promise<{ data: StaticPageData }>;
+      // Not-yet-created is expected for a canonical slug — the form still
+      // renders, and Save creates it (see the PATCH upsert route).
+      if (res.status === 404) return { data: null };
+      if (!res.ok) throw new Error("Failed to load page");
+      return res.json() as Promise<{ data: StaticPageData | null }>;
     },
   });
 
@@ -79,11 +87,13 @@ export default function StaticPageEditorPage({
     setEditorKey((k) => k + 1);
   }, [page]);
 
-  if (isError) {
+  if (!isCanonicalSlug || isError) {
     return (
       <div className="px-4 md:px-8 py-6">
         <p className="font-['DM_Sans'] text-sm text-(--color-coral)">
-          Page not found. Make sure you've run the seed script.
+          {isCanonicalSlug
+            ? "Something went wrong loading this page."
+            : `"${slug}" isn't a recognized static page.`}
         </p>
         <Link
           href="/admin/pages"
@@ -135,7 +145,7 @@ export default function StaticPageEditorPage({
         </a>
       </div>
 
-      <div className="flex items-baseline gap-4 mb-8">
+      <div className="flex items-baseline gap-4 mb-2">
         <h1 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl text-white">
           {page?.title ?? slug}
         </h1>
@@ -145,6 +155,11 @@ export default function StaticPageEditorPage({
           </p>
         )}
       </div>
+      <p className="font-['DM_Sans'] text-xs text-(--color-gold) mb-8 h-4">
+        {!isLoading && !page
+          ? "Not created yet — saving below will create this page."
+          : ""}
+      </p>
 
       {isLoading ? (
         <p className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
@@ -155,20 +170,28 @@ export default function StaticPageEditorPage({
           <SectionCard title="Page Info">
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
+                <label
+                  htmlFor="static-page-title"
+                  className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5"
+                >
                   Title
                 </label>
                 <input
+                  id="static-page-title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className={inputCls}
                 />
               </div>
               <div>
-                <label className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5">
+                <label
+                  htmlFor="static-page-subtitle"
+                  className="block text-xs font-['DM_Sans'] text-(--color-text-secondary) mb-1.5"
+                >
                   Subtitle
                 </label>
                 <input
+                  id="static-page-subtitle"
                   value={subtitle}
                   onChange={(e) => setSubtitle(e.target.value)}
                   placeholder="Optional subtitle shown below the title"

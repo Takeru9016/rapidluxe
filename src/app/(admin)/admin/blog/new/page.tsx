@@ -77,21 +77,31 @@ function SectionCard({
 
 function Field({
   label,
+  htmlFor,
   hint,
   children,
   className,
 }: {
   label: string;
+  // Only pass this when `children` renders a single native input/select/
+  // textarea with a matching `id` — composite widgets (TagsInput,
+  // RichTextEditor, CloudinaryUpload) have no single control to associate,
+  // so those fields omit it and get a plain caption instead of a <label>.
+  htmlFor?: string;
   hint?: string;
   children: React.ReactNode;
   className?: string;
 }) {
+  const LabelTag = htmlFor ? "label" : "span";
   return (
     <div className={className}>
       <div className="flex items-baseline justify-between mb-1.5">
-        <label className="font-['DM_Sans'] text-xs text-(--color-text-secondary)">
+        <LabelTag
+          htmlFor={htmlFor}
+          className="block font-['DM_Sans'] text-xs text-(--color-text-secondary)"
+        >
           {label}
-        </label>
+        </LabelTag>
         {hint && (
           <span className="font-['DM_Sans'] text-[10px] text-(--color-text-secondary)">
             {hint}
@@ -298,8 +308,9 @@ export default function NewBlogPostPage() {
         {/* ── Basic Info ── */}
         <SectionCard title="Basic Info">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Title" className="sm:col-span-2">
+            <Field label="Title" htmlFor="post-title" className="sm:col-span-2">
               <input
+                id="post-title"
                 {...register("title", { required: true })}
                 placeholder="e.g. 10 Things Nobody Tells You About Bali"
                 className={inputCls}
@@ -309,8 +320,9 @@ export default function NewBlogPostPage() {
               )}
             </Field>
 
-            <Field label="Slug">
+            <Field label="Slug" htmlFor="post-slug">
               <input
+                id="post-slug"
                 {...register("slug")}
                 placeholder="auto-generated"
                 className={inputCls}
@@ -321,16 +333,17 @@ export default function NewBlogPostPage() {
               />
             </Field>
 
-            <Field label="Published At">
+            <Field label="Published At" htmlFor="post-publishedAt">
               <input
+                id="post-publishedAt"
                 type="date"
                 {...register("publishedAt")}
                 className={inputCls}
               />
             </Field>
 
-            <Field label="Author">
-              <select {...register("authorId")} className={selectCls}>
+            <Field label="Author" htmlFor="post-authorId">
+              <select id="post-authorId" {...register("authorId")} className={selectCls}>
                 <option value="">Select author…</option>
                 {authors.map((a) => (
                   <option key={a._id} value={a._id}>
@@ -341,8 +354,8 @@ export default function NewBlogPostPage() {
               </select>
             </Field>
 
-            <Field label="Category">
-              <select {...register("category")} className={selectCls}>
+            <Field label="Category" htmlFor="post-category">
+              <select id="post-category" {...register("category")} className={selectCls}>
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -351,8 +364,9 @@ export default function NewBlogPostPage() {
               </select>
             </Field>
 
-            <Field label="Read Time (minutes)">
+            <Field label="Read Time (minutes)" htmlFor="post-readTime">
               <input
+                id="post-readTime"
                 type="number"
                 min={1}
                 {...register("readTime", { valueAsNumber: true })}
@@ -365,8 +379,13 @@ export default function NewBlogPostPage() {
         {/* ── Content ── */}
         <SectionCard title="Content">
           <div className="space-y-4">
-            <Field label="Excerpt" hint={`${excerpt?.length ?? 0}/160`}>
+            <Field
+              label="Excerpt"
+              htmlFor="post-excerpt"
+              hint={`${excerpt?.length ?? 0}/160`}
+            >
               <textarea
+                id="post-excerpt"
                 {...register("excerpt", { maxLength: 160 })}
                 rows={3}
                 placeholder="Short summary shown in previews…"
@@ -403,15 +422,17 @@ export default function NewBlogPostPage() {
         {/* ── SEO ── */}
         <SectionCard title="SEO">
           <div className="space-y-4">
-            <Field label="Meta Title">
+            <Field label="Meta Title" htmlFor="post-metaTitle">
               <input
+                id="post-metaTitle"
                 {...register("metaTitle")}
                 placeholder="e.g. 10 Bali Travel Tips | RapidLuxe"
                 className={inputCls}
               />
             </Field>
-            <Field label="Meta Description">
+            <Field label="Meta Description" htmlFor="post-metaDescription">
               <textarea
+                id="post-metaDescription"
                 {...register("metaDescription")}
                 rows={2}
                 placeholder="Short description for search engines…"

@@ -1,7 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { sanityWriteClient } from "@/lib/sanity";
+import {
+  countReferencingPosts,
+  sanityWriteClient,
+  uploadSanityImageFromUrl,
+} from "@/lib/sanity";
 
 async function requireAdmin() {
   const { sessionClaims } = await auth();
@@ -48,21 +52,9 @@ export async function POST(req: NextRequest) {
   if (!body.name?.trim())
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
 
-  let image:
-    | { _type: "image"; asset: { _type: "reference"; _ref: string } }
-    | undefined;
-
-  if (body.imageUrl) {
-    const res = await fetch(body.imageUrl);
-    if (res.ok) {
-      const buffer = Buffer.from(await res.arrayBuffer());
-      const asset = await sanityWriteClient.assets.upload("image", buffer);
-      image = {
-        _type: "image",
-        asset: { _type: "reference", _ref: asset._id },
-      };
-    }
-  }
+  const image = body.imageUrl
+    ? await uploadSanityImageFromUrl(body.imageUrl)
+    : undefined;
 
   const created = await sanityWriteClient.create({
     _type: "author",
@@ -81,6 +73,19 @@ export async function DELETE(req: NextRequest) {
   const { id } = (await req.json()) as { id?: string };
   if (!id)
     return NextResponse.json({ error: "id is required" }, { status: 400 });
+
+  // Checked immediately before the delete call, with no intervening
+  // user-driven delay, to keep the race window as small as practical —
+  // Sanity has no atomic "delete if unreferenced" transaction primitive.
+  const referencingPosts = await countReferencingPosts(id);
+  if (referencingPosts > 0) {
+    return NextResponse.json(
+      {
+        error: `Cannot delete: referenced by ${referencingPosts} post${referencingPosts === 1 ? "" : "s"}.`,
+      },
+      { status: 409 },
+    );
+  }
 
   await sanityWriteClient.delete(id);
   return NextResponse.json({ data: { id } });

@@ -32,13 +32,15 @@ export async function generateMetadata({
   if (!post) return { title: "Post Not Found" };
 
   const image = post.mainImage?.asset?.url;
+  const title = post.seo?.metaTitle ?? post.title;
+  const description = post.seo?.metaDescription ?? post.excerpt ?? undefined;
 
   return {
-    title: post.title,
-    description: post.excerpt ?? undefined,
+    title,
+    description,
     openGraph: {
-      title: post.title,
-      description: post.excerpt ?? undefined,
+      title,
+      description,
       images: image ? [{ url: image }] : undefined,
     },
   };

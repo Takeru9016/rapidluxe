@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import { PortableTextBody } from "@/components/shared/PortableTextBody";
 import { STATIC_PAGE_QUERY } from "@/lib/queries/pages";
 import { sanityReadClient } from "@/lib/sanity";
@@ -9,16 +10,28 @@ export const revalidate = 3600;
 
 const SLUG = "cancellation-policy";
 
+interface CancellationPolicyFetchResult {
+  page: StaticPageData | null;
+  failed: boolean;
+}
+
+const getCancellationPolicyData = cache(
+  async (): Promise<CancellationPolicyFetchResult> => {
+    try {
+      const page = await sanityReadClient.fetch<StaticPageData | null>(
+        STATIC_PAGE_QUERY,
+        { slug: SLUG },
+      );
+      return { page, failed: false };
+    } catch (err) {
+      console.error("cancellation-policy page sanity fetch error:", err);
+      return { page: null, failed: true };
+    }
+  },
+);
+
 export async function generateMetadata(): Promise<Metadata> {
-  let page: StaticPageData | null = null;
-  try {
-    page = await sanityReadClient.fetch<StaticPageData | null>(
-      STATIC_PAGE_QUERY,
-      { slug: SLUG },
-    );
-  } catch (err) {
-    console.error("cancellation-policy page sanity fetch error:", err);
-  }
+  const { page } = await getCancellationPolicyData();
 
   return {
     title: page?.seo?.metaTitle ?? page?.title ?? "Cancellation Policy",
@@ -27,17 +40,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function CancellationPolicyPage() {
-  let page: StaticPageData | null = null;
-  let fetchFailed = false;
-  try {
-    page = await sanityReadClient.fetch<StaticPageData | null>(
-      STATIC_PAGE_QUERY,
-      { slug: SLUG },
-    );
-  } catch (err) {
-    console.error("cancellation-policy page sanity fetch error:", err);
-    fetchFailed = true;
-  }
+  const { page, failed: fetchFailed } = await getCancellationPolicyData();
 
   return (
     <section className="bg-(--color-navy) min-h-screen">
