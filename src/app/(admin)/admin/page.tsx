@@ -1,35 +1,38 @@
 "use client";
 
-import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { Calendar, IndianRupee, Package, MessageSquare } from "lucide-react";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
-  BarChart,
+  AlertTriangle,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  FileText,
+  IndianRupee,
+  MessageSquare,
+  Package,
+} from "lucide-react";
+import Link from "next/link";
+import {
   Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
-import type { ColumnDef } from "@tanstack/react-table";
-
+import { type AppTableFeatures, DataTable } from "@/components/admin/DataTable";
 import { StatsCard } from "@/components/admin/StatsCard";
-import { DataTable, type AppTableFeatures } from "@/components/admin/DataTable";
 import { Badge } from "@/components/shared/Badge";
-import { formatPrice, formatDate } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { BOOKING_STATUS_CONFIG } from "@/lib/booking-status";
+import { formatDate, formatPrice } from "@/lib/utils";
+import type { DbBookingStatus } from "@/types/booking";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-
-type BookingStatus =
-  | "ENQUIRY"
-  | "QUOTE_SENT"
-  | "AWAITING_PAYMENT"
-  | "PAID"
-  | "CONFIRMED"
-  | "CANCELLED";
 
 interface RecentBooking {
   id: string;
@@ -38,7 +41,7 @@ interface RecentBooking {
   userName: string;
   departureDate: string;
   totalAmount: number;
-  status: BookingStatus;
+  status: DbBookingStatus;
   createdAt: string;
 }
 
@@ -50,29 +53,12 @@ interface AnalyticsData {
     revenueMTD: number;
     activePackages: number;
     activeEnquiries: number;
+    quotesAwaitingAction: number;
+    paymentsAwaiting: number;
+    confirmedBookings: number;
   };
   recentBookings: RecentBooking[];
 }
-
-// ── Status → badge variant ────────────────────────────────────────────────────
-
-const statusVariant: Record<BookingStatus, "teal" | "ghost" | "coral"> = {
-  ENQUIRY: "ghost",
-  QUOTE_SENT: "ghost",
-  AWAITING_PAYMENT: "ghost",
-  PAID: "teal",
-  CONFIRMED: "teal",
-  CANCELLED: "coral",
-};
-
-const statusLabel: Record<BookingStatus, string> = {
-  ENQUIRY: "Enquiry",
-  QUOTE_SENT: "Quote Sent",
-  AWAITING_PAYMENT: "Awaiting Payment",
-  PAID: "Paid",
-  CONFIRMED: "Confirmed",
-  CANCELLED: "Cancelled",
-};
 
 // ── Pie colours for top packages ─────────────────────────────────────────────
 
@@ -128,10 +114,11 @@ const columns: ColumnDef<AppTableFeatures, RecentBooking>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ getValue }) => {
-      const s = getValue<BookingStatus>();
+      const s = getValue<DbBookingStatus>();
+      const meta = BOOKING_STATUS_CONFIG[s];
       return (
-        <Badge variant={statusVariant[s]} size="sm">
-          {statusLabel[s]}
+        <Badge variant={meta.variant} size="sm">
+          {meta.label}
         </Badge>
       );
     },
@@ -172,7 +159,9 @@ export default function AdminDashboardPage() {
     day: "numeric",
   });
 
-  const { data, isLoading } = useQuery<{ data: AnalyticsData }>({
+  const { data, isLoading, isError, refetch } = useQuery<{
+    data: AnalyticsData;
+  }>({
     queryKey: ["admin-analytics-dashboard"],
     queryFn: async () => {
       const res = await fetch("/api/admin/analytics?range=12M");
@@ -199,200 +188,251 @@ export default function AdminDashboardPage() {
         </p>
       </div>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-8">
-        <StatsCard
-          label="Total Bookings"
-          value={summary?.totalBookings ?? 0}
-          icon={Calendar}
-        />
-        <StatsCard
-          label="Revenue (MTD)"
-          value={summary?.revenueMTD ?? 0}
-          icon={IndianRupee}
-          format="currency"
-        />
-        <StatsCard
-          label="Active Packages"
-          value={summary?.activePackages ?? 0}
-          icon={Package}
-        />
-        <StatsCard
-          label="Active Enquiries"
-          value={summary?.activeEnquiries ?? 0}
-          icon={MessageSquare}
-        />
-      </div>
-
-      {/* Charts Row */}
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Revenue Bar Chart */}
-        <div className="lg:col-span-2 bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
-          <p className="font-['Cormorant_Garamond'] text-xl text-white mb-6">
-            Revenue Overview
+      {isError ? (
+        <div className="mt-8 flex flex-col items-center justify-center text-center rounded-xl border border-(--color-navy-border) bg-(--color-navy-surface) py-16 px-6">
+          <AlertTriangle size={32} className="text-(--color-coral) mb-3" />
+          <p
+            role="alert"
+            className="font-['Cormorant_Garamond'] text-xl text-white mb-1"
+          >
+            Couldn&apos;t load dashboard data
           </p>
-          {isLoading ? (
-            <div className="h-[220px] flex items-center justify-center">
-              <span className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
-                Loading…
-              </span>
-            </div>
-          ) : revenueData.length === 0 ? (
-            <div className="h-[220px] flex items-center justify-center">
-              <span className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
-                No revenue data yet
-              </span>
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart
-                data={revenueData}
-                barCategoryGap="35%"
-                margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
-              >
-                <XAxis
-                  dataKey="month"
-                  tick={{
-                    fill: "var(--color-text-secondary)",
-                    fontSize: 11,
-                    fontFamily: "DM Sans",
-                  }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{
-                    fill: "var(--color-text-secondary)",
-                    fontSize: 11,
-                    fontFamily: "DM Sans",
-                  }}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={(v: number) =>
-                    v >= 1000000 ? `₹${v / 1000000}M` : `₹${v / 1000}K`
-                  }
-                  width={52}
-                />
-                <Tooltip
-                  content={<RevenueTooltip />}
-                  cursor={{ fill: "rgba(255,255,255,0.04)" }}
-                />
-                <Bar
-                  dataKey="revenue"
-                  fill="var(--color-gold)"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
+          <p className="font-['DM_Sans'] text-sm text-(--color-text-secondary) mb-5 max-w-sm">
+            Something went wrong while fetching analytics. The figures below are
+            not being shown because they could not be verified — please try
+            again.
+          </p>
+          <Button type="button" variant="coral" onClick={() => refetch()}>
+            Try again
+          </Button>
         </div>
+      ) : (
+        <>
+          {/* Overview */}
+          <h2 className="font-['Cormorant_Garamond'] text-xl text-white mt-8 mb-4">
+            Overview
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <StatsCard
+              label="Total Bookings"
+              value={summary?.totalBookings ?? 0}
+              icon={Calendar}
+            />
+            <StatsCard
+              label="Revenue (MTD)"
+              value={summary?.revenueMTD ?? 0}
+              icon={IndianRupee}
+              format="currency"
+            />
+            <StatsCard
+              label="Active Packages"
+              value={summary?.activePackages ?? 0}
+              icon={Package}
+            />
+            <StatsCard
+              label="New Enquiries"
+              value={summary?.activeEnquiries ?? 0}
+              icon={MessageSquare}
+            />
+          </div>
 
-        {/* Top Packages */}
-        <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
-          <p className="font-['Cormorant_Garamond'] text-xl text-white mb-6">
-            Top Packages
-          </p>
-          {isLoading ? (
-            <div className="h-[180px] flex items-center justify-center">
-              <span className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
-                Loading…
-              </span>
-            </div>
-          ) : packageData.length === 0 ? (
-            <div className="h-[180px] flex items-center justify-center">
-              <span className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
-                No bookings yet
-              </span>
-            </div>
-          ) : (
-            <>
-              <div className="flex justify-center mb-4">
-                <PieChart width={140} height={140}>
-                  <Pie
-                    data={packageData}
-                    cx={65}
-                    cy={65}
-                    innerRadius={40}
-                    outerRadius={65}
-                    dataKey="bookings"
-                    strokeWidth={0}
+          {/* Needs Action */}
+          <h2 className="font-['Cormorant_Garamond'] text-xl text-white mt-8 mb-4">
+            Needs Action
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <StatsCard
+              label="Quotes Awaiting Action"
+              value={summary?.quotesAwaitingAction ?? 0}
+              icon={FileText}
+            />
+            <StatsCard
+              label="Payments Awaiting"
+              value={summary?.paymentsAwaiting ?? 0}
+              icon={Clock}
+            />
+            <StatsCard
+              label="Confirmed Bookings"
+              value={summary?.confirmedBookings ?? 0}
+              icon={CheckCircle2}
+            />
+          </div>
+
+          {/* Charts Row */}
+          <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Revenue Bar Chart */}
+            <div className="lg:col-span-2 bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
+              <h2 className="font-['Cormorant_Garamond'] text-xl text-white mb-6">
+                Revenue Overview
+              </h2>
+              {isLoading ? (
+                <div className="h-[220px] flex items-center justify-center">
+                  <span className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+                    Loading…
+                  </span>
+                </div>
+              ) : revenueData.length === 0 ? (
+                <div className="h-[220px] flex items-center justify-center">
+                  <span className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+                    No revenue data yet
+                  </span>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart
+                    data={revenueData}
+                    barCategoryGap="35%"
+                    margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
                   >
-                    {packageData.map((_, i) => (
-                      <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                    <XAxis
+                      dataKey="month"
+                      tick={{
+                        fill: "var(--color-text-secondary)",
+                        fontSize: 11,
+                        fontFamily: "DM Sans",
+                      }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{
+                        fill: "var(--color-text-secondary)",
+                        fontSize: 11,
+                        fontFamily: "DM Sans",
+                      }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(v: number) =>
+                        v >= 1000000 ? `₹${v / 1000000}M` : `₹${v / 1000}K`
+                      }
+                      width={52}
+                    />
+                    <Tooltip
+                      content={<RevenueTooltip />}
+                      cursor={{ fill: "rgba(255,255,255,0.04)" }}
+                    />
+                    <Bar
+                      dataKey="revenue"
+                      fill="var(--color-gold)"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            {/* Top Packages */}
+            <div className="bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
+              <h2 className="font-['Cormorant_Garamond'] text-xl text-white mb-6">
+                Top Journeys
+              </h2>
+              {isLoading ? (
+                <div className="h-[180px] flex items-center justify-center">
+                  <span className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+                    Loading…
+                  </span>
+                </div>
+              ) : packageData.length === 0 ? (
+                <div className="h-[180px] flex items-center justify-center">
+                  <span className="font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+                    No bookings yet
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <div className="flex justify-center mb-4">
+                    <PieChart width={140} height={140}>
+                      <Pie
+                        data={packageData}
+                        cx={65}
+                        cy={65}
+                        innerRadius={40}
+                        outerRadius={65}
+                        dataKey="bookings"
+                        strokeWidth={0}
+                      >
+                        {packageData.map((pkg, i) => (
+                          <Cell
+                            key={pkg.name}
+                            fill={PIE_COLORS[i % PIE_COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </div>
+                  <ul className="space-y-2.5">
+                    {packageData.map((pkg, i) => (
+                      <li
+                        key={pkg.name}
+                        className="flex items-center justify-between gap-3"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full shrink-0"
+                            style={{
+                              backgroundColor:
+                                PIE_COLORS[i % PIE_COLORS.length],
+                            }}
+                          />
+                          <span className="font-['DM_Sans'] text-xs text-(--color-white-muted) truncate">
+                            {pkg.name}
+                          </span>
+                        </div>
+                        <span className="font-['JetBrains_Mono'] text-xs text-(--color-text-secondary) shrink-0">
+                          {pkg.bookings}
+                        </span>
+                      </li>
                     ))}
-                  </Pie>
-                </PieChart>
-              </div>
-              <ul className="space-y-2.5">
-                {packageData.map((pkg, i) => (
-                  <li
-                    key={pkg.name}
-                    className="flex items-center justify-between gap-3"
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span
-                        className="w-2.5 h-2.5 rounded-full shrink-0"
-                        style={{
-                          backgroundColor: PIE_COLORS[i % PIE_COLORS.length],
-                        }}
-                      />
-                      <span className="font-['DM_Sans'] text-xs text-(--color-white-muted) truncate">
-                        {pkg.name}
-                      </span>
-                    </div>
-                    <span className="font-['JetBrains_Mono'] text-xs text-(--color-text-secondary) shrink-0">
-                      {pkg.bookings}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </div>
-      </div>
+                  </ul>
+                </>
+              )}
+            </div>
+          </div>
 
-      {/* Recent Bookings */}
-      <div className="mt-8 bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
-        <div className="flex items-center justify-between mb-6">
-          <p className="font-['Cormorant_Garamond'] text-xl text-white">
-            Recent Bookings
-          </p>
-          <Link
-            href="/admin/bookings"
-            className="font-['DM_Sans'] text-sm text-(--color-gold) hover:text-(--color-gold-light) transition-colors"
-          >
-            View All →
-          </Link>
-        </div>
-        {isLoading ? (
-          <p className="font-['DM_Sans'] text-sm text-(--color-text-secondary) py-8 text-center">
-            Loading…
-          </p>
-        ) : recentBookings.length === 0 ? (
-          <p className="font-['DM_Sans'] text-sm text-(--color-text-secondary) py-8 text-center">
-            No bookings yet
-          </p>
-        ) : (
-          <DataTable columns={columns} data={recentBookings} />
-        )}
-      </div>
+          {/* Recent Bookings */}
+          <div className="mt-8 bg-(--color-navy-surface) rounded-xl border border-(--color-navy-border) p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-['Cormorant_Garamond'] text-xl text-white">
+                Recent Bookings
+              </h2>
+              <Link
+                href="/admin/bookings"
+                className="font-['DM_Sans'] text-sm text-(--color-gold) hover:text-(--color-gold-light) transition-colors"
+              >
+                View All →
+              </Link>
+            </div>
+            {isLoading ? (
+              <p className="font-['DM_Sans'] text-sm text-(--color-text-secondary) py-8 text-center">
+                Loading…
+              </p>
+            ) : recentBookings.length === 0 ? (
+              <p className="font-['DM_Sans'] text-sm text-(--color-text-secondary) py-8 text-center">
+                No bookings yet
+              </p>
+            ) : (
+              <DataTable columns={columns} data={recentBookings} />
+            )}
+          </div>
 
-      {/* Quick Actions */}
-      <div className="mt-8 flex flex-wrap gap-4">
-        {[
-          { label: "Add Package", href: "/admin/packages/new" },
-          { label: "Create Deal", href: "/admin/deals/new" },
-          { label: "View Enquiries", href: "/admin/enquiries" },
-        ].map(({ label, href }) => (
-          <Link
-            key={label}
-            href={href}
-            className="px-5 py-2.5 rounded-lg border border-(--color-gold)/60 text-(--color-gold) font-['DM_Sans'] text-sm font-medium hover:bg-(--color-gold)/10 transition-colors"
-          >
-            {label}
-          </Link>
-        ))}
-      </div>
+          {/* Quick Actions */}
+          <div className="mt-8 flex flex-wrap gap-4">
+            {[
+              { label: "Add Package", href: "/admin/packages/new" },
+              { label: "Create Deal", href: "/admin/deals/new" },
+              { label: "View Enquiries", href: "/admin/enquiries" },
+            ].map(({ label, href }) => (
+              <Link
+                key={label}
+                href={href}
+                className="px-5 py-2.5 rounded-lg border border-(--color-gold)/60 text-(--color-gold) font-['DM_Sans'] text-sm font-medium hover:bg-(--color-gold)/10 transition-colors"
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

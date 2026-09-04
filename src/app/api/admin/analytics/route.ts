@@ -1,9 +1,26 @@
 import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { calculateGST } from "@/lib/utils";
 
 type Range = "7D" | "30D" | "90D" | "12M";
+
+// totalAmount is fixed at enquiry-time (ENQUIRY status) and never updated
+// afterward — src/types/booking.ts documents it as "Stale once a quote
+// exists". quotedAmount is set by admin send-quote and is mandatory before
+// any payment can be created (see /api/payments/create-order), which
+// computes the actual charged total as calculateGST(quotedAmount).total.
+// So for PAID/CONFIRMED bookings, quotedAmount (when present) is the
+// authoritative source for the real charged amount, not totalAmount.
+function chargedTotal(b: {
+  totalAmount: number;
+  quotedAmount: number | null;
+}): number {
+  return b.quotedAmount != null
+    ? calculateGST(b.quotedAmount).total
+    : b.totalAmount;
+}
 
 function sinceDate(range: Range): Date {
   const d = new Date();
@@ -49,6 +66,7 @@ export async function GET(req: NextRequest) {
     select: {
       createdAt: true,
       totalAmount: true,
+      quotedAmount: true,
       packageId: true,
       package: {
         select: {
@@ -65,11 +83,12 @@ export async function GET(req: NextRequest) {
   for (const b of bookings) {
     const d = new Date(b.createdAt);
     const key = monthKey(d);
+    const amount = chargedTotal(b);
     const existing = revenueMap.get(key);
     if (existing) {
-      existing.revenue += b.totalAmount;
+      existing.revenue += amount;
     } else {
-      revenueMap.set(key, { label: monthLabel(d), revenue: b.totalAmount });
+      revenueMap.set(key, { label: monthLabel(d), revenue: amount });
     }
   }
   const revenueData = [...revenueMap.entries()]
@@ -138,21 +157,30 @@ export async function GET(req: NextRequest) {
 
   const [
     totalBookings,
-    revenueMTDResult,
+    revenueMTDRows,
     activePackages,
     activeEnquiries,
+    quotesAwaitingAction,
+    paymentsAwaiting,
+    confirmedBookings,
     recentBookingRows,
   ] = await Promise.all([
     prisma.booking.count({ where: { status: { not: "CANCELLED" } } }),
-    prisma.booking.aggregate({
-      _sum: { totalAmount: true },
+    // Selected (not aggregated) because the authoritative charged amount is
+    // computed per-row from quotedAmount, not a plain totalAmount sum — see
+    // chargedTotal() above.
+    prisma.booking.findMany({
       where: {
         status: { in: ["PAID", "CONFIRMED"] },
         createdAt: { gte: mtdStart },
       },
+      select: { totalAmount: true, quotedAmount: true },
     }),
     prisma.package.count({ where: { status: "PUBLISHED" } }),
     prisma.enquiry.count({ where: { isRead: false } }),
+    prisma.booking.count({ where: { status: "QUOTE_SENT" } }),
+    prisma.booking.count({ where: { status: "AWAITING_PAYMENT" } }),
+    prisma.booking.count({ where: { status: "CONFIRMED" } }),
     prisma.booking.findMany({
       take: 10,
       orderBy: { createdAt: "desc" },
@@ -168,6 +196,14 @@ export async function GET(req: NextRequest) {
       },
     }),
   ]);
+
+  const revenueMTD = Math.round(
+    revenueMTDRows.reduce(
+      (sum: number, b: { totalAmount: number; quotedAmount: number | null }) =>
+        sum + chargedTotal(b),
+      0,
+    ),
+  );
 
   const recentBookings = recentBookingRows.map((b) => ({
     id: b.id,
@@ -188,9 +224,12 @@ export async function GET(req: NextRequest) {
       users: usersData,
       summary: {
         totalBookings,
-        revenueMTD: Math.round(revenueMTDResult._sum.totalAmount ?? 0),
+        revenueMTD,
         activePackages,
         activeEnquiries,
+        quotesAwaitingAction,
+        paymentsAwaiting,
+        confirmedBookings,
       },
       recentBookings,
     },
