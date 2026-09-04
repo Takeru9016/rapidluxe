@@ -22,6 +22,7 @@ export const createBookingSchema = z.object({
   occasion: z.string().optional(),
   dietaryRequirements: z.array(z.string()).default([]),
   couponCode: z.string().optional(),
+  dealId: z.string().optional(),
   specialRequests: z.string().optional(),
   travelers: z.array(travelerSchema).min(1),
   panCard: panCardSchema.optional(),

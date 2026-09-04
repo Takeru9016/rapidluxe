@@ -10,7 +10,13 @@ import {
 
 const validateCouponSchema = z.object({
   code: z.string().min(1),
+  // Raw pre-discount subtotal — minAmount is checked against this, unchanged
+  // by Deal stacking.
   baseAmount: z.number().nonnegative(),
+  // Post-Deal amount to calculate the discount against, when a Deal is
+  // applied. Omitted (or equal to baseAmount) when there is no Deal — the
+  // no-Deal behavior is unchanged from before.
+  applicableAmount: z.number().nonnegative().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -27,7 +33,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { code, baseAmount } = parsed.data;
+  const { code, baseAmount, applicableAmount } = parsed.data;
+  const discountBasis = applicableAmount ?? baseAmount;
 
   const coupon = await prisma.coupon.findUnique({
     where: { code: code.trim().toUpperCase() },
@@ -57,10 +64,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const discountAmount =
+  // PERCENT is clamped to 100 defensively — createCouponSchema/update also
+  // enforce this at write time, but a coupon created before that check
+  // existed must not be able to produce a negative charged amount.
+  const rawDiscount =
     coupon.discountType === "PERCENT"
-      ? (baseAmount * coupon.discountValue) / 100
-      : Math.min(coupon.discountValue, baseAmount);
+      ? (discountBasis * Math.min(coupon.discountValue, 100)) / 100
+      : coupon.discountValue;
+  const discountAmount = Math.min(Math.max(rawDiscount, 0), discountBasis);
 
   return NextResponse.json({ data: { coupon, discountAmount } });
 }

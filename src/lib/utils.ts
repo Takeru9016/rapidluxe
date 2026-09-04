@@ -71,6 +71,74 @@ export function calculateBookingBaseAmount(
   };
 }
 
+// Existing-discount eligibility, sourced from PriceDisplay's own display
+// condition and calculateDiscount below — a Deal never applies to a Package
+// that already shows a strikethrough original price.
+export function packageHasExistingDiscount(pkg: {
+  originalPrice?: number | null;
+  pricePerPerson: number;
+}): boolean {
+  return pkg.originalPrice != null && pkg.originalPrice > pkg.pricePerPerson;
+}
+
+export interface CouponForFinancials {
+  discountType: string;
+  discountValue: number;
+}
+
+export interface BookingFinancials {
+  subtotal: number;
+  dealDiscountAmount: number;
+  afterDeal: number;
+  couponDiscountAmount: number;
+  afterCoupon: number;
+  gstAmount: number;
+  totalAmount: number;
+}
+
+// Deal -> Coupon -> GST pipeline, applied once against the aggregated
+// traveler subtotal (never per-traveler). Coupon stacks on top of the
+// Deal-discounted amount, not the raw subtotal. Both discounts are clamped
+// so the charged total can never go negative.
+export function calculateBookingFinancials(
+  subtotal: number,
+  dealDiscountPct: number,
+  coupon: CouponForFinancials | null,
+): BookingFinancials {
+  const dealDiscountAmount = clampToRange(
+    (subtotal * dealDiscountPct) / 100,
+    0,
+    subtotal,
+  );
+  const afterDeal = subtotal - dealDiscountAmount;
+
+  let couponDiscountAmount = 0;
+  if (coupon) {
+    const raw =
+      coupon.discountType === "PERCENT"
+        ? (afterDeal * Math.min(coupon.discountValue, 100)) / 100
+        : coupon.discountValue;
+    couponDiscountAmount = clampToRange(raw, 0, afterDeal);
+  }
+  const afterCoupon = afterDeal - couponDiscountAmount;
+
+  const { gst, total } = calculateGST(afterCoupon);
+
+  return {
+    subtotal,
+    dealDiscountAmount,
+    afterDeal,
+    couponDiscountAmount,
+    afterCoupon,
+    gstAmount: gst,
+    totalAmount: total,
+  };
+}
+
+function clampToRange(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
 export function generateSlug(text: string): string {
   return text
     .toLowerCase()

@@ -237,6 +237,10 @@ export function PackageDetailClient({ slug }: { slug: string }) {
     );
   }
 
+  const bookingHref = activeDeal
+    ? `/book/${pkg?.slug}?deal=${activeDeal.id}`
+    : `/book/${pkg?.slug}`;
+
   const effectivePrice = activeDeal
     ? Math.round(pkg.pricePerPerson * (1 - activeDeal.discountPct / 100))
     : pkg.pricePerPerson;
@@ -753,7 +757,7 @@ export function PackageDetailClient({ slug }: { slug: string }) {
                   variant="coral"
                   className="w-full font-sans font-medium h-11"
                 >
-                  <Link href={`/book/${pkg.slug}`}>Request This Journey</Link>
+                  <Link href={bookingHref}>Request This Journey</Link>
                 </Button>
                 <p className="font-sans text-xs text-(--color-text-secondary) text-center mt-3 leading-relaxed">
                   No payment required to enquire. We&apos;ll confirm

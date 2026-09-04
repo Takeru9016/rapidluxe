@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
 async function requireAdmin(): Promise<boolean> {
@@ -10,14 +11,19 @@ async function requireAdmin(): Promise<boolean> {
   return role === "admin";
 }
 
-const createCouponSchema = z.object({
-  code: z.string().min(2).max(20),
-  discountType: z.enum(["PERCENT", "FIXED"]),
-  discountValue: z.number().positive(),
-  minAmount: z.number().min(0).optional(),
-  maxUses: z.number().int().positive().optional(),
-  expiresAt: z.string().optional(),
-});
+export const createCouponSchema = z
+  .object({
+    code: z.string().min(2).max(20),
+    discountType: z.enum(["PERCENT", "FIXED"]),
+    discountValue: z.number().positive(),
+    minAmount: z.number().min(0).optional(),
+    maxUses: z.number().int().positive().optional(),
+    expiresAt: z.string().optional(),
+  })
+  .refine(
+    (data) => data.discountType !== "PERCENT" || data.discountValue <= 100,
+    { message: "Percent discount cannot exceed 100", path: ["discountValue"] },
+  );
 
 export async function GET(_req: NextRequest) {
   if (!(await requireAdmin())) {
@@ -46,23 +52,38 @@ export async function POST(req: NextRequest) {
   const { code, discountType, discountValue, minAmount, maxUses, expiresAt } =
     parsed.data;
 
-  const existing = await prisma.coupon.findUnique({
-    where: { code: code.toUpperCase() },
-  });
-  if (existing) {
-    return NextResponse.json({ error: "Code already exists" }, { status: 409 });
+  if (expiresAt) {
+    const expiry = new Date(expiresAt);
+    if (Number.isNaN(expiry.getTime()) || expiry <= new Date()) {
+      return NextResponse.json(
+        { error: "Expiry date must be in the future" },
+        { status: 400 },
+      );
+    }
   }
 
-  const coupon = await prisma.coupon.create({
-    data: {
-      code: code.toUpperCase(),
-      discountType,
-      discountValue,
-      minAmount: minAmount ?? null,
-      maxUses: maxUses ?? null,
-      expiresAt: expiresAt ? new Date(expiresAt) : null,
-    },
-  });
-
-  return NextResponse.json({ data: coupon }, { status: 201 });
+  try {
+    const coupon = await prisma.coupon.create({
+      data: {
+        code: code.toUpperCase(),
+        discountType,
+        discountValue,
+        minAmount: minAmount ?? null,
+        maxUses: maxUses ?? null,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+      },
+    });
+    return NextResponse.json({ data: coupon }, { status: 201 });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return NextResponse.json(
+        { error: "Code already exists" },
+        { status: 409 },
+      );
+    }
+    throw error;
+  }
 }

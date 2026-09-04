@@ -127,6 +127,9 @@ model Booking {
   discountAmount      Float         @default(0)
   totalAmount         Float
   couponCode          String?
+  dealId              String? // stable reference to the Deal applied at booking time; re-verified server-side, never trusted from client
+  dealDiscountAmount  Float? // null = no Deal attribution recorded (predates this field, or no Deal applied)
+  couponDiscountAmount Float? // null = no Coupon attribution recorded (predates this field, or no Coupon applied)
   quotedAmount        Float?
   quoteNotes          String?
   paymentDueDate      DateTime?

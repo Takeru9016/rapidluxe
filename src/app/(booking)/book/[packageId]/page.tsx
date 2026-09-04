@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { use, useEffect, useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { useForm } from "react-hook-form";
@@ -28,6 +29,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Separator } from "@/components/ui/separator";
+import { useDeals } from "@/hooks/api/useDeals";
 import { usePackage } from "@/hooks/api/usePackages";
 import {
   calculateBookingBaseAmount,
@@ -168,7 +170,8 @@ function BookingSidebar({ pkg }: { pkg: BookingPackage }) {
     infants,
     baseAmount,
     gstAmount,
-    discountAmount,
+    dealDiscountAmount,
+    couponDiscountAmount,
     totalAmount,
   } = useBookingStore();
 
@@ -273,11 +276,23 @@ function BookingSidebar({ pkg }: { pkg: BookingPackage }) {
             {formatPrice(gstAmount)}
           </span>
         </div>
-        {discountAmount > 0 && (
+        {dealDiscountAmount > 0 && (
           <div className="flex justify-between">
-            <span className="text-(--color-text-secondary)">Discount</span>
+            <span className="text-(--color-text-secondary)">
+              Deal discount
+            </span>
             <span className="text-(--color-coral)">
-              −{formatPrice(discountAmount)}
+              −{formatPrice(dealDiscountAmount)}
+            </span>
+          </div>
+        )}
+        {couponDiscountAmount > 0 && (
+          <div className="flex justify-between">
+            <span className="text-(--color-text-secondary)">
+              Coupon discount
+            </span>
+            <span className="text-(--color-coral)">
+              −{formatPrice(couponDiscountAmount)}
             </span>
           </div>
         )}
@@ -309,6 +324,7 @@ function Step1({ pkg }: { pkg: BookingPackage }) {
     flexibleDuration,
     flexibleMonths,
     baseAmount,
+    dealDiscountAmount,
     appliedCoupon,
     setTravelers,
     setOccasion,
@@ -371,7 +387,11 @@ function Step1({ pkg }: { pkg: BookingPackage }) {
       const res = await fetch("/api/coupons/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, baseAmount }),
+        body: JSON.stringify({
+          code,
+          baseAmount,
+          applicableAmount: baseAmount - dealDiscountAmount,
+        }),
       });
       const json = (await res.json()) as {
         data?: { coupon: Coupon; discountAmount: number };
@@ -381,11 +401,7 @@ function Step1({ pkg }: { pkg: BookingPackage }) {
         toast.error(json.error ?? "Invalid coupon code.");
         return;
       }
-      setCoupon(
-        json.data.coupon.code,
-        json.data.coupon,
-        json.data.discountAmount,
-      );
+      setCoupon(json.data.coupon.code, json.data.coupon);
       toast.success(
         `Coupon applied! ${formatPrice(json.data.discountAmount)} off.`,
       );
@@ -1167,7 +1183,8 @@ function Step3({ pkg }: { pkg: BookingPackage }) {
     infants,
     baseAmount,
     gstAmount,
-    discountAmount,
+    dealDiscountAmount,
+    couponDiscountAmount,
     totalAmount,
     setStep,
   } = useBookingStore();
@@ -1202,6 +1219,7 @@ function Step3({ pkg }: { pkg: BookingPackage }) {
           dietaryRequirements: store.dietaryRequirements,
           specialRequests: store.specialRequests || undefined,
           couponCode: store.couponCode ?? undefined,
+          dealId: store.dealId ?? undefined,
           travelers: store.travelerDetails,
           panCard: store.panCard ?? undefined,
           idempotencyKey,
@@ -1216,8 +1234,15 @@ function Step3({ pkg }: { pkg: BookingPackage }) {
       }
       store.setBookingResult(json.data.bookingId, json.data.bookingRef);
       store.setStep(4);
-    } catch {
-      toast.error("Failed to submit request. Please try again.");
+    } catch (err) {
+      // Surfaces the server's actual reason (e.g. a Deal that expired or no
+      // longer applies) instead of a generic message — the user needs to
+      // know why, not just that it failed.
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Failed to submit request. Please try again.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -1308,13 +1333,23 @@ function Step3({ pkg }: { pkg: BookingPackage }) {
             {formatPrice(gstAmount)}
           </span>
         </div>
-        {discountAmount > 0 && (
+        {dealDiscountAmount > 0 && (
           <div className="flex justify-between text-sm">
             <span className="font-['DM_Sans'] text-(--color-text-secondary)">
-              Discount
+              Deal discount
             </span>
             <span className="font-['DM_Sans'] text-(--color-coral)">
-              −{formatPrice(discountAmount)}
+              −{formatPrice(dealDiscountAmount)}
+            </span>
+          </div>
+        )}
+        {couponDiscountAmount > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="font-['DM_Sans'] text-(--color-text-secondary)">
+              Coupon discount
+            </span>
+            <span className="font-['DM_Sans'] text-(--color-coral)">
+              −{formatPrice(couponDiscountAmount)}
             </span>
           </div>
         )}
@@ -1437,6 +1472,8 @@ export default function BookingPage({
 }) {
   const { packageId: slug } = use(params);
   const { data: pkgData, isLoading, isError } = usePackage(slug);
+  const searchParams = useSearchParams();
+  const { data: dealsData } = useDeals();
 
   const { currentStep } = useBookingStore();
 
@@ -1470,6 +1507,25 @@ export default function BookingPage({
     );
     state.updateAmounts(baseAmount);
   }, [pkg?.id]);
+
+  // Resolve a ?deal=<id> query param (carried over from the package page)
+  // against the deal list — /api/deals already excludes deals for packages
+  // that have an existing discount, so any match here is display-eligible.
+  // The server independently re-verifies the deal at submission time; this
+  // is only what drives the wizard's displayed numbers.
+  useEffect(() => {
+    if (!pkg) return;
+    const dealId = searchParams.get("deal");
+    if (!dealId) return;
+    const deal = (dealsData?.data ?? []).find(
+      (d) => d.id === dealId && d.packageId === pkg.id,
+    );
+    if (deal) {
+      useBookingStore
+        .getState()
+        .setDeal({ id: deal.id, discountPct: deal.discountPct });
+    }
+  }, [pkg, searchParams, dealsData]);
 
   if (isLoading) {
     return (

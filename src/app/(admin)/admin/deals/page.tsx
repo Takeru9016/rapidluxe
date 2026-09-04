@@ -161,7 +161,11 @@ function buildColumns(
             <Pencil size={14} />
           </button>
           <button
-            onClick={() => onDelete(row.original.id)}
+            onClick={() => {
+              if (window.confirm("Delete this deal? This cannot be undone.")) {
+                onDelete(row.original.id);
+              }
+            }}
             className="p-1.5 rounded-md text-(--color-text-secondary) hover:text-(--color-coral) transition-colors"
             aria-label="Delete deal"
           >

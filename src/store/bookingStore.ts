@@ -1,9 +1,14 @@
 "use client";
 
 import { create } from "zustand";
-import { calculateGST } from "@/lib/utils";
+import { calculateBookingFinancials } from "@/lib/utils";
 import type { TravelerDetail } from "@/types/booking";
 import type { Coupon } from "@/types/coupon";
+
+interface AppliedDeal {
+  id: string;
+  discountPct: number;
+}
 
 interface BookingStore {
   currentStep: 1 | 2 | 3 | 4;
@@ -20,6 +25,8 @@ interface BookingStore {
   flexibleMonths: string[];
   couponCode: string | null;
   appliedCoupon: Coupon | null;
+  dealId: string | null;
+  appliedDeal: AppliedDeal | null;
   // Step 2
   travelerDetails: TravelerDetail[];
   dietaryRequirements: string[];
@@ -29,6 +36,8 @@ interface BookingStore {
   baseAmount: number;
   gstAmount: number;
   discountAmount: number;
+  dealDiscountAmount: number;
+  couponDiscountAmount: number;
   totalAmount: number;
   // Result
   bookingId: string | null;
@@ -46,11 +55,8 @@ interface BookingStore {
   setDietaryRequirements: (requirements: string[]) => void;
   setPanCard: (pan: string) => void;
   setSpecialRequests: (requests: string) => void;
-  setCoupon: (
-    code: string | null,
-    coupon: Coupon | null,
-    discount: number,
-  ) => void;
+  setDeal: (deal: AppliedDeal | null) => void;
+  setCoupon: (code: string | null, coupon: Coupon | null) => void;
   updateAmounts: (base: number) => void;
   setBookingResult: (bookingId: string, bookingRef: string) => void;
   /** Returns the current attempt's idempotency key, generating and storing
@@ -73,6 +79,8 @@ const DEFAULT_STATE = {
   flexibleMonths: [] as string[],
   couponCode: null,
   appliedCoupon: null,
+  dealId: null,
+  appliedDeal: null as AppliedDeal | null,
   travelerDetails: [] as TravelerDetail[],
   dietaryRequirements: [] as string[],
   panCard: null,
@@ -80,6 +88,8 @@ const DEFAULT_STATE = {
   baseAmount: 0,
   gstAmount: 0,
   discountAmount: 0,
+  dealDiscountAmount: 0,
+  couponDiscountAmount: 0,
   totalAmount: 0,
   bookingId: null,
   bookingRef: null,
@@ -91,8 +101,20 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
 
   setStep: (step) => set({ currentStep: step }),
 
-  setTravelers: (adults, children, infants) =>
-    set({ adults, children, infants: Math.min(infants, adults) }),
+  setTravelers: (adults, children, infants) => {
+    // Traveler count changing invalidates any applied coupon's amount (it
+    // was validated as a rupee figure against the old subtotal) — clear it
+    // rather than showing a now-wrong number; the Deal recomputes exactly
+    // since it's a percentage of whatever the new subtotal is.
+    set({
+      adults,
+      children,
+      infants: Math.min(infants, adults),
+      couponCode: null,
+      appliedCoupon: null,
+      couponDiscountAmount: 0,
+    });
+  },
 
   setOccasion: (occasion) => set({ occasion }),
 
@@ -113,22 +135,75 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
 
   setSpecialRequests: (requests) => set({ specialRequests: requests }),
 
-  setCoupon: (code, coupon, discount) => {
-    const { baseAmount } = get();
-    const { gst, total } = calculateGST(baseAmount - discount);
+  setDeal: (deal) => {
+    const { baseAmount, appliedCoupon } = get();
+    const financials = calculateBookingFinancials(
+      baseAmount,
+      deal?.discountPct ?? 0,
+      appliedCoupon
+        ? {
+            discountType: appliedCoupon.discountType,
+            discountValue: appliedCoupon.discountValue,
+          }
+        : null,
+    );
+    set({
+      dealId: deal?.id ?? null,
+      appliedDeal: deal,
+      dealDiscountAmount: financials.dealDiscountAmount,
+      couponDiscountAmount: financials.couponDiscountAmount,
+      discountAmount:
+        financials.dealDiscountAmount + financials.couponDiscountAmount,
+      gstAmount: financials.gstAmount,
+      totalAmount: financials.totalAmount,
+    });
+  },
+
+  setCoupon: (code, coupon) => {
+    const { baseAmount, appliedDeal } = get();
+    const financials = calculateBookingFinancials(
+      baseAmount,
+      appliedDeal?.discountPct ?? 0,
+      coupon
+        ? {
+            discountType: coupon.discountType,
+            discountValue: coupon.discountValue,
+          }
+        : null,
+    );
     set({
       couponCode: code,
       appliedCoupon: coupon,
-      discountAmount: discount,
-      gstAmount: gst,
-      totalAmount: total,
+      dealDiscountAmount: financials.dealDiscountAmount,
+      couponDiscountAmount: financials.couponDiscountAmount,
+      discountAmount:
+        financials.dealDiscountAmount + financials.couponDiscountAmount,
+      gstAmount: financials.gstAmount,
+      totalAmount: financials.totalAmount,
     });
   },
 
   updateAmounts: (base) => {
-    const { discountAmount } = get();
-    const { gst, total } = calculateGST(base - discountAmount);
-    set({ baseAmount: base, gstAmount: gst, totalAmount: total });
+    const { appliedDeal, appliedCoupon } = get();
+    const financials = calculateBookingFinancials(
+      base,
+      appliedDeal?.discountPct ?? 0,
+      appliedCoupon
+        ? {
+            discountType: appliedCoupon.discountType,
+            discountValue: appliedCoupon.discountValue,
+          }
+        : null,
+    );
+    set({
+      baseAmount: base,
+      dealDiscountAmount: financials.dealDiscountAmount,
+      couponDiscountAmount: financials.couponDiscountAmount,
+      discountAmount:
+        financials.dealDiscountAmount + financials.couponDiscountAmount,
+      gstAmount: financials.gstAmount,
+      totalAmount: financials.totalAmount,
+    });
   },
 
   setBookingResult: (bookingId, bookingRef) => {

@@ -9,7 +9,11 @@ import {
   rateLimitResponse,
   strictLimiter,
 } from "@/lib/rate-limit";
-import { calculateBookingBaseAmount, calculateGST } from "@/lib/utils";
+import {
+  calculateBookingBaseAmount,
+  calculateBookingFinancials,
+  packageHasExistingDiscount,
+} from "@/lib/utils";
 import { createBookingSchema } from "@/lib/validations/booking";
 import type { DbBookingStatus, DisplayStatus } from "@/types/booking";
 
@@ -158,7 +162,42 @@ export async function POST(req: NextRequest) {
       data.infants,
     );
 
-    let discountAmount = 0;
+    // Deal: never trust client-supplied discountPct/effectivePrice — only a
+    // stable dealId is accepted, and it is fully re-verified server-side
+    // against the current Package/Deal state. A dealId that fails any check
+    // is rejected outright (not silently dropped): the client showed the
+    // customer a deal-adjusted price, so creating a full-price enquiry
+    // instead would misrepresent what they were quoted.
+    let dealDiscountPct = 0;
+    let appliedDealId: string | null = null;
+    if (data.dealId) {
+      const deal = await prisma.deal.findUnique({ where: { id: data.dealId } });
+      const dealValid =
+        deal != null &&
+        deal.packageId === pkg.id &&
+        deal.isActive &&
+        deal.expiresAt > new Date() &&
+        !packageHasExistingDiscount(pkg);
+      if (!dealValid) {
+        return NextResponse.json(
+          {
+            error:
+              "This deal is no longer available. Please refresh the package page and try again.",
+          },
+          { status: 400 },
+        );
+      }
+      dealDiscountPct = deal.discountPct;
+      appliedDealId = deal.id;
+    }
+
+    // Coupon: validity/min-amount gating is unchanged (still evaluated
+    // against the raw pre-discount subtotal — see coupons/validate for the
+    // same rule). Only the discount *amount* calculation changes: it now
+    // applies against the post-deal amount, done inside
+    // calculateBookingFinancials.
+    let validCoupon: { discountType: string; discountValue: number } | null =
+      null;
     if (data.couponCode) {
       const coupon = await prisma.coupon.findFirst({
         where: {
@@ -173,14 +212,21 @@ export async function POST(req: NextRequest) {
         minAmountMet &&
         coupon.usedCount < (coupon.maxUses ?? Infinity)
       ) {
-        discountAmount =
-          coupon.discountType === "PERCENT"
-            ? (baseAmount * coupon.discountValue) / 100
-            : coupon.discountValue;
+        validCoupon = {
+          discountType: coupon.discountType,
+          discountValue: coupon.discountValue,
+        };
       }
     }
 
-    const { gst, total } = calculateGST(baseAmount - discountAmount);
+    const financials = calculateBookingFinancials(
+      baseAmount,
+      dealDiscountPct,
+      validCoupon,
+    );
+    const { gstAmount: gst, totalAmount: total } = financials;
+    const discountAmount =
+      financials.dealDiscountAmount + financials.couponDiscountAmount;
 
     // PAN card is mandatory above ₹2,00,000 (FEMA) — validated at creation
     // time since traveler/PAN capture now happens in this same request.
@@ -244,7 +290,14 @@ export async function POST(req: NextRequest) {
           gstAmount: gst,
           discountAmount,
           totalAmount: total,
-          couponCode: data.couponCode ?? null,
+          couponCode: validCoupon ? data.couponCode : null,
+          dealId: appliedDealId,
+          dealDiscountAmount: appliedDealId
+            ? financials.dealDiscountAmount
+            : null,
+          couponDiscountAmount: validCoupon
+            ? financials.couponDiscountAmount
+            : null,
           bookingRef,
           idempotencyKey: data.idempotencyKey,
           status: "ENQUIRY",

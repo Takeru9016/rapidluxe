@@ -99,7 +99,7 @@ export function DealCard({ deal, className }: DealCardProps) {
               Save {formatPrice(savings)}
             </span>
             <p className="text-xs text-(--color-text-secondary) font-sans mt-1">
-              per person · includes 5% GST
+              per person · GST calculated at booking
             </p>
           </div>
 
