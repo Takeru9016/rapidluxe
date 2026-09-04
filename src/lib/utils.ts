@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from "clsx";
+import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]): string {
@@ -64,6 +64,12 @@ export function generateSlug(text: string): string {
     .replace(/[^a-z0-9-]/g, "")
     .replace(/^-+|-+$/g, "");
 }
+
+// Matches what generateSlug() actually produces (including the multi-hyphen
+// runs it leaves behind, e.g. "switzerland--south-of-france" from a
+// stripped "&") — lowercase alphanumeric segments joined by one or more
+// hyphens, no leading/trailing hyphen, no other characters.
+export const SLUG_PATTERN = /^[a-z0-9]+(-+[a-z0-9]+)*$/;
 
 export function formatDate(date: Date | string): string {
   return new Date(date).toLocaleDateString("en-IN", {

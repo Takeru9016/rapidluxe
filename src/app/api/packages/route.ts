@@ -30,6 +30,10 @@ export async function GET(req: NextRequest) {
 
   const raw = {
     destination: searchParams.get("destination") ?? undefined,
+    search: searchParams.get("search") ?? undefined,
+    // status filtering is admin-only (all=true) — a public request cannot
+    // use this to see non-PUBLISHED packages, enforced below in `where`.
+    status: all ? (searchParams.get("status") ?? undefined) : undefined,
     priceMin: searchParams.get("priceMin") ?? undefined,
     priceMax: searchParams.get("priceMax") ?? undefined,
     duration: searchParams.get("duration") ?? undefined,
@@ -53,6 +57,8 @@ export async function GET(req: NextRequest) {
 
   const {
     destination,
+    search,
+    status,
     priceMin,
     priceMax,
     duration,
@@ -91,6 +97,13 @@ export async function GET(req: NextRequest) {
 
   const where = {
     ...(!all && { status: "PUBLISHED" as const }),
+    ...(all && status !== undefined && { status }),
+    ...(search && {
+      OR: [
+        { title: { contains: search, mode: "insensitive" as const } },
+        { slug: { contains: search, mode: "insensitive" as const } },
+      ],
+    }),
     ...(destinationSlugs.length > 0 && {
       destination: { slug: { in: destinationSlugs } },
     }),
@@ -145,7 +158,7 @@ export async function POST(req: NextRequest) {
   const parsed = createPackageSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+      { error: "Invalid input", details: parsed.error.issues },
       { status: 400 },
     );
   }
@@ -155,7 +168,10 @@ export async function POST(req: NextRequest) {
     select: { id: true },
   });
   if (existing) {
-    return NextResponse.json({ error: "Slug already in use" }, { status: 409 });
+    return NextResponse.json(
+      { error: "This slug is already in use by another package." },
+      { status: 409 },
+    );
   }
 
   const pkg = await prisma.package.create({ data: parsed.data });

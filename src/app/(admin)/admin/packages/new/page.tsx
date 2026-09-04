@@ -8,7 +8,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Controller,
+  type FieldPath,
   type SubmitHandler,
+  type UseFormSetError,
   useFieldArray,
   useForm,
 } from "react-hook-form";
@@ -133,21 +135,58 @@ function SectionCard({
 
 function Field({
   label,
+  htmlFor,
+  error,
   children,
   className,
 }: {
   label: string;
+  htmlFor: string;
+  error?: string;
   children: React.ReactNode;
   className?: string;
 }) {
+  const errorId = error ? `${htmlFor}-error` : undefined;
   return (
     <div className={className}>
-      <label className="block font-['DM_Sans'] text-xs text-(--color-text-secondary) mb-1.5">
+      <label
+        htmlFor={htmlFor}
+        className="block font-['DM_Sans'] text-xs text-(--color-text-secondary) mb-1.5"
+      >
         {label}
       </label>
       {children}
+      {error && (
+        <p
+          id={errorId}
+          role="alert"
+          className="text-xs text-(--color-coral) mt-1"
+        >
+          {error}
+        </p>
+      )}
     </div>
   );
+}
+
+// Maps a server 400's Zod issues (path + message) onto react-hook-form field
+// errors, so a validation failure the client didn't already catch (numeric
+// bounds, URL format, etc.) still surfaces next to the field that caused it.
+function applyServerErrors(
+  details: unknown,
+  setError: UseFormSetError<PackageFormValues>,
+) {
+  if (!Array.isArray(details)) return;
+  for (const issue of details) {
+    if (typeof issue !== "object" || issue === null) continue;
+    const path = (issue as { path?: (string | number)[] }).path;
+    const message = (issue as { message?: string }).message;
+    if (!path || path.length === 0 || !message) continue;
+    setError(path.join(".") as FieldPath<PackageFormValues>, {
+      type: "server",
+      message,
+    });
+  }
 }
 
 const inputCls =
@@ -183,6 +222,7 @@ export default function NewPackagePage() {
     handleSubmit,
     watch,
     setValue,
+    setError,
     control,
     formState: { errors },
   } = useForm<PackageFormValues>({
@@ -295,6 +335,16 @@ export default function NewPackagePage() {
         images: data.images.map((i) => i.url).filter(Boolean),
         tags: data.tags,
         cancellationPolicy: data.cancellationPolicy,
+        attributes: data.attributes
+          .map((a, i) => ({
+            label: ATTRIBUTE_LABELS[i] as string,
+            quality: a.quality,
+          }))
+          .filter((a) => a.quality !== "")
+          .map((a) => ({
+            label: a.label,
+            quality: a.quality as AttributeQuality,
+          })),
         isFeatured: data.isFeatured,
         status: data.status,
         metaTitle: data.metaTitle || undefined,
@@ -306,7 +356,11 @@ export default function NewPackagePage() {
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
-        const err = (await res.json()) as { error?: string };
+        const err = (await res.json()) as {
+          error?: string;
+          details?: unknown;
+        };
+        applyServerErrors(err.details, setError);
         throw new Error(err.error ?? "Failed to create package");
       }
       toast.success("Package created.");
@@ -357,22 +411,30 @@ export default function NewPackagePage() {
         {/* ── Basic Info ── */}
         <SectionCard title="Basic Info">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Title" className="md:col-span-2">
+            <Field
+              label="Title"
+              htmlFor="title"
+              error={errors.title?.message}
+              className="md:col-span-2"
+            >
               <input
-                {...register("title", { required: true })}
+                id="title"
+                {...register("title", { required: "Title is required" })}
                 placeholder="e.g. Bali Serenity Escape"
                 className={inputCls}
+                aria-invalid={!!errors.title}
+                aria-describedby={errors.title ? "title-error" : undefined}
               />
-              {errors.title && (
-                <p className="text-xs text-(--color-coral) mt-1">Required</p>
-              )}
             </Field>
 
-            <Field label="Slug">
+            <Field label="Slug" htmlFor="slug" error={errors.slug?.message}>
               <input
-                {...register("slug")}
+                id="slug"
+                {...register("slug", { required: "Slug is required" })}
                 placeholder="auto-generated"
                 className={inputCls}
+                aria-invalid={!!errors.slug}
+                aria-describedby={errors.slug ? "slug-error" : undefined}
                 onChange={(e) => {
                   setSlugManual(true);
                   setValue("slug", e.target.value);
@@ -380,8 +442,8 @@ export default function NewPackagePage() {
               />
             </Field>
 
-            <Field label="Status">
-              <select {...register("status")} className={selectCls}>
+            <Field label="Status" htmlFor="status">
+              <select id="status" {...register("status")} className={selectCls}>
                 <option value="DRAFT">Draft</option>
                 <option value="PUBLISHED">Published</option>
                 <option value="ARCHIVED">Archived</option>
@@ -393,8 +455,22 @@ export default function NewPackagePage() {
         {/* ── Location ── */}
         <SectionCard title="Location">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Destination">
-              <select {...register("destinationId")} className={selectCls}>
+            <Field
+              label="Destination"
+              htmlFor="destinationId"
+              error={errors.destinationId?.message}
+            >
+              <select
+                id="destinationId"
+                {...register("destinationId", {
+                  required: "Destination is required",
+                })}
+                className={selectCls}
+                aria-invalid={!!errors.destinationId}
+                aria-describedby={
+                  errors.destinationId ? "destinationId-error" : undefined
+                }
+              >
                 <option value="">Select destination</option>
                 {destinations.map((d) => (
                   <option key={d.id} value={d.id}>
@@ -404,8 +480,9 @@ export default function NewPackagePage() {
               </select>
             </Field>
 
-            <Field label="Country">
+            <Field label="Country" htmlFor="country">
               <input
+                id="country"
                 {...register("country")}
                 placeholder="e.g. Indonesia"
                 className={inputCls}
@@ -417,24 +494,39 @@ export default function NewPackagePage() {
         {/* ── Duration ── */}
         <SectionCard title="Duration & Group Size">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Field label="Nights">
+            <Field
+              label="Nights"
+              htmlFor="durationNights"
+              error={errors.durationNights?.message}
+            >
               <input
+                id="durationNights"
                 type="number"
                 min={1}
-                {...register("durationNights", { valueAsNumber: true })}
+                {...register("durationNights", {
+                  valueAsNumber: true,
+                  required: "Duration is required",
+                  min: { value: 1, message: "Must be at least 1 night" },
+                })}
                 className={inputCls}
+                aria-invalid={!!errors.durationNights}
+                aria-describedby={
+                  errors.durationNights ? "durationNights-error" : undefined
+                }
               />
             </Field>
-            <Field label="Min Group Size">
+            <Field label="Min Group Size" htmlFor="minGroupSize">
               <input
+                id="minGroupSize"
                 type="number"
                 min={1}
                 {...register("minGroupSize", { valueAsNumber: true })}
                 className={inputCls}
               />
             </Field>
-            <Field label="Max Group Size">
+            <Field label="Max Group Size" htmlFor="maxGroupSize">
               <input
+                id="maxGroupSize"
                 type="number"
                 min={1}
                 {...register("maxGroupSize", { valueAsNumber: true })}
@@ -447,16 +539,33 @@ export default function NewPackagePage() {
         {/* ── Pricing ── */}
         <SectionCard title="Pricing">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Price per Person (Adults 12+) (₹)">
+            <Field
+              label="Price per Person (Adults 12+) (₹)"
+              htmlFor="pricePerPerson"
+              error={errors.pricePerPerson?.message}
+            >
               <input
+                id="pricePerPerson"
                 type="number"
                 min={0}
-                {...register("pricePerPerson", { valueAsNumber: true })}
+                {...register("pricePerPerson", {
+                  valueAsNumber: true,
+                  required: "Price per person is required",
+                  min: { value: 0.01, message: "Must be greater than 0" },
+                })}
                 className={inputCls}
+                aria-invalid={!!errors.pricePerPerson}
+                aria-describedby={
+                  errors.pricePerPerson ? "pricePerPerson-error" : undefined
+                }
               />
             </Field>
-            <Field label="Original Price (₹) — for discount display">
+            <Field
+              label="Original Price (₹) — for discount display"
+              htmlFor="originalPrice"
+            >
               <input
+                id="originalPrice"
                 type="number"
                 min={0}
                 {...register("originalPrice", { valueAsNumber: true })}
@@ -466,8 +575,9 @@ export default function NewPackagePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 pt-4 border-t border-(--color-navy-border)">
-            <Field label="Per Child (Age 2–11) (₹)">
+            <Field label="Per Child (Age 2–11) (₹)" htmlFor="childPrice">
               <input
+                id="childPrice"
                 type="number"
                 min={0}
                 {...register("childPrice", { valueAsNumber: true })}
@@ -475,8 +585,9 @@ export default function NewPackagePage() {
                 className={inputCls}
               />
             </Field>
-            <Field label="Per Infant (Under 2) (₹)">
+            <Field label="Per Infant (Under 2) (₹)" htmlFor="infantPrice">
               <input
+                id="infantPrice"
                 type="number"
                 min={0}
                 {...register("infantPrice", { valueAsNumber: true })}
@@ -487,8 +598,12 @@ export default function NewPackagePage() {
                 Enter 0 for free, leave empty if not accepted
               </p>
             </Field>
-            <Field label="Tours & Transfers (per person) (₹)">
+            <Field
+              label="Tours & Transfers (per person) (₹)"
+              htmlFor="toursPrice"
+            >
               <input
+                id="toursPrice"
                 type="number"
                 min={0}
                 {...register("toursPrice", { valueAsNumber: true })}
@@ -504,12 +619,23 @@ export default function NewPackagePage() {
 
         {/* ── Description ── */}
         <SectionCard title="Description">
-          <Field label="Description (→ Phase 2E: Tiptap)">
+          <Field
+            label="Description (→ Phase 2E: Tiptap)"
+            htmlFor="description"
+            error={errors.description?.message}
+          >
             <textarea
-              {...register("description")}
+              id="description"
+              {...register("description", {
+                required: "Description is required",
+              })}
               rows={5}
               placeholder="Describe the package experience…"
               className={inputCls + " resize-y"}
+              aria-invalid={!!errors.description}
+              aria-describedby={
+                errors.description ? "description-error" : undefined
+              }
             />
           </Field>
         </SectionCard>
@@ -579,15 +705,32 @@ export default function NewPackagePage() {
                   {...register(`itinerary.${i}.day`)}
                   value={i + 1}
                 />
-                <Field label="Title">
+                <Field
+                  label="Title"
+                  htmlFor={`itinerary-${i}-title`}
+                  error={errors.itinerary?.[i]?.title?.message}
+                >
                   <input
-                    {...register(`itinerary.${i}.title`)}
+                    id={`itinerary-${i}-title`}
+                    {...register(`itinerary.${i}.title`, {
+                      required: "Day title is required",
+                    })}
                     placeholder="e.g. Arrival & Welcome"
                     className={inputCls}
+                    aria-invalid={!!errors.itinerary?.[i]?.title}
+                    aria-describedby={
+                      errors.itinerary?.[i]?.title
+                        ? `itinerary-${i}-title-error`
+                        : undefined
+                    }
                   />
                 </Field>
-                <Field label="Description">
+                <Field
+                  label="Description"
+                  htmlFor={`itinerary-${i}-description`}
+                >
                   <textarea
+                    id={`itinerary-${i}-description`}
                     {...register(`itinerary.${i}.description`)}
                     rows={2}
                     placeholder="What happens this day…"
@@ -657,15 +800,29 @@ export default function NewPackagePage() {
                   )}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Field label="Hotel Name">
+                  <Field
+                    label="Hotel Name"
+                    htmlFor={`hotels-${i}-name`}
+                    error={errors.hotels?.[i]?.name?.message}
+                  >
                     <input
-                      {...register(`hotels.${i}.name`)}
+                      id={`hotels-${i}-name`}
+                      {...register(`hotels.${i}.name`, {
+                        required: "Hotel name is required",
+                      })}
                       placeholder="e.g. Four Seasons"
                       className={inputCls}
+                      aria-invalid={!!errors.hotels?.[i]?.name}
+                      aria-describedby={
+                        errors.hotels?.[i]?.name
+                          ? `hotels-${i}-name-error`
+                          : undefined
+                      }
                     />
                   </Field>
-                  <Field label="Stars">
+                  <Field label="Stars" htmlFor={`hotels-${i}-stars`}>
                     <select
+                      id={`hotels-${i}-stars`}
                       {...register(`hotels.${i}.stars`, {
                         valueAsNumber: true,
                       })}
@@ -678,22 +835,29 @@ export default function NewPackagePage() {
                       ))}
                     </select>
                   </Field>
-                  <Field label="Location">
+                  <Field label="Location" htmlFor={`hotels-${i}-location`}>
                     <input
+                      id={`hotels-${i}-location`}
                       {...register(`hotels.${i}.location`)}
                       placeholder="e.g. Ubud, Bali"
                       className={inputCls}
                     />
                   </Field>
                 </div>
-                <Field label="Hotel Image">
+                <div>
+                  <span
+                    id={`hotels-${i}-image-label`}
+                    className="block font-['DM_Sans'] text-xs text-(--color-text-secondary) mb-1.5"
+                  >
+                    Hotel Image
+                  </span>
                   <CloudinaryUpload
                     folder="rapidluxe/hotels"
                     currentUrl={watch(`hotels.${i}.imageUrl`)}
                     onUpload={(url) => setValue(`hotels.${i}.imageUrl`, url)}
                     onRemove={() => setValue(`hotels.${i}.imageUrl`, "")}
                   />
-                </Field>
+                </div>
                 <label className="flex items-center gap-2 text-sm font-['DM_Sans'] text-(--color-white-muted) cursor-pointer">
                   <input
                     type="checkbox"
@@ -732,22 +896,40 @@ export default function NewPackagePage() {
                 key={field.id}
                 className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] gap-3 items-end border border-(--color-navy-border) rounded-lg p-3"
               >
-                <Field label="Activity Name">
+                <Field
+                  label="Activity Name"
+                  htmlFor={`activities-${i}-name`}
+                  error={errors.activities?.[i]?.name?.message}
+                >
                   <input
-                    {...register(`activities.${i}.name`)}
+                    id={`activities-${i}-name`}
+                    {...register(`activities.${i}.name`, {
+                      required: "Activity name is required",
+                    })}
                     placeholder="e.g. Snorkelling"
                     className={inputCls}
+                    aria-invalid={!!errors.activities?.[i]?.name}
+                    aria-describedby={
+                      errors.activities?.[i]?.name
+                        ? `activities-${i}-name-error`
+                        : undefined
+                    }
                   />
                 </Field>
-                <Field label="Duration">
+                <Field label="Duration" htmlFor={`activities-${i}-duration`}>
                   <input
+                    id={`activities-${i}-duration`}
                     {...register(`activities.${i}.duration`)}
                     placeholder="2 hrs"
                     className={inputCls}
                   />
                 </Field>
-                <Field label="Price (₹) if not incl.">
+                <Field
+                  label="Price (₹) if not incl."
+                  htmlFor={`activities-${i}-price`}
+                >
                   <input
+                    id={`activities-${i}-price`}
                     type="number"
                     min={0}
                     {...register(`activities.${i}.price`, {
@@ -902,8 +1084,12 @@ export default function NewPackagePage() {
                 key={field.id}
                 className="grid grid-cols-[1fr_1fr_auto] gap-3 items-end"
               >
-                <Field label="Days Before Departure">
+                <Field
+                  label="Days Before Departure"
+                  htmlFor={`cancellation-${i}-days`}
+                >
                   <input
+                    id={`cancellation-${i}-days`}
                     type="number"
                     min={0}
                     {...register(
@@ -913,15 +1099,30 @@ export default function NewPackagePage() {
                     className={inputCls}
                   />
                 </Field>
-                <Field label="Refund %">
+                <Field
+                  label="Refund %"
+                  htmlFor={`cancellation-${i}-refund`}
+                  error={errors.cancellationPolicy?.[i]?.refundPercent?.message}
+                >
                   <input
+                    id={`cancellation-${i}-refund`}
                     type="number"
                     min={0}
                     max={100}
                     {...register(`cancellationPolicy.${i}.refundPercent`, {
                       valueAsNumber: true,
+                      min: { value: 0, message: "Must be 0-100" },
+                      max: { value: 100, message: "Must be 0-100" },
                     })}
                     className={inputCls}
+                    aria-invalid={
+                      !!errors.cancellationPolicy?.[i]?.refundPercent
+                    }
+                    aria-describedby={
+                      errors.cancellationPolicy?.[i]?.refundPercent
+                        ? `cancellation-${i}-refund-error`
+                        : undefined
+                    }
                   />
                 </Field>
                 {cancellation.fields.length > 1 && (
@@ -951,15 +1152,17 @@ export default function NewPackagePage() {
         {/* ── SEO ── */}
         <SectionCard title="SEO">
           <div className="space-y-4">
-            <Field label="Meta Title">
+            <Field label="Meta Title" htmlFor="metaTitle">
               <input
+                id="metaTitle"
                 {...register("metaTitle")}
                 placeholder="e.g. Bali Serenity Escape | RapidLuxe"
                 className={inputCls}
               />
             </Field>
-            <Field label="Meta Description">
+            <Field label="Meta Description" htmlFor="metaDescription">
               <textarea
+                id="metaDescription"
                 {...register("metaDescription")}
                 rows={2}
                 placeholder="Short description for search engines…"
@@ -994,7 +1197,10 @@ export default function NewPackagePage() {
           <div className="space-y-4">
             {ATTRIBUTE_LABELS.map((label, i) => (
               <div key={label} className="flex items-center justify-between">
-                <span className="font-['DM_Sans'] text-sm text-(--color-white-muted)">
+                <span
+                  id={`attributes-${i}-label`}
+                  className="font-['DM_Sans'] text-sm text-(--color-white-muted)"
+                >
                   {label}
                 </span>
                 <Controller
@@ -1002,7 +1208,11 @@ export default function NewPackagePage() {
                   name={`attributes.${i}.quality`}
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="w-36 bg-(--color-navy) border-(--color-navy-border) text-sm font-['DM_Sans'] text-white focus:ring-(--color-gold)/40">
+                      <SelectTrigger
+                        id={`attributes-${i}-quality`}
+                        aria-labelledby={`attributes-${i}-label`}
+                        className="w-36 bg-(--color-navy) border-(--color-navy-border) text-sm font-['DM_Sans'] text-white focus:ring-(--color-gold)/40"
+                      >
                         <SelectValue placeholder="Select..." />
                       </SelectTrigger>
                       <SelectContent className="bg-(--color-navy-surface) border-(--color-navy-border)">

@@ -1,7 +1,11 @@
 import { z } from "zod";
 
+import { SLUG_PATTERN } from "@/lib/utils";
+
 export const packageFiltersSchema = z.object({
   destination: z.string().optional(),
+  search: z.string().trim().min(1).max(200).optional(),
+  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).optional(),
   priceMin: z.coerce.number().optional(),
   priceMax: z.coerce.number().optional(),
   duration: z.coerce.number().optional(),
@@ -24,7 +28,13 @@ export const packageFiltersSchema = z.object({
 
 export const createPackageSchema = z.object({
   title: z.string().min(1),
-  slug: z.string().min(1),
+  slug: z
+    .string()
+    .min(1)
+    .regex(
+      SLUG_PATTERN,
+      "Slug must be lowercase letters, numbers, and hyphens only (no spaces or leading/trailing hyphen)",
+    ),
   description: z.string().min(1),
   destinationId: z.string().min(1),
   durationNights: z.number().int().min(1),
@@ -75,12 +85,15 @@ export const createPackageSchema = z.object({
       }),
     )
     .optional(),
+  // Shape matches PackageAttribute (src/types/package.ts) and the public
+  // AttributeQualityBadges renderer — {label, value, icon?} never matched
+  // either consumer and no persisted row ever used it (verified against
+  // the live DB: zero non-null `attributes` rows existed under any shape).
   attributes: z
     .array(
       z.object({
-        label: z.string(),
-        value: z.string(),
-        icon: z.string().optional(),
+        label: z.string().min(1),
+        quality: z.enum(["GREAT", "GOOD", "AVERAGE"]),
       }),
     )
     .optional(),

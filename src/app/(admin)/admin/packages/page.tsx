@@ -1,17 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
+import { ImageOff, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { ColumnDef } from "@tanstack/react-table";
 
-import { DataTable, type AppTableFeatures } from "@/components/admin/DataTable";
+import { type AppTableFeatures, DataTable } from "@/components/admin/DataTable";
 import { Badge } from "@/components/shared/Badge";
-import { formatPrice } from "@/lib/utils";
 import type { ApiPackage } from "@/hooks/api/usePackages";
+import { formatPrice } from "@/lib/utils";
 import type { PackageStatus } from "@/types/package";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -56,18 +56,24 @@ function buildColumns(
       id: "image",
       header: "Image",
       cell: ({ row }) => {
-        const src =
-          row.original.images?.[0] ??
-          "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=200&q=60";
+        const src = row.original.images?.[0];
         return (
-          <div className="relative w-8 h-8 rounded overflow-hidden shrink-0">
-            <Image
-              src={src}
-              alt={row.original.title}
-              fill
-              className="object-cover"
-              sizes="32px"
-            />
+          <div className="relative w-8 h-8 rounded overflow-hidden shrink-0 bg-(--color-navy-border) flex items-center justify-center">
+            {src ? (
+              <Image
+                src={src}
+                alt={row.original.title}
+                fill
+                className="object-cover"
+                sizes="32px"
+              />
+            ) : (
+              <ImageOff
+                size={14}
+                aria-label="No image uploaded"
+                className="text-(--color-text-secondary)"
+              />
+            )}
           </div>
         );
       },
@@ -125,6 +131,7 @@ function buildColumns(
             Edit
           </Link>
           <button
+            type="button"
             onClick={() => onDelete(row.original)}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-['DM_Sans'] border border-(--color-navy-border) text-(--color-white-muted) hover:text-(--color-coral) hover:border-(--color-coral)/40 transition-colors"
           >
@@ -139,22 +146,42 @@ function buildColumns(
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
+const PAGE_SIZE = 20;
+
 export default function AdminPackagesPage() {
   const [tab, setTab] = useState<TabValue>("all");
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const queryClient = useQueryClient();
 
+  // Debounce the search box so every keystroke doesn't fire a request.
+  // Reset to page 1 whenever the debounced value actually changes — an
+  // admin filtering to a smaller result set should never land on an
+  // out-of-range page from a previous, larger listing.
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setSearch(searchInput.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [searchInput]);
+
   const { data, isLoading, isError } = useQuery<PackagesResponse>({
-    queryKey: ["admin-packages"],
+    queryKey: ["admin-packages", search, tab, page],
     queryFn: async () => {
-      const res = await fetch("/api/packages?all=true&limit=100");
+      const params = new URLSearchParams({
+        all: "true",
+        page: String(page),
+        limit: String(PAGE_SIZE),
+      });
+      if (search) params.set("search", search);
+      if (tab !== "all") params.set("status", tab);
+      const res = await fetch(`/api/packages?${params.toString()}`);
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: res.statusText }));
-        console.log("[admin/packages] API error", res.status, err);
         throw new Error("Failed to fetch packages");
       }
-      const json = (await res.json()) as PackagesResponse;
-      console.log("[admin/packages] API response", json);
-      return json;
+      return (await res.json()) as PackagesResponse;
     },
   });
 
@@ -188,8 +215,7 @@ export default function AdminPackagesPage() {
   }
 
   const packages = data?.data ?? [];
-  const filtered =
-    tab === "all" ? packages : packages.filter((p) => p.status === tab);
+  const pagination = data?.pagination;
   const columns = buildColumns(handleDelete);
 
   return (
@@ -208,21 +234,41 @@ export default function AdminPackagesPage() {
         </Link>
       </div>
 
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        {TABS.map(({ value, label }) => (
-          <button
-            key={value}
-            onClick={() => setTab(value)}
-            className={`px-4 py-1.5 rounded-full text-sm font-['DM_Sans'] border transition-colors ${
-              tab === value
-                ? "border-(--color-gold) bg-(--color-gold)/10 text-(--color-gold)"
-                : "border-(--color-navy-border) text-(--color-text-secondary) hover:border-(--color-gold)/40"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
+      {/* Search + Tabs */}
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        <div className="relative w-full sm:w-64">
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-(--color-text-secondary)"
+          />
+          <input
+            type="search"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search by title or slug…"
+            aria-label="Search packages by title or slug"
+            className="w-full bg-(--color-navy) border border-(--color-navy-border) rounded-lg pl-9 pr-3 py-2 text-sm font-['DM_Sans'] text-white placeholder:text-(--color-text-secondary) focus:outline-none focus:border-(--color-gold)/60 transition-colors"
+          />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {TABS.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => {
+                setTab(value);
+                setPage(1);
+              }}
+              className={`px-4 py-1.5 rounded-full text-sm font-['DM_Sans'] border transition-colors ${
+                tab === value
+                  ? "border-(--color-gold) bg-(--color-gold)/10 text-(--color-gold)"
+                  : "border-(--color-navy-border) text-(--color-text-secondary) hover:border-(--color-gold)/40"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Table */}
@@ -233,12 +279,48 @@ export default function AdminPackagesPage() {
           </div>
         ) : isError ? (
           <div className="py-12 text-center font-['DM_Sans'] text-sm text-(--color-coral)">
-            Failed to load packages — check console for details.
+            Failed to load packages. Please try again.
+          </div>
+        ) : packages.length === 0 ? (
+          <div className="py-12 text-center font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+            {search || tab !== "all"
+              ? "No packages match your search/filter."
+              : "No packages yet."}
           </div>
         ) : (
-          <DataTable columns={columns} data={filtered} />
+          <DataTable columns={columns} data={packages} />
         )}
       </div>
+
+      {/* Pagination */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4 font-['DM_Sans'] text-sm text-(--color-text-secondary)">
+          <span>
+            Page {pagination.page} of {pagination.totalPages} —{" "}
+            {pagination.total} package{pagination.total !== 1 ? "s" : ""}
+          </span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="px-3 py-1.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) disabled:opacity-40 hover:border-(--color-gold)/40 transition-colors"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                setPage((p) => Math.min(pagination.totalPages, p + 1))
+              }
+              disabled={page >= pagination.totalPages}
+              className="px-3 py-1.5 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) disabled:opacity-40 hover:border-(--color-gold)/40 transition-colors"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

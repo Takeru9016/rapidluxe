@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createPackageSchema } from "@/lib/validations/package";
 
@@ -54,17 +55,50 @@ export async function PUT(
     );
   }
 
+  const current = await prisma.package.findUnique({
+    where: { slug },
+    select: { id: true },
+  });
+  if (!current) {
+    return NextResponse.json({ error: "Package not found" }, { status: 404 });
+  }
+
   const { destinationId, ...rest } = parsed.data;
 
-  const pkg = await prisma.package.update({
-    where: { slug },
-    data: {
-      ...rest,
-      ...(destinationId
-        ? { destination: { connect: { id: destinationId } } }
-        : {}),
-    },
-  });
+  if (rest.slug && rest.slug !== slug) {
+    const collision = await prisma.package.findUnique({
+      where: { slug: rest.slug },
+      select: { id: true },
+    });
+    if (collision && collision.id !== current.id) {
+      return NextResponse.json(
+        { error: "This slug is already in use by another package." },
+        { status: 409 },
+      );
+    }
+  }
 
-  return NextResponse.json({ data: pkg });
+  try {
+    const pkg = await prisma.package.update({
+      where: { slug },
+      data: {
+        ...rest,
+        ...(destinationId
+          ? { destination: { connect: { id: destinationId } } }
+          : {}),
+      },
+    });
+    return NextResponse.json({ data: pkg });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return NextResponse.json(
+        { error: "This slug is already in use by another package." },
+        { status: 409 },
+      );
+    }
+    throw error;
+  }
 }
