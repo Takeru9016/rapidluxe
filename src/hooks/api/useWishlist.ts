@@ -1,5 +1,5 @@
 import { useAuth } from "@clerk/nextjs";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type { ApiPackage } from "@/hooks/api/usePackages";
 
@@ -91,5 +91,8 @@ export function useWishlist() {
     toggle: mutation.mutate,
     isPending: mutation.isPending,
     isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetch: query.refetch,
   };
 }
