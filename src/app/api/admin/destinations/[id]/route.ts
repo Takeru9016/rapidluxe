@@ -1,9 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@/generated/prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { sanityWriteClient } from "@/lib/sanity";
+import { updateDestinationSchema } from "@/lib/validations/destination";
 
 async function requireAdmin(): Promise<boolean> {
   const { sessionClaims } = await auth();
@@ -51,7 +53,11 @@ export async function DELETE(
     );
   }
 
-  await prisma.destination.delete({ where: { id } });
+  const deleted = await prisma.destination.delete({ where: { id } });
+
+  revalidatePath("/api/destinations");
+  revalidatePath(`/api/destinations/${deleted.slug}`);
+  revalidatePath("/sitemap.xml");
 
   return NextResponse.json({ success: true });
 }
@@ -65,73 +71,80 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const body = (await req.json()) as {
-    name?: string;
-    slug?: string;
-    country?: string;
-    continent?: string;
-    imageUrl?: string;
-    images?: string[];
-    bestMonths?: string[];
-    visaType?: string;
-    currency?: string;
-    language?: string;
-    lat?: number;
-    lng?: number;
-    countryCode?: string;
-    crowdLevel?: string;
-    whenToVisit?: unknown;
-    howToGetThere?: unknown;
-    about?: string;
-    travelTips?: string;
-    metaTitle?: string;
-    metaDescription?: string;
-  };
+  const raw: unknown = await req.json();
+  const parsed = updateDestinationSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid input", details: parsed.error.issues },
+      { status: 400 },
+    );
+  }
+  const body = parsed.data;
 
   const existing = await prisma.destination.findUnique({ where: { id } });
   if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const destination = await prisma.destination.update({
-    where: { id },
-    data: {
-      ...(body.name !== undefined && { name: body.name }),
-      ...(body.slug !== undefined && { slug: body.slug }),
-      ...(body.country !== undefined && { country: body.country }),
-      ...(body.continent !== undefined && { continent: body.continent }),
-      ...(body.imageUrl !== undefined && { imageUrl: body.imageUrl }),
-      ...(body.images !== undefined && { images: body.images }),
-      ...(body.bestMonths !== undefined && { bestMonths: body.bestMonths }),
-      ...(body.visaType !== undefined && { visaType: body.visaType }),
-      ...(body.currency !== undefined && { currency: body.currency }),
-      ...(body.language !== undefined && { language: body.language }),
-      ...(body.lat !== undefined && { lat: body.lat }),
-      ...(body.lng !== undefined && { lng: body.lng }),
-      ...(body.countryCode !== undefined && { countryCode: body.countryCode }),
-      ...(body.crowdLevel !== undefined && {
-        crowdLevel:
-          body.crowdLevel as Prisma.DestinationUpdateInput["crowdLevel"],
-      }),
-      ...(body.whenToVisit !== undefined && {
-        whenToVisit:
-          body.whenToVisit === null
-            ? Prisma.DbNull
-            : (body.whenToVisit as Prisma.InputJsonValue),
-      }),
-      ...(body.howToGetThere !== undefined && {
-        howToGetThere:
-          body.howToGetThere === null
-            ? Prisma.DbNull
-            : (body.howToGetThere as Prisma.InputJsonValue),
-      }),
-    },
-  });
+  if (body.slug !== undefined && body.slug !== existing.slug) {
+    const collision = await prisma.destination.findUnique({
+      where: { slug: body.slug },
+      select: { id: true },
+    });
+    if (collision && collision.id !== existing.id) {
+      return NextResponse.json(
+        { error: "This slug is already in use by another destination." },
+        { status: 409 },
+      );
+    }
+  }
+
+  let destination: Prisma.DestinationGetPayload<Record<string, never>>;
+  try {
+    destination = await prisma.destination.update({
+      where: { id },
+      data: {
+        ...(body.name !== undefined && { name: body.name }),
+        ...(body.slug !== undefined && { slug: body.slug }),
+        ...(body.country !== undefined && { country: body.country }),
+        ...(body.continent !== undefined && { continent: body.continent }),
+        ...(body.imageUrl !== undefined && { imageUrl: body.imageUrl }),
+        ...(body.images !== undefined && { images: body.images }),
+        ...(body.bestMonths !== undefined && { bestMonths: body.bestMonths }),
+        ...(body.visaType !== undefined && { visaType: body.visaType }),
+        ...(body.currency !== undefined && { currency: body.currency }),
+        ...(body.language !== undefined && { language: body.language }),
+        ...(body.lat !== undefined && { lat: body.lat }),
+        ...(body.lng !== undefined && { lng: body.lng }),
+        ...(body.countryCode !== undefined && {
+          countryCode: body.countryCode,
+        }),
+        ...(body.crowdLevel !== undefined && { crowdLevel: body.crowdLevel }),
+        ...(body.whenToVisit !== undefined && {
+          whenToVisit: body.whenToVisit as Prisma.InputJsonValue,
+        }),
+        ...(body.howToGetThere !== undefined && {
+          howToGetThere: body.howToGetThere as Prisma.InputJsonValue,
+        }),
+      },
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return NextResponse.json(
+        { error: "This slug is already in use by another destination." },
+        { status: 409 },
+      );
+    }
+    throw error;
+  }
 
   const slug = body.slug ?? existing.slug;
   const sanityDocs = await sanityWriteClient.fetch<Array<{ _id: string }>>(
     `*[_type == "destination" && slug.current == $slug]{ _id }`,
-    { slug },
+    { slug: existing.slug },
   );
 
   const sanityPatch: Record<string, unknown> = {};
@@ -159,6 +172,13 @@ export async function PATCH(
         ...sanityPatch,
       });
     }
+  }
+
+  revalidatePath("/api/destinations");
+  revalidatePath(`/api/destinations/${existing.slug}`);
+  if (body.slug !== undefined && body.slug !== existing.slug) {
+    revalidatePath(`/api/destinations/${body.slug}`);
+    revalidatePath("/sitemap.xml");
   }
 
   return NextResponse.json({ data: destination });

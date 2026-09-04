@@ -1,13 +1,13 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
+import { ImageOff, Pencil, Plus, Trash2 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { toast } from "sonner";
 
-import { DataTable, type AppTableFeatures } from "@/components/admin/DataTable";
+import { type AppTableFeatures, DataTable } from "@/components/admin/DataTable";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -42,18 +42,24 @@ function buildColumns(
       id: "image",
       header: "Image",
       cell: ({ row }) => {
-        const src =
-          row.original.imageUrl ??
-          "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=200&q=60";
+        const src = row.original.imageUrl;
         return (
-          <div className="relative w-8 h-8 rounded overflow-hidden shrink-0">
-            <Image
-              src={src}
-              alt={row.original.name}
-              fill
-              className="object-cover"
-              sizes="32px"
-            />
+          <div className="relative w-8 h-8 rounded overflow-hidden shrink-0 bg-(--color-navy-border) flex items-center justify-center">
+            {src ? (
+              <Image
+                src={src}
+                alt={row.original.name}
+                fill
+                className="object-cover"
+                sizes="32px"
+              />
+            ) : (
+              <ImageOff
+                size={14}
+                aria-label="No image uploaded"
+                className="text-(--color-text-secondary)"
+              />
+            )}
           </div>
         );
       },
@@ -107,6 +113,7 @@ function buildColumns(
             Edit
           </Link>
           <button
+            type="button"
             onClick={() => onDelete(row.original)}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-['DM_Sans'] border border-(--color-navy-border) text-(--color-white-muted) hover:text-(--color-coral) hover:border-(--color-coral)/40 transition-colors"
           >
@@ -128,13 +135,9 @@ export default function AdminDestinationsPage() {
     queryFn: async () => {
       const res = await fetch("/api/destinations");
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: res.statusText }));
-        console.log("[admin/destinations] API error", res.status, err);
         throw new Error("Failed to fetch destinations");
       }
-      const json = (await res.json()) as { data: AdminDestination[] };
-      console.log("[admin/destinations] API response", json);
-      return json;
+      return (await res.json()) as { data: AdminDestination[] };
     },
   });
 

@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Controller,
+  type FieldPath,
   type SubmitHandler,
+  type UseFormSetError,
   useFieldArray,
   useForm,
 } from "react-hook-form";
@@ -19,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { generateSlug } from "@/lib/utils";
+import { generateSlug, SLUG_PATTERN } from "@/lib/utils";
 import type {
   AvailabilityStatus,
   Continent,
@@ -143,21 +145,59 @@ function SectionCard({
 
 function Field({
   label,
+  htmlFor,
+  error,
   children,
   className,
 }: {
   label: string;
+  htmlFor: string;
+  error?: string;
   children: React.ReactNode;
   className?: string;
 }) {
+  const errorId = error ? `${htmlFor}-error` : undefined;
   return (
     <div className={className}>
-      <label className="block font-['DM_Sans'] text-xs text-(--color-text-secondary) mb-1.5">
+      <label
+        htmlFor={htmlFor}
+        className="block font-['DM_Sans'] text-xs text-(--color-text-secondary) mb-1.5"
+      >
         {label}
       </label>
       {children}
+      {error && (
+        <p
+          id={errorId}
+          role="alert"
+          className="text-xs text-(--color-coral) mt-1"
+        >
+          {error}
+        </p>
+      )}
     </div>
   );
+}
+
+// Maps a server 400's Zod issues (path + message) onto react-hook-form field
+// errors, so a validation failure the client didn't already catch (slug
+// format, coordinate bounds, duplicate bestMonths, etc.) still surfaces next
+// to the field that caused it.
+function applyServerErrors(
+  details: unknown,
+  setError: UseFormSetError<DestinationFormValues>,
+) {
+  if (!Array.isArray(details)) return;
+  for (const issue of details) {
+    if (typeof issue !== "object" || issue === null) continue;
+    const path = (issue as { path?: (string | number)[] }).path;
+    const message = (issue as { message?: string }).message;
+    if (!path || path.length === 0 || !message) continue;
+    setError(path.join(".") as FieldPath<DestinationFormValues>, {
+      type: "server",
+      message,
+    });
+  }
 }
 
 const inputCls =
@@ -168,15 +208,18 @@ const selectCls = inputCls + " cursor-pointer";
 function ToggleSwitch({
   checked,
   onChange,
+  ariaLabel,
 }: {
   checked: boolean;
   onChange: (v: boolean) => void;
+  ariaLabel?: string;
 }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
+      aria-label={ariaLabel}
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
         checked ? "bg-(--color-gold)" : "bg-(--color-navy-border)"
@@ -203,6 +246,7 @@ export default function NewDestinationPage() {
     handleSubmit,
     watch,
     setValue,
+    setError,
     control,
     formState: { errors },
   } = useForm<DestinationFormValues>({
@@ -275,7 +319,8 @@ export default function NewDestinationPage() {
         }),
       });
       if (!res.ok) {
-        const err = (await res.json()) as { error?: string };
+        const err = (await res.json()) as { error?: string; details?: unknown };
+        applyServerErrors(err.details, setError);
         throw new Error(err.error ?? "Failed to create destination");
       }
       toast.success("Destination created.");
@@ -306,22 +351,36 @@ export default function NewDestinationPage() {
         {/* ── Postgres: Core Fields ── */}
         <SectionCard title="Core Details" subtitle="Saved to Postgres">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Name" className="sm:col-span-2">
+            <Field
+              label="Name"
+              htmlFor="name"
+              error={errors.name ? "Required" : undefined}
+              className="sm:col-span-2"
+            >
               <input
+                id="name"
                 {...register("name", { required: true })}
                 placeholder="e.g. Bali"
                 className={inputCls}
+                aria-invalid={!!errors.name}
+                aria-describedby={errors.name ? "name-error" : undefined}
               />
-              {errors.name && (
-                <p className="text-xs text-(--color-coral) mt-1">Required</p>
-              )}
             </Field>
 
-            <Field label="Slug">
+            <Field label="Slug" htmlFor="slug" error={errors.slug?.message}>
               <input
-                {...register("slug")}
+                id="slug"
+                {...register("slug", {
+                  pattern: {
+                    value: SLUG_PATTERN,
+                    message:
+                      "Slug must be lowercase letters, numbers, and hyphens only (no spaces or leading/trailing hyphen)",
+                  },
+                })}
                 placeholder="auto-generated"
                 className={inputCls}
+                aria-invalid={!!errors.slug}
+                aria-describedby={errors.slug ? "slug-error" : undefined}
                 onChange={(e) => {
                   setSlugManual(true);
                   setValue("slug", e.target.value);
@@ -329,16 +388,27 @@ export default function NewDestinationPage() {
               />
             </Field>
 
-            <Field label="Country">
+            <Field
+              label="Country"
+              htmlFor="country"
+              error={errors.country ? "Required" : undefined}
+            >
               <input
+                id="country"
                 {...register("country", { required: true })}
                 placeholder="e.g. Indonesia"
                 className={inputCls}
+                aria-invalid={!!errors.country}
+                aria-describedby={errors.country ? "country-error" : undefined}
               />
             </Field>
 
-            <Field label="Continent">
-              <select {...register("continent")} className={selectCls}>
+            <Field label="Continent" htmlFor="continent">
+              <select
+                id="continent"
+                {...register("continent")}
+                className={selectCls}
+              >
                 {CONTINENTS.map(({ value, label }) => (
                   <option key={value} value={value}>
                     {label}
@@ -347,8 +417,12 @@ export default function NewDestinationPage() {
               </select>
             </Field>
 
-            <Field label="Visa Type">
-              <select {...register("visaType")} className={selectCls}>
+            <Field label="Visa Type" htmlFor="visaType">
+              <select
+                id="visaType"
+                {...register("visaType")}
+                className={selectCls}
+              >
                 <option value="">Select visa type</option>
                 {VISA_TYPES.map(({ value, label }) => (
                   <option key={value} value={value}>
@@ -358,16 +432,18 @@ export default function NewDestinationPage() {
               </select>
             </Field>
 
-            <Field label="Currency">
+            <Field label="Currency" htmlFor="currency">
               <input
+                id="currency"
                 {...register("currency")}
                 placeholder="e.g. IDR"
                 className={inputCls}
               />
             </Field>
 
-            <Field label="Language">
+            <Field label="Language" htmlFor="language">
               <input
+                id="language"
                 {...register("language")}
                 placeholder="e.g. Bahasa Indonesia"
                 className={inputCls}
@@ -375,9 +451,12 @@ export default function NewDestinationPage() {
             </Field>
 
             <div className="sm:col-span-2">
-              <label className="block font-['DM_Sans'] text-xs text-(--color-text-secondary) mb-1.5">
+              <span
+                id="imageUrl-label"
+                className="block font-['DM_Sans'] text-xs text-(--color-text-secondary) mb-1.5"
+              >
                 Cover Image
-              </label>
+              </span>
               <CloudinaryUpload
                 folder="rapidluxe/destinations"
                 currentUrl={watch("imageUrl")}
@@ -438,7 +517,8 @@ export default function NewDestinationPage() {
             control={control}
             name="bestMonths"
             render={({ field }) => (
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              <fieldset className="grid grid-cols-3 sm:grid-cols-4 gap-2 border-0 p-0 m-0">
+                <legend className="sr-only">Best months to visit</legend>
                 {MONTHS.map((m) => {
                   const checked = field.value.includes(m);
                   return (
@@ -462,7 +542,7 @@ export default function NewDestinationPage() {
                     </button>
                   );
                 })}
-              </div>
+              </fieldset>
             )}
           />
         </SectionCard>
@@ -473,22 +553,44 @@ export default function NewDestinationPage() {
           subtitle="Used for the interactive map on destination page"
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Latitude">
+            <Field label="Latitude" htmlFor="lat" error={errors.lat?.message}>
               <input
+                id="lat"
                 type="number"
                 step={0.000001}
-                {...register("lat")}
+                {...register("lat", {
+                  validate: (v) => {
+                    if (!v) return true;
+                    const n = Number(v);
+                    return (
+                      (n >= -90 && n <= 90) || "Must be between -90 and 90"
+                    );
+                  },
+                })}
                 placeholder="e.g. -8.4095"
                 className={inputCls}
+                aria-invalid={!!errors.lat}
+                aria-describedby={errors.lat ? "lat-error" : undefined}
               />
             </Field>
-            <Field label="Longitude">
+            <Field label="Longitude" htmlFor="lng" error={errors.lng?.message}>
               <input
+                id="lng"
                 type="number"
                 step={0.000001}
-                {...register("lng")}
+                {...register("lng", {
+                  validate: (v) => {
+                    if (!v) return true;
+                    const n = Number(v);
+                    return (
+                      (n >= -180 && n <= 180) || "Must be between -180 and 180"
+                    );
+                  },
+                })}
                 placeholder="e.g. 115.1889"
                 className={inputCls}
+                aria-invalid={!!errors.lng}
+                aria-describedby={errors.lng ? "lng-error" : undefined}
               />
             </Field>
           </div>
@@ -499,8 +601,9 @@ export default function NewDestinationPage() {
           title="Country Code"
           subtitle="ISO 3166-1 alpha-2 country code"
         >
-          <Field label="Country Code">
+          <Field label="Country Code" htmlFor="countryCode">
             <input
+              id="countryCode"
               {...register("countryCode")}
               maxLength={2}
               placeholder="e.g. ID for Indonesia, CH for Switzerland"
@@ -517,8 +620,12 @@ export default function NewDestinationPage() {
           title="Crowd Level"
           subtitle="Overall crowd level for this destination"
         >
-          <Field label="Crowd Level">
-            <select {...register("crowdLevel")} className={selectCls}>
+          <Field label="Crowd Level" htmlFor="crowdLevel">
+            <select
+              id="crowdLevel"
+              {...register("crowdLevel")}
+              className={selectCls}
+            >
               <option value="">Select crowd level</option>
               {DESTINATION_CROWD_LEVELS.map(({ value, label }) => (
                 <option key={value} value={value}>
@@ -536,8 +643,12 @@ export default function NewDestinationPage() {
         >
           <div className="space-y-4">
             {/* Phase 2E: replace with Tiptap / PortableText editor */}
-            <Field label="About (Phase 2E: replace with Tiptap / PortableText)">
+            <Field
+              label="About (Phase 2E: replace with Tiptap / PortableText)"
+              htmlFor="about"
+            >
               <textarea
+                id="about"
                 {...register("about")}
                 rows={6}
                 placeholder="Describe this destination — culture, highlights, why it's special…"
@@ -546,8 +657,12 @@ export default function NewDestinationPage() {
             </Field>
 
             {/* Phase 2E: replace with Tiptap / PortableText editor */}
-            <Field label="Travel Tips (Phase 2E: replace with Tiptap / PortableText)">
+            <Field
+              label="Travel Tips (Phase 2E: replace with Tiptap / PortableText)"
+              htmlFor="travelTips"
+            >
               <textarea
+                id="travelTips"
                 {...register("travelTips")}
                 rows={4}
                 placeholder="Practical tips — best transport, cultural etiquette, packing list…"
@@ -560,15 +675,17 @@ export default function NewDestinationPage() {
         {/* ── Sanity: SEO ── */}
         <SectionCard title="SEO" subtitle="Saved to Sanity CMS">
           <div className="space-y-4">
-            <Field label="Meta Title">
+            <Field label="Meta Title" htmlFor="metaTitle">
               <input
+                id="metaTitle"
                 {...register("metaTitle")}
                 placeholder="e.g. Bali Travel Packages | RapidLuxe"
                 className={inputCls}
               />
             </Field>
-            <Field label="Meta Description">
+            <Field label="Meta Description" htmlFor="metaDescription">
               <textarea
+                id="metaDescription"
                 {...register("metaDescription")}
                 rows={2}
                 placeholder="Short description for search engines…"
@@ -586,8 +703,8 @@ export default function NewDestinationPage() {
             </h2>
             <p className="font-['DM_Sans'] text-xs text-(--color-text-secondary) mt-1">
               Weather auto-populates from lat/lng after this destination is
-              first saved — set Crowd/Recommendation manually for now, or
-              leave blank and revisit after saving.
+              first saved — set Crowd/Recommendation manually for now, or leave
+              blank and revisit after saving.
             </p>
           </div>
           <div className="space-y-3">
@@ -619,7 +736,10 @@ export default function NewDestinationPage() {
                   name={`whenToVisit.${i}.crowdLevel`}
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="bg-(--color-navy) border-(--color-navy-border) text-sm font-['DM_Sans'] text-white focus:ring-(--color-gold)/40">
+                      <SelectTrigger
+                        aria-label={`${month} crowd level`}
+                        className="bg-(--color-navy) border-(--color-navy-border) text-sm font-['DM_Sans'] text-white focus:ring-(--color-gold)/40"
+                      >
                         <SelectValue placeholder="Crowd..." />
                       </SelectTrigger>
                       <SelectContent className="bg-(--color-navy-surface) border-(--color-navy-border)">
@@ -640,6 +760,7 @@ export default function NewDestinationPage() {
                     render={({ field }) => (
                       <ToggleSwitch
                         checked={field.value === "Open"}
+                        ariaLabel={`${month} open`}
                         onChange={(checked) =>
                           field.onChange(checked ? "Open" : "Closed")
                         }
@@ -657,6 +778,7 @@ export default function NewDestinationPage() {
                     render={({ field }) => (
                       <ToggleSwitch
                         checked={field.value === "Recommended"}
+                        ariaLabel={`${month} recommended`}
                         onChange={(checked) =>
                           field.onChange(
                             checked ? "Recommended" : "Not recommended",
