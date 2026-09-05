@@ -354,6 +354,10 @@ function Step1({ pkg }: { pkg: BookingPackage }) {
     const min = type === "adults" ? 1 : 0;
     const next = { ...curr, [type]: Math.max(min, curr[type] + delta) };
     setTravelers(next.adults, next.children, next.infants);
+    if (appliedCoupon) {
+      setCouponInput("");
+      toast.info("Promo code removed — traveler count changed.");
+    }
     const { baseAmount: nextBase } = calculateBookingBaseAmount(
       pkg,
       next.adults,
