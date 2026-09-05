@@ -13,6 +13,7 @@ const EXCLUDED_PREFIXES = [
   "/sign-in",
   "/sign-up",
   "/pay/",
+  "/book/",
 ];
 
 const FIRST_DELAY_MS = 10_000;
@@ -82,6 +83,16 @@ export function LeadCaptureModal() {
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) close();
   };
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: close only reads setters/refs, safe to omit
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
