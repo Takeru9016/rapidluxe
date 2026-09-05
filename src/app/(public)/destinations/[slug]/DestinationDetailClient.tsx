@@ -29,7 +29,10 @@ import {
 } from "@/components";
 import { MapboxMap } from "@/components/shared/MapboxMap";
 import { PortableTextBody } from "@/components/shared/PortableTextBody";
-import { PackageCardSkeleton } from "@/components/shared/Skeletons";
+import {
+  DestinationDetailSkeleton,
+  PackageCardSkeleton,
+} from "@/components/shared/Skeletons";
 import { useDestinationEditorial } from "@/hooks/api/useDestinationEditorial";
 import {
   useDestination,
@@ -185,23 +188,7 @@ export function DestinationDetailClient({ slug }: { slug: string }) {
       : "Year-round";
 
   if (destLoading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="bg-(--color-navy-surface) rounded-xl p-4 h-24 animate-pulse border border-(--color-navy-border)"
-            />
-          ))}
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <PackageCardSkeleton key={i} />
-          ))}
-        </div>
-      </div>
-    );
+    return <DestinationDetailSkeleton />;
   }
 
   if (!dest) {

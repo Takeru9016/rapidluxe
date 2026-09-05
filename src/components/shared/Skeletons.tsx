@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { UsefulLinks } from "./UsefulLinks";
 
 function Bone({ className }: { className?: string }) {
   return (
@@ -130,6 +131,87 @@ export function PackageDetailSkeleton() {
         <aside className="hidden lg:block w-80 xl:w-96 shrink-0">
           <Bone className="h-96 w-full rounded-xl" />
         </aside>
+      </div>
+    </div>
+  );
+}
+
+export function DestinationDetailSkeleton() {
+  return (
+    <div>
+      <Bone className="w-full h-64 md:h-[480px] rounded-none" />
+
+      <div className="max-w-7xl mx-auto px-4 md:px-8">
+        <div className="pt-6 md:pt-8">
+          <Bone className="h-4 w-40 mb-3" />
+          <Bone className="h-10 md:h-14 w-2/3 md:w-1/2" />
+          <Bone className="h-4 w-24 mt-2" />
+        </div>
+
+        <section className="py-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Bone key={i} className="h-24 rounded-xl" />
+            ))}
+          </div>
+        </section>
+
+        <section className="py-12 border-t border-(--color-navy-border)">
+          <Bone className="h-8 w-1/3 mb-8" />
+          <div className="flex flex-col gap-3 max-w-3xl">
+            <Bone className="h-4 w-full" />
+            <Bone className="h-4 w-full" />
+            <Bone className="h-4 w-5/6" />
+          </div>
+        </section>
+
+        <section className="py-12 border-t border-(--color-navy-border)">
+          <Bone className="h-8 w-1/3 mb-8" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <PackageCardSkeleton key={i} />
+            ))}
+          </div>
+        </section>
+
+        <section className="py-12 border-t border-(--color-navy-border)">
+          <Bone className="h-8 w-1/3 mb-8" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Bone key={i} className="h-52 rounded-xl" />
+            ))}
+          </div>
+        </section>
+
+        <section className="py-12 border-t border-(--color-navy-border)">
+          <Bone className="h-8 w-1/3 mb-2" />
+          <Bone className="h-4 w-1/2 mb-8" />
+          <Bone className="h-64 w-full rounded-xl" />
+        </section>
+
+        <section className="py-12 border-t border-(--color-navy-border)">
+          <Bone className="h-8 w-1/3 mb-8" />
+          <div className="max-w-3xl flex flex-col gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Bone key={i} className="h-16 w-full rounded-xl" />
+            ))}
+          </div>
+        </section>
+
+        <section className="py-12 border-t border-(--color-navy-border)">
+          <Bone className="h-8 w-1/3 mb-8" />
+          <div className="max-w-2xl flex flex-col gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Bone key={i} className="h-5 w-full" />
+            ))}
+          </div>
+        </section>
+
+        <section className="py-8 border-t border-(--color-navy-border)">
+          <Bone className="h-96 w-full rounded-xl" />
+        </section>
+
+        <UsefulLinks />
       </div>
     </div>
   );
