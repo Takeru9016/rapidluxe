@@ -305,7 +305,13 @@ export function PackageDetailClient({ slug }: { slug: string }) {
           <div className="flex-1 min-w-0 flex flex-col gap-14">
             {/* 1. Gallery */}
             <div>
-              <DetailPhotoGrid images={pkg.images} alt={pkg.title} priority />
+              {pkg.images.length > 0 ? (
+                <DetailPhotoGrid images={pkg.images} alt={pkg.title} priority />
+              ) : (
+                <div className="w-full h-64 md:h-120 rounded-xl bg-linear-to-br from-(--color-navy-surface) to-(--color-navy-border) flex items-center justify-center">
+                  <Plane className="w-12 h-12 text-(--color-gold)/30" />
+                </div>
+              )}
             </div>
 
             {/* 2. Title + destination + core facts */}

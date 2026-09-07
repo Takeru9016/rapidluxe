@@ -20,6 +20,11 @@ const prisma = new PrismaClient({
 const toJson = (value: unknown): Prisma.InputJsonValue =>
   value as Prisma.InputJsonValue;
 
+const UNSPLASH_PREFIX = "https://images.unsplash.com/";
+
+const stripUnsplash = (urls: string[]): string[] =>
+  urls.filter((url) => !url.startsWith(UNSPLASH_PREFIX));
+
 interface GeoInfo {
   lat: number;
   lng: number;
@@ -87,7 +92,7 @@ async function main() {
         continent: dest.continent,
         description: dest.description,
         imageUrl: dest.imageUrl,
-        images: dest.images ?? [],
+        images: stripUnsplash(dest.images ?? []),
         bestMonths: dest.bestMonths ?? [],
         visaType: dest.visaType,
         currency: dest.currency,
@@ -119,7 +124,7 @@ async function main() {
         itinerary: toJson(pkg.itinerary),
         hotels: toJson(pkg.hotels),
         activities: toJson(pkg.activities),
-        images: pkg.images,
+        images: stripUnsplash(pkg.images),
         tags: pkg.tags,
         cancellationPolicy: toJson(pkg.cancellationPolicy ?? []),
         attributes: toJson(pkg.attributes ?? []),
