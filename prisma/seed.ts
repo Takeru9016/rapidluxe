@@ -91,7 +91,9 @@ async function main() {
         country: dest.country,
         continent: dest.continent,
         description: dest.description,
-        imageUrl: dest.imageUrl,
+        imageUrl: dest.imageUrl?.startsWith(UNSPLASH_PREFIX)
+          ? null
+          : dest.imageUrl,
         images: stripUnsplash(dest.images ?? []),
         bestMonths: dest.bestMonths ?? [],
         visaType: dest.visaType,
