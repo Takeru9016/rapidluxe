@@ -155,6 +155,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Package not found" }, { status: 404 });
     }
 
+    // Group size, like toursTotal in calculateBookingBaseAmount, counts
+    // adults + children only — infants don't occupy a group slot.
+    if (data.adults + data.children > pkg.maxGroupSize) {
+      return NextResponse.json(
+        {
+          error: `Traveler count exceeds this package's maximum group size of ${pkg.maxGroupSize}.`,
+        },
+        { status: 400 },
+      );
+    }
+
     const { baseAmount } = calculateBookingBaseAmount(
       pkg,
       data.adults,
