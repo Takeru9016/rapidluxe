@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@/generated/prisma/client";
@@ -6,6 +7,23 @@ import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { sanityWriteClient } from "@/lib/sanity";
 import { updateDestinationSchema } from "@/lib/validations/destination";
+
+// The admin form's About/Travel-tips fields are plain textareas, but the
+// Sanity schema types these as Portable Text (array of block) — writing a
+// raw string into that field is a silent no-op on render. Wrap plain text
+// in a single block so it matches what the public page's PortableText
+// renderer expects.
+function textToPortableTextBlocks(text: string) {
+  return [
+    {
+      _type: "block",
+      _key: randomUUID(),
+      style: "normal",
+      markDefs: [],
+      children: [{ _type: "span", _key: randomUUID(), text, marks: [] }],
+    },
+  ];
+}
 
 async function requireAdmin(): Promise<boolean> {
   const { sessionClaims } = await auth();
@@ -148,8 +166,12 @@ export async function PATCH(
   );
 
   const sanityPatch: Record<string, unknown> = {};
-  if (body.about !== undefined) sanityPatch.about = body.about;
-  if (body.travelTips !== undefined) sanityPatch.travelTips = body.travelTips;
+  if (body.about !== undefined)
+    sanityPatch.about = body.about ? textToPortableTextBlocks(body.about) : [];
+  if (body.travelTips !== undefined)
+    sanityPatch.travelTips = body.travelTips
+      ? textToPortableTextBlocks(body.travelTips)
+      : [];
   if (body.metaTitle !== undefined || body.metaDescription !== undefined) {
     sanityPatch.seo = {
       metaTitle: body.metaTitle ?? null,

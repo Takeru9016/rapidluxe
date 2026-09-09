@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useDestinationEditorial } from "@/hooks/api/useDestinationEditorial";
 import { useDestinationWeather } from "@/hooks/api/useDestinations";
 import { generateSlug, SLUG_PATTERN } from "@/lib/utils";
 import {
@@ -73,6 +74,28 @@ interface DestinationFormValues {
   metaDescription: string;
   whenToVisit: WhenToVisitRow[];
   howToGetThere: TransportRow[];
+}
+
+// The Sanity fields are Portable Text (array of block); the admin form
+// edits them as plain text, so extract the block spans back into a string.
+function portableTextToPlainText(
+  blocks: { children?: unknown[] }[] | null | undefined,
+): string {
+  if (!blocks) return "";
+  return blocks
+    .map((block) =>
+      (block.children ?? [])
+        .map((child) =>
+          typeof child === "object" &&
+          child !== null &&
+          "text" in child &&
+          typeof child.text === "string"
+            ? child.text
+            : "",
+        )
+        .join(""),
+    )
+    .join("\n\n");
 }
 
 interface DestinationData {
@@ -310,6 +333,8 @@ export default function EditDestinationPage({
 
   const dest = data?.data;
   const { data: weatherData } = useDestinationWeather(dest?.slug ?? "");
+  const { data: editorialData } = useDestinationEditorial(dest?.slug ?? "");
+  const editorial = editorialData?.data;
   const monthlyWeather = weatherData?.data ?? [];
 
   const {
@@ -375,6 +400,25 @@ export default function EditDestinationPage({
       howToGetThere: dest.howToGetThere ?? [],
     });
   }, [dest, reset]);
+
+  // Editorial content lives in Sanity and loads separately from the Prisma
+  // `dest` fetch above, so it's applied via setValue once it arrives rather
+  // than folded into the reset() above.
+  useEffect(() => {
+    if (!editorial) return;
+    setValue("about", portableTextToPlainText(editorial.about), {
+      shouldDirty: false,
+    });
+    setValue("travelTips", portableTextToPlainText(editorial.travelTips), {
+      shouldDirty: false,
+    });
+    setValue("metaTitle", editorial.seo?.metaTitle ?? "", {
+      shouldDirty: false,
+    });
+    setValue("metaDescription", editorial.seo?.metaDescription ?? "", {
+      shouldDirty: false,
+    });
+  }, [editorial, setValue]);
 
   // Fill in Crowd Level / Recommendation from live weather data, but only for
   // months the admin hasn't already set — an explicit toggle always wins and persists.
