@@ -78,11 +78,14 @@ interface DestinationFormValues {
 
 // The Sanity fields are Portable Text (array of block); the admin form
 // edits them as plain text, so extract the block spans back into a string.
-function portableTextToPlainText(
-  blocks: { children?: unknown[] }[] | null | undefined,
-): string {
+// Some existing documents still hold a legacy plain string (written before
+// this admin form wrapped text into blocks) — pass those through as-is
+// instead of crashing on blocks.map.
+function portableTextToPlainText(blocks: unknown): string {
   if (!blocks) return "";
-  return blocks
+  if (typeof blocks === "string") return blocks;
+  if (!Array.isArray(blocks)) return "";
+  return (blocks as { children?: unknown[] }[])
     .map((block) =>
       (block.children ?? [])
         .map((child) =>
