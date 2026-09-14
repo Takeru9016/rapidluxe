@@ -6,6 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { PILL_BUTTON_CLASS } from "@/lib/ui-tokens";
+import { cn } from "@/lib/utils";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -71,7 +73,11 @@ export function TherapycationIntro() {
               indulgence. We call it Therapycation. Travel that restores you.
             </p>
             <div className="mt-8">
-              <Button variant="outline-gold" className="font-sans" asChild>
+              <Button
+                variant="outline-gold"
+                className={cn(PILL_BUTTON_CLASS, "font-sans")}
+                asChild
+              >
                 <Link href="/about">Discover Therapycation</Link>
               </Button>
             </div>

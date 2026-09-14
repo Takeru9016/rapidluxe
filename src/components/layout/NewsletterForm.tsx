@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PILL_BUTTON_CLASS } from "@/lib/ui-tokens";
+import { cn } from "@/lib/utils";
 
 export function NewsletterForm() {
   const [email, setEmail] = useState("");
@@ -45,13 +46,13 @@ export function NewsletterForm() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && handleSubscribe()}
-        className="bg-white/5 border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold) focus-visible:border-(--color-gold)"
+        className="h-11 rounded-full bg-white/5 border-(--color-navy-border) text-white placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold) focus-visible:border-(--color-gold)"
       />
       <Button
         variant="gold"
         onClick={handleSubscribe}
         disabled={loading}
-        className="w-full mt-2 font-sans font-medium"
+        className={cn(PILL_BUTTON_CLASS, "w-full mt-2 font-sans font-medium")}
       >
         {loading ? "Subscribing…" : "Subscribe"}
       </Button>

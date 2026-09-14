@@ -21,6 +21,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { useBookings } from "@/hooks/api/useBookings";
 import { useWishlist } from "@/hooks/api/useWishlist";
+import { FILTER_CHIP_CLASS, PILL_BUTTON_CLASS } from "@/lib/ui-tokens";
+import { cn } from "@/lib/utils";
 
 import type { UserProfile } from "@/types/user";
 
@@ -73,7 +75,10 @@ function AccountSummaryCard({
       </div>
       <Link
         href={href}
-        className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg border border-(--color-gold) text-(--color-gold) font-(--font-body) text-sm font-medium hover:bg-(--color-gold)/10 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-gold) focus-visible:ring-offset-2 focus-visible:ring-offset-(--color-navy)"
+        className={cn(
+          PILL_BUTTON_CLASS,
+          "inline-flex items-center gap-1.5 border border-(--color-gold) text-(--color-gold) font-(--font-body) text-sm font-medium hover:bg-(--color-gold)/10 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-gold) focus-visible:ring-offset-2 focus-visible:ring-offset-(--color-navy)",
+        )}
       >
         {linkLabel}
         <ArrowRight size={14} />
@@ -340,24 +345,33 @@ export default function ProfilePage() {
 
         {/* ── Tabs ── */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="flex flex-wrap gap-1 h-auto bg-(--color-navy-surface) border border-(--color-navy-border) p-1 rounded-2xl mb-8 w-full">
+          <TabsList className="flex flex-wrap gap-2 h-auto bg-transparent p-0 mb-8 w-full">
             <TabsTrigger
               value="bookings"
-              className="flex items-center gap-1.5 text-xs font-(--font-body) data-[state=active]:bg-(--color-gold) data-[state=active]:text-(--color-navy) rounded-xl px-3 py-2 flex-1"
+              className={cn(
+                FILTER_CHIP_CLASS,
+                "flex-none flex items-center gap-1.5 text-sm font-(--font-body) border border-(--color-navy-border) data-[state=active]:bg-(--color-gold) data-[state=active]:text-(--color-navy) data-[state=active]:border-(--color-gold)",
+              )}
             >
               <Calendar size={13} />
               My Bookings
             </TabsTrigger>
             <TabsTrigger
               value="wishlist"
-              className="flex items-center gap-1.5 text-xs font-(--font-body) data-[state=active]:bg-(--color-gold) data-[state=active]:text-(--color-navy) rounded-xl px-3 py-2 flex-1"
+              className={cn(
+                FILTER_CHIP_CLASS,
+                "flex-none flex items-center gap-1.5 text-sm font-(--font-body) border border-(--color-navy-border) data-[state=active]:bg-(--color-gold) data-[state=active]:text-(--color-navy) data-[state=active]:border-(--color-gold)",
+              )}
             >
               <Heart size={13} />
               Wishlist
             </TabsTrigger>
             <TabsTrigger
               value="details"
-              className="flex items-center gap-1.5 text-xs font-(--font-body) data-[state=active]:bg-(--color-gold) data-[state=active]:text-(--color-navy) rounded-xl px-3 py-2 flex-1"
+              className={cn(
+                FILTER_CHIP_CLASS,
+                "flex-none flex items-center gap-1.5 text-sm font-(--font-body) border border-(--color-navy-border) data-[state=active]:bg-(--color-gold) data-[state=active]:text-(--color-navy) data-[state=active]:border-(--color-gold)",
+              )}
             >
               <User size={13} />
               Personal Details

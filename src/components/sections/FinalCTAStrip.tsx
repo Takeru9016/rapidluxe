@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { PILL_BUTTON_CLASS } from "@/lib/ui-tokens";
+import { cn } from "@/lib/utils";
 
 export function FinalCTAStrip() {
   return (
@@ -33,7 +35,7 @@ export function FinalCTAStrip() {
           <Button
             variant="coral"
             size="lg"
-            className="h-auto px-10 py-4 rounded-lg text-base font-sans"
+            className={cn(PILL_BUTTON_CLASS, "text-base font-sans")}
             asChild
           >
             <Link href="/packages">Explore Journeys →</Link>

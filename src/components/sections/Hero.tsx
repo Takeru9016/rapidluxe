@@ -8,6 +8,8 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { usePackages } from "@/hooks/api/usePackages";
 import { useSiteContent } from "@/hooks/api/useSiteContent";
+import { PILL_BUTTON_CLASS } from "@/lib/ui-tokens";
+import { cn } from "@/lib/utils";
 
 function toMp4CloudinaryUrl(url: string | undefined): string | undefined {
   if (!url) return url;
@@ -222,7 +224,7 @@ export function Hero() {
             <Button
               variant="coral"
               size="lg"
-              className="h-auto px-8 py-4 rounded-full text-base font-sans"
+              className={cn(PILL_BUTTON_CLASS, "text-base font-sans")}
               asChild
             >
               <Link href="/packages">Explore Journeys</Link>
@@ -230,9 +232,12 @@ export function Hero() {
             <Link
               href="/contact"
               aria-label="Bespoke Planning"
-              className="group flex items-center h-14 rounded-full border border-[#FFFFFF]/40 text-[#FFFFFF] overflow-hidden transition-[padding-right] duration-300 hover:pr-6"
+              className={cn(
+                PILL_BUTTON_CLASS,
+                "group flex items-center px-0 border border-[#FFFFFF]/40 text-[#FFFFFF] overflow-hidden transition-[padding-right] duration-300 hover:pr-6",
+              )}
             >
-              <span className="flex items-center justify-center size-14 shrink-0">
+              <span className="flex items-center justify-center size-11 shrink-0">
                 <ArrowUpRight size={20} />
               </span>
               <span className="max-w-0 group-hover:max-w-40 overflow-hidden whitespace-nowrap font-sans text-sm transition-[max-width] duration-300">

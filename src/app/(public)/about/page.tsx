@@ -7,6 +7,8 @@ import Link from "next/link";
 import { cache } from "react";
 
 import { sanityReadClient } from "@/lib/sanity";
+import { PILL_BUTTON_CLASS } from "@/lib/ui-tokens";
+import { cn } from "@/lib/utils";
 
 // ── Sanity types ──────────────────────────────────────────────────────────────
 
@@ -448,14 +450,20 @@ export default async function AboutPage() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             href="/packages"
-            className="inline-flex items-center gap-2 font-sans font-medium px-10 py-4 rounded-lg text-sm transition-opacity hover:opacity-90"
+            className={cn(
+              PILL_BUTTON_CLASS,
+              "inline-flex items-center gap-2 font-sans font-medium text-sm transition-opacity hover:opacity-90",
+            )}
             style={{ backgroundColor: "#1B2A41", color: "#FFFFFF" }}
           >
             Explore Journeys <ArrowRight size={16} />
           </Link>
           <Link
             href="/contact"
-            className="inline-flex items-center gap-2 font-sans font-medium px-10 py-4 rounded-lg text-sm border-2 transition-colors hover:bg-[#1B2A41]/10"
+            className={cn(
+              PILL_BUTTON_CLASS,
+              "inline-flex items-center gap-2 font-sans font-medium text-sm border-2 transition-colors hover:bg-[#1B2A41]/10",
+            )}
             style={{ borderColor: "#1B2A41", color: "#1B2A41" }}
           >
             Bespoke Planning

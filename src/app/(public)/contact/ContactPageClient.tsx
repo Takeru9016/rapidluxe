@@ -17,6 +17,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { PILL_BUTTON_CLASS } from "@/lib/ui-tokens";
+import { cn } from "@/lib/utils";
 
 interface FormData {
   name: string;
@@ -164,7 +166,7 @@ export default function ContactPageClient() {
                     aria-describedby={
                       errors.name ? "contact-name-error" : undefined
                     }
-                    className="bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
+                    className="h-11 rounded-full bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
                   />
                   {errors.name && (
                     <p
@@ -197,7 +199,7 @@ export default function ContactPageClient() {
                     aria-describedby={
                       errors.email ? "contact-email-error" : undefined
                     }
-                    className="bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
+                    className="h-11 rounded-full bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
                   />
                   {errors.email && (
                     <p
@@ -227,7 +229,7 @@ export default function ContactPageClient() {
                     {...register("phone")}
                     type="tel"
                     placeholder="+91 98765 43210"
-                    className="bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
+                    className="h-11 rounded-full bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -257,7 +259,7 @@ export default function ContactPageClient() {
                       aria-describedby={
                         errors.subject ? "contact-subject-error" : undefined
                       }
-                      className="bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-text-secondary) focus:ring-(--color-gold)/40 data-placeholder:text-(--color-text-secondary)"
+                      className="h-11 rounded-full bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-text-secondary) focus:ring-(--color-gold)/40 data-placeholder:text-(--color-text-secondary)"
                     >
                       <SelectValue placeholder="Select a subject" />
                     </SelectTrigger>
@@ -313,7 +315,7 @@ export default function ContactPageClient() {
                   aria-describedby={
                     errors.message ? "contact-message-error" : undefined
                   }
-                  className="bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60 resize-none"
+                  className="rounded-2xl bg-(--color-navy-surface) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60 resize-none"
                 />
                 {errors.message && (
                   <p
@@ -329,7 +331,7 @@ export default function ContactPageClient() {
                 type="submit"
                 variant="coral"
                 disabled={isSubmitting}
-                className="font-sans font-medium px-8 h-11 gap-2"
+                className={cn(PILL_BUTTON_CLASS, "font-sans font-medium gap-2")}
               >
                 <Send size={14} />
                 {isSubmitting ? "Sending..." : "Send Message →"}
@@ -389,7 +391,10 @@ export default function ContactPageClient() {
                     href={`https://wa.me/${process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-[#25D366] text-white font-sans text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-[#25D366]/90 transition-colors"
+                    className={cn(
+                      PILL_BUTTON_CLASS,
+                      "inline-flex items-center gap-2 bg-[#25D366] text-white font-sans text-sm font-medium hover:bg-[#25D366]/90 transition-colors",
+                    )}
                   >
                     <MessageCircle size={14} />
                     Chat with us on WhatsApp

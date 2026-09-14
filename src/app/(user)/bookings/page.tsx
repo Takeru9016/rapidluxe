@@ -11,7 +11,8 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { BookingCardSkeleton } from "@/components/shared/Skeletons";
 import { useBookings, usePayBooking } from "@/hooks/api/useBookings";
 import { BOOKING_STATUS_CONFIG } from "@/lib/booking-status";
-import { calculateGST, formatDateRange, formatPrice } from "@/lib/utils";
+import { FILTER_CHIP_CLASS } from "@/lib/ui-tokens";
+import { calculateGST, cn, formatDateRange, formatPrice } from "@/lib/utils";
 import type { DisplayStatus, UserBooking } from "@/types/booking";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -154,11 +155,13 @@ export default function BookingsPage() {
               key={value}
               type="button"
               onClick={() => setFilter(value)}
-              className={`px-4 py-1.5 rounded-full text-sm font-['DM_Sans'] border transition-colors ${
+              className={cn(
+                FILTER_CHIP_CLASS,
+                "text-sm font-['DM_Sans'] border transition-colors",
                 filter === value
                   ? "border-(--color-gold) bg-(--color-gold)/10 text-(--color-gold)"
-                  : "border-(--color-navy-border) text-(--color-text-secondary) hover:border-(--color-gold)/40"
-              }`}
+                  : "border-(--color-navy-border) text-(--color-text-secondary) hover:border-(--color-gold)/40",
+              )}
             >
               {label}
             </button>

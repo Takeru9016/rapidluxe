@@ -37,7 +37,8 @@ import {
   type PackagesQuery,
   usePackages,
 } from "@/hooks/api/usePackages";
-import { formatPrice } from "@/lib/utils";
+import { FILTER_CHIP_CLASS } from "@/lib/ui-tokens";
+import { cn, formatPrice } from "@/lib/utils";
 import { useSearchStore } from "@/store/searchStore";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -111,7 +112,7 @@ function DestinationChipRow({
             size="sm"
             aria-pressed={isSelected}
             onClick={() => onToggle(dest.slug)}
-            className="shrink-0 rounded-full h-auto px-4 py-2 font-sans gap-1.5"
+            className={cn(FILTER_CHIP_CLASS, "shrink-0 font-sans gap-1.5")}
           >
             {isSelected && <Check className="size-3.5" />}
             {dest.name}

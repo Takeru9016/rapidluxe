@@ -11,9 +11,10 @@ import {
   QuoteDialog,
 } from "@/components/admin/BookingActionDialogs";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FILTER_CHIP_CLASS } from "@/lib/ui-tokens";
 
 import { BOOKING_STATUS_CONFIG } from "@/lib/booking-status";
-import { formatDate, formatPrice } from "@/lib/utils";
+import { cn, formatDate, formatPrice } from "@/lib/utils";
 import type { AdminBooking, DbBookingStatus } from "@/types/booking";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -170,12 +171,15 @@ export default function AdminBookingsPage() {
         }}
         className="mb-4"
       >
-        <TabsList className="bg-(--color-navy-surface) border border-(--color-navy-border) h-auto p-1 flex flex-wrap gap-1">
+        <TabsList className="bg-transparent h-auto p-0 flex flex-wrap gap-2">
           {TABS.map((t) => (
             <TabsTrigger
               key={t.value}
               value={t.value}
-              className="font-['DM_Sans'] text-sm text-(--color-text-secondary) rounded-md px-3 py-1.5 data-[state=active]:bg-(--color-gold) data-[state=active]:text-(--color-navy) data-[state=active]:shadow-none"
+              className={cn(
+                FILTER_CHIP_CLASS,
+                "flex-none font-['DM_Sans'] text-sm border border-(--color-navy-border) text-(--color-text-secondary) data-[state=active]:bg-(--color-gold) data-[state=active]:text-(--color-navy) data-[state=active]:border-(--color-gold) data-[state=active]:shadow-none",
+              )}
             >
               {t.label}
             </TabsTrigger>
@@ -199,7 +203,7 @@ export default function AdminBookingsPage() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search reference, name, or email…"
-            className="w-full bg-(--color-navy) border border-(--color-navy-border) rounded-lg pl-9 pr-3 py-2 text-sm font-['DM_Sans'] text-white placeholder:text-(--color-text-secondary) focus:outline-none focus:border-(--color-gold)/60 transition-colors"
+            className="w-full h-10 bg-(--color-navy) border border-(--color-navy-border) rounded-full pl-9 pr-3 text-sm font-['DM_Sans'] text-white placeholder:text-(--color-text-secondary) focus:outline-none focus:border-(--color-gold)/60 transition-colors"
           />
         </div>
 
@@ -218,7 +222,7 @@ export default function AdminBookingsPage() {
               setDateFrom(e.target.value);
               setPage(1);
             }}
-            className="bg-(--color-navy) border border-(--color-navy-border) rounded-lg px-3 py-2 text-sm font-['DM_Sans'] text-white focus:outline-none focus:border-(--color-gold)/60 transition-colors"
+            className="h-10 bg-(--color-navy) border border-(--color-navy-border) rounded-full px-4 text-sm font-['DM_Sans'] text-white focus:outline-none focus:border-(--color-gold)/60 transition-colors"
           />
         </div>
 
@@ -237,7 +241,7 @@ export default function AdminBookingsPage() {
               setDateTo(e.target.value);
               setPage(1);
             }}
-            className="bg-(--color-navy) border border-(--color-navy-border) rounded-lg px-3 py-2 text-sm font-['DM_Sans'] text-white focus:outline-none focus:border-(--color-gold)/60 transition-colors"
+            className="h-10 bg-(--color-navy) border border-(--color-navy-border) rounded-full px-4 text-sm font-['DM_Sans'] text-white focus:outline-none focus:border-(--color-gold)/60 transition-colors"
           />
         </div>
 
@@ -249,7 +253,7 @@ export default function AdminBookingsPage() {
               setDateTo("");
               setPage(1);
             }}
-            className="px-3 py-2 rounded-lg border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-xs hover:border-(--color-gold)/40 hover:text-white transition-colors"
+            className="h-10 px-4 rounded-full border border-(--color-navy-border) text-(--color-white-muted) font-['DM_Sans'] text-xs hover:border-(--color-gold)/40 hover:text-white transition-colors"
           >
             Clear dates
           </button>

@@ -24,6 +24,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { PILL_BUTTON_CLASS } from "@/lib/ui-tokens";
+import { cn } from "@/lib/utils";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -193,7 +195,7 @@ function CorporateForm() {
               aria-describedby={
                 errors.contactName ? "corporate-contact-name-error" : undefined
               }
-              className="bg-(--color-navy) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
+              className="h-11 rounded-full bg-(--color-navy) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
             />
             {errors.contactName && (
               <p
@@ -226,7 +228,7 @@ function CorporateForm() {
               aria-describedby={
                 errors.email ? "corporate-email-error" : undefined
               }
-              className="bg-(--color-navy) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
+              className="h-11 rounded-full bg-(--color-navy) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
             />
             {errors.email && (
               <p
@@ -257,7 +259,7 @@ function CorporateForm() {
               aria-describedby={
                 errors.companyName ? "corporate-company-name-error" : undefined
               }
-              className="bg-(--color-navy) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
+              className="h-11 rounded-full bg-(--color-navy) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
             />
             {errors.companyName && (
               <p
@@ -280,7 +282,7 @@ function CorporateForm() {
               id="corporate-gst-number"
               {...register("gstNumber")}
               placeholder="27AABCU9603R1ZX"
-              className="font-mono bg-(--color-navy) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
+              className="h-11 rounded-full font-mono bg-(--color-navy) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60"
             />
           </div>
         </div>
@@ -310,7 +312,7 @@ function CorporateForm() {
               aria-describedby={
                 errors.teamSize ? "corporate-team-size-error" : undefined
               }
-              className="bg-(--color-navy) border-(--color-navy-border) text-(--color-text-secondary) focus:ring-(--color-gold)/40 data-placeholder:text-(--color-text-secondary)"
+              className="h-11 rounded-full bg-(--color-navy) border-(--color-navy-border) text-(--color-text-secondary) focus:ring-(--color-gold)/40 data-placeholder:text-(--color-text-secondary)"
             >
               <SelectValue placeholder="Select team size" />
             </SelectTrigger>
@@ -355,7 +357,7 @@ function CorporateForm() {
             aria-describedby={
               errors.requirements ? "corporate-requirements-error" : undefined
             }
-            className="bg-(--color-navy) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60 resize-none"
+            className="rounded-2xl bg-(--color-navy) border-(--color-navy-border) text-(--color-white) placeholder:text-(--color-text-secondary) focus-visible:ring-(--color-gold)/40 focus-visible:border-(--color-gold)/60 resize-none"
           />
           {errors.requirements && (
             <p
@@ -371,7 +373,7 @@ function CorporateForm() {
           type="submit"
           variant="coral"
           disabled={isSubmitting}
-          className="font-sans font-medium px-8 h-11 gap-2"
+          className={cn(PILL_BUTTON_CLASS, "font-sans font-medium gap-2")}
         >
           <ArrowRight size={14} />
           {isSubmitting ? "Sending..." : "Request a Corporate Account"}

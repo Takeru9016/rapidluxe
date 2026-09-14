@@ -8,6 +8,8 @@ import { DestinationCard } from "@/components";
 import { DestinationCardSkeleton } from "@/components/shared/Skeletons";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDestinations } from "@/hooks/api/useDestinations";
+import { FILTER_CHIP_CLASS } from "@/lib/ui-tokens";
+import { cn } from "@/lib/utils";
 
 import type { Continent, Destination } from "@/types/destination";
 
@@ -78,7 +80,10 @@ function DestinationsContent() {
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
-                className="flex-none rounded-full border border-(--color-gold)/30 px-5 py-2.5 text-sm font-sans font-medium text-(--color-white-muted) transition-all duration-200 cursor-pointer data-[state=active]:bg-(--color-gold) data-[state=active]:text-[#1B2A41] data-[state=active]:border-(--color-gold) data-[state=inactive]:hover:border-(--color-gold)/60 data-[state=inactive]:hover:text-white"
+                className={cn(
+                  FILTER_CHIP_CLASS,
+                  "flex-none border border-(--color-gold)/30 text-sm font-sans font-medium text-(--color-white-muted) transition-all duration-200 cursor-pointer data-[state=active]:bg-(--color-gold) data-[state=active]:text-[#1B2A41] data-[state=active]:border-(--color-gold) data-[state=inactive]:hover:border-(--color-gold)/60 data-[state=inactive]:hover:text-white",
+                )}
               >
                 {tab.label}
               </TabsTrigger>
