@@ -2,14 +2,11 @@ allowBuilds:
   '@clerk/shared': true
   '@prisma/engines': true
   '@sentry/cli': true
-  core-js: set this to true or false
+  core-js: true
   esbuild: true
   msw: true
   prisma: true
   sharp: true
-ignoredBuiltDependencies:
-  - sharp
-  - unrs-resolver
 minimumReleaseAgeExclude:
   - '@prisma/adapter-pg@7.10.0'
   - '@prisma/client-runtime-utils@7.10.0'

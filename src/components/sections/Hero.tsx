@@ -11,13 +11,21 @@ import { useSiteContent } from "@/hooks/api/useSiteContent";
 import { PILL_BUTTON_CLASS } from "@/lib/ui-tokens";
 import { cn } from "@/lib/utils";
 
-function toMp4CloudinaryUrl(url: string | undefined): string | undefined {
+const BASE_VIDEO_TRANSFORMS = "f_mp4,q_auto,vc_auto";
+// The source video has a logo burned into its top-left corner, so every crop
+// (CSS object-position and this Cloudinary gravity) is anchored top-left.
+const MOBILE_VIDEO_TRANSFORMS = `${BASE_VIDEO_TRANSFORMS},c_fill,ar_9:16,g_north_west,w_720`;
+
+function toCloudinaryVideoUrl(
+  url: string | undefined,
+  transforms: string,
+): string | undefined {
   if (!url) return url;
   const marker = "cloudinary.com/video/upload/";
   const markerIndex = url.indexOf(marker);
   if (markerIndex === -1) return url;
   const insertAt = markerIndex + marker.length;
-  return `${url.slice(0, insertAt)}f_mp4,q_auto,vc_auto/${url.slice(insertAt)}`;
+  return `${url.slice(0, insertAt)}${transforms}/${url.slice(insertAt)}`;
 }
 
 const BADGE_TEXT = "EXPLORE NOW • EXPLORE NOW • ";
@@ -88,8 +96,17 @@ export function Hero() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
 
-  const videoUrl = toMp4CloudinaryUrl(process.env.NEXT_PUBLIC_HERO_VIDEO_URL);
+  // Picked after mount (not <source media>, which video elements don't
+  // reliably honor) — poster covers the brief gap before the source is set.
+  const videoUrl =
+    isMobile === null
+      ? undefined
+      : toCloudinaryVideoUrl(
+          process.env.NEXT_PUBLIC_HERO_VIDEO_URL,
+          isMobile ? MOBILE_VIDEO_TRANSFORMS : BASE_VIDEO_TRANSFORMS,
+        );
   const posterUrl = process.env.NEXT_PUBLIC_HERO_POSTER_URL;
 
   // Real featured package for the floating card — never fabricated content.
@@ -110,10 +127,9 @@ export function Hero() {
       "(prefers-reduced-motion: reduce)",
     ).matches;
     setReducedMotion(prefersReduced);
+    setIsMobile(window.matchMedia("(max-width: 767px)").matches);
 
     if (!prefersReduced) {
-      videoRef.current?.play().catch(() => {});
-
       gsap
         .timeline()
         .fromTo(
@@ -160,6 +176,11 @@ export function Hero() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!videoUrl || reducedMotion) return;
+    videoRef.current?.play().catch(() => {});
+  }, [videoUrl, reducedMotion]);
+
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background */}
@@ -171,11 +192,10 @@ export function Hero() {
           playsInline
           aria-hidden="true"
           preload="metadata"
-          className="absolute inset-0 w-full h-full object-fill"
+          src={videoUrl}
+          className="absolute inset-0 w-full h-full object-cover object-top-left"
           {...(posterUrl ? { poster: posterUrl } : {})}
-        >
-          <source src={videoUrl} type="video/mp4" />
-        </video>
+        />
         {/* Base layer — consistent darkening over any video frame or theme */}
         <div className="absolute inset-0 bg-[#1B2A41]/50" />
         <div
