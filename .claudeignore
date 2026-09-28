@@ -55,3 +55,4 @@ playwright-report/
 .env.local
 .env
 .env.*
+graphify-out/

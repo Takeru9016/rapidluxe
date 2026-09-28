@@ -72,3 +72,5 @@ out/
 
 # Superpowers brainstorming companion mockups
 .superpowers/
+graphify-out/cache/
+/graphify-out
