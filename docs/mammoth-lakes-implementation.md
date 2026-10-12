@@ -1,5 +1,11 @@
 # Mammoth Lakes implementation - 12 October 2026
 
+## Live publication - 12 October 2026
+
+After the draft implementation and QA below, the owner explicitly instructed publication of all three journeys and merge/push to main. All three existing package records were changed from DRAFT to PUBLISHED in one optimistic transaction. Prices, content, five-image galleries and commercial caveats were preserved. No supplier guarantees or new inclusions were added. The draft status and publication blockers described below document the earlier handoff; supplier-specific confirmations still apply to each customer quote.
+
+The live public API returned 200 and PUBLISHED for each slug, with the approved price/original-price pairs and five images. Each live journey page returned 200, rendered its SEO title and price pair, loaded all five primary Cloudinary gallery images, and showed Request This Journey. No preview interception was used for these live checks. Before/after publication backups are retained at /private/tmp/rapidluxe-mammoth/before-publication.json and after-publication.json. No schema, migration or application-code changes were required for publication.
+
 Four existing database records were updated. No duplicate records were created. All three journeys remain DRAFT and unfeatured. Group limits are 1-2 travellers, explicitly approved in this chat. Prices are INR starting prices per person, based on two adults sharing, with international and domestic airfare excluded. Festive/peak rates are not guaranteed.
 
 ## Exact records
