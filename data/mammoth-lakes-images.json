@@ -1,0 +1,115 @@
+[
+  {
+    "key": "convict",
+    "source": "https://www.pexels.com/photo/rocky-lake-with-mountainview-6911450/",
+    "credit": "Kelly Kennedy",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "cloudinaryUrl": "https://res.cloudinary.com/dofivda6g/image/upload/v1791217143/rapidluxe/destinations/ywhnaojctqsd6kutgp5o.jpg",
+    "upload": "Existing destination cover, uploaded 2026-10-05"
+  },
+  {
+    "key": "fall",
+    "source": "https://www.pexels.com/photo/fall-colors-convict-lake-14272737/",
+    "credit": "Soly Moses",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "cloudinaryUrl": "https://res.cloudinary.com/dofivda6g/image/upload/v1791217295/rapidluxe/packages/unx8gizzewtwiotaklhp.jpg",
+    "upload": "Existing fall package cover, uploaded 2026-10-05"
+  },
+  {
+    "key": "winter",
+    "source": "https://www.pexels.com/photo/snow-capped-mountain-near-body-of-water-2434982/",
+    "credit": "Caylee DG",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "cloudinaryUrl": "https://res.cloudinary.com/dofivda6g/image/upload/v1791217452/rapidluxe/packages/zbkp2kbzywyqgvjzeore.jpg",
+    "upload": "Existing winter package cover, uploaded 2026-10-05"
+  },
+  {
+    "key": "mono",
+    "source": "https://www.pexels.com/photo/mono-lake-tufa-formations-in-california-s-sierra-nevada-35016791/",
+    "credit": "Mazin Omron",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "cloudinaryUrl": "https://res.cloudinary.com/dofivda6g/image/upload/v1791217370/rapidluxe/packages/evjyez29vjbx80pdb7ye.jpg",
+    "upload": "Existing adventure package cover, uploaded 2026-10-05"
+  },
+  {
+    "key": "minaret",
+    "source": "https://commons.wikimedia.org/wiki/File:View_from_Minaret_Vista_(51293565102).jpg",
+    "credit": "US Forest Service Region 5 Photography",
+    "license": "Public domain",
+    "licenseUrl": "https://commons.wikimedia.org/wiki/File:View_from_Minaret_Vista_(51293565102).jpg",
+    "cloudinaryUrl": "https://res.cloudinary.com/dofivda6g/image/upload/v1791789887/rapidluxe/packages/mammoth-lakes-minaret-20261012.jpg",
+    "width": 640,
+    "height": 480,
+    "bytes": 262506
+  },
+  {
+    "key": "skiing",
+    "source": "https://commons.wikimedia.org/wiki/File:Skiing_on_Mammoth_Mountain._Mammoth_Lakes,_California_LCCN2013633939.tif",
+    "credit": "Carol M. Highsmith / The Jon B. Lovelace Collection of California Photographs, Library of Congress, Prints and Photographs Division",
+    "license": "Public domain",
+    "licenseUrl": "https://commons.wikimedia.org/wiki/File:Skiing_on_Mammoth_Mountain._Mammoth_Lakes,_California_LCCN2013633939.tif",
+    "cloudinaryUrl": "https://res.cloudinary.com/dofivda6g/image/upload/v1791789889/rapidluxe/packages/mammoth-lakes-skiing-20261012.jpg",
+    "width": 3840,
+    "height": 2563,
+    "bytes": 2093179
+  },
+  {
+    "key": "lodge",
+    "source": "https://commons.wikimedia.org/wiki/File:Skiers_outside_lodge,_Mammoth_Lakes,_California_LCCN2013633717.tif",
+    "credit": "Carol M. Highsmith / The Jon B. Lovelace Collection of California Photographs, Library of Congress, Prints and Photographs Division",
+    "license": "Public domain",
+    "licenseUrl": "https://commons.wikimedia.org/wiki/File:Skiers_outside_lodge,_Mammoth_Lakes,_California_LCCN2013633717.tif",
+    "cloudinaryUrl": "https://res.cloudinary.com/dofivda6g/image/upload/v1791789890/rapidluxe/packages/mammoth-lakes-lodge-20261012.jpg",
+    "width": 3840,
+    "height": 2563,
+    "bytes": 1376920
+  },
+  {
+    "key": "kayaking",
+    "source": "https://commons.wikimedia.org/wiki/File:Kayaking_Mono_-_panoramio.jpg",
+    "credit": "Sean Foster",
+    "license": "CC BY 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+    "cloudinaryUrl": "https://res.cloudinary.com/dofivda6g/image/upload/v1791789891/rapidluxe/packages/mammoth-lakes-kayaking-20261012.jpg",
+    "width": 3472,
+    "height": 1971,
+    "bytes": 2286303
+  },
+  {
+    "key": "owens",
+    "source": "https://commons.wikimedia.org/wiki/File:Owens_River,_United_States_(Unsplash).jpg",
+    "credit": "Robson Hatsukami Morgan",
+    "license": "CC0 (published before 2017-06-05)",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "cloudinaryUrl": "https://res.cloudinary.com/dofivda6g/image/upload/v1791789893/rapidluxe/packages/mammoth-lakes-owens-20261012.jpg",
+    "width": 5464,
+    "height": 3643,
+    "bytes": 4765204
+  },
+  {
+    "key": "hot-creek",
+    "source": "https://www.usgs.gov/media/images/hot-creek",
+    "credit": "U.S. Geological Survey",
+    "license": "Public domain",
+    "licenseUrl": "https://www.usgs.gov/media/images/hot-creek",
+    "cloudinaryUrl": "https://res.cloudinary.com/dofivda6g/image/upload/v1791789895/rapidluxe/packages/mammoth-lakes-hot-creek-20261012.jpg",
+    "width": 2272,
+    "height": 1704,
+    "bytes": 2540396
+  },
+  {
+    "key": "june-lake",
+    "source": "https://pxhere.com/en/photo/800850",
+    "credit": "PxHere contributor (not named)",
+    "license": "CC0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "cloudinaryUrl": "https://res.cloudinary.com/dofivda6g/image/upload/v1791789896/rapidluxe/packages/mammoth-lakes-june-lake-20261012.jpg",
+    "width": 1200,
+    "height": 483,
+    "bytes": 155505
+  }
+]
